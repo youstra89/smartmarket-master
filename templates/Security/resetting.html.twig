@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title 'Réinitialisation de mot de passe compte Smart Market' %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+
+{% block body %}
+  <div class="uk-container">
+    <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Réinitialisation de mot de passe</span></h1>
+    {% if not form.vars.valid %}
+      <div class="uk-alert-danger" uk-alert>
+        <a class="uk-alert-close" uk-close></a>
+        <p>Votre formulaire n'est pas valide</p>
+      </div>
+    {% endif %}
+    <hr class="uk-divider-icon"><br>
+    <div class="">
+      <div class="uk-text-center">
+        {{ form_start(form) }}
+          <div class="uk-margin">
+            <div class="uk-inline">
+              {{ form_row(form.email, { 'attr': {'class': 'uk-input'} }) }}
+            </div>
+          </div>
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token('resetting') }}"/>
+          <button type="submit" class="uk-button uk-button-default">
+            <i class="fa fa-sign-in" aria-hidden="true"></i> Réinitialiser mot de passe
+          </button>
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

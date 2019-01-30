@@ -1,0 +1,60 @@
+{% extends 'base-admin.html.twig' %}
+
+
+{% block title %}Les catégories{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Catégories</h2>
+    <a href="{{ path('category.add') }}" class="btn btn-primary">Ajouter une nouvelle catégorie</a>
+    <div class="row row-bottom-padded-md">
+      {% set i = 0 %}
+      {% for category in categories %}
+        {% set i = i + 1 %}
+        <div class="col-md-3 col-sm-6 col-padding text-center animate-box">
+          <a href="{{ path('category.edit', {id: category.id}) }}" class="work image-popup" style="background-image: url({{ asset('images/img-1.jpg') }});">
+            <div class="desc">
+              <h3>{{ category.name }}</h3>
+              <span>Catégorie {{ i }}</span>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      // $(".alert").alert('close');
+    })
+  </script>
+{% endblock %}

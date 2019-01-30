@@ -1,0 +1,56 @@
+security:
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        from_database:
+            entity:
+                class: App\Entity\User
+                property: username
+    role_hierarchy:
+        ROLE_ADMIN:       ROLE_USER
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        # login:
+        #     pattern:   ^/login$
+        #     anonymous: true
+        main:
+            pattern: ^/
+            anonymous: true
+            form_login:
+                # Le nom de la route de la page de connexion
+                check_path: login
+                # Le nom de la route où se trouve le formulaire de connexion
+                # Si un utilisateur tente d'acceder à une page protégée sans en avoir les droits
+                # il sera redirigé sur cette page
+                login_path: login
+                # Securisation des formulaires
+                csrf_token_generator: security.csrf.token_manager
+                # La page par defaut apres une connexion reussie
+                default_target_path: homepage
+
+            logout:
+                # La route où se trouve le process de deconnexion
+                path: logout
+                # La route sur laquelle doit etre rediriger l'utilisateur apres une deconnexion
+                target: homepage
+
+            # activate different ways to authenticate
+
+            # http_basic: true
+            # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
+
+            # form_login: true
+            # https://symfony.com/doc/current/security/form_login_setup.html
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/profile, roles: ROLE_USER }
+
+    encoders:
+        App\Entity\User:
+            algorithm: bcrypt
+            cost: 12

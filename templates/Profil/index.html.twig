@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+{% endblock %}
+
+
+
+{% block title user.username ~ ' | Compte Orientation Authentique' %}
+
+
+
+{% block contextual_menu %}
+{% endblock %}
+
+
+{% block content %}
+{% endblock %}
+
+
+{% block notification %}
+{% endblock %}
+
+
+
+{% block body %}
+  <div class="uk-container uk-padding-small">
+    <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Mon compte</span></h1>
+    <p class="uk-text-center"></p>
+    <h2>Profil de <strong>{{ user.username }}</strong><br> </h2>
+    <ul class="uk-subnav uk-subnav-pill" uk-switcher="animation: uk-animation-fade">
+      <li><a href="#">Informations personnelles</a></li>
+      <li><a href="#">Paramètres</a></li>
+    </ul>
+    <ul class="uk-switcher uk-margin">
+        <li>
+          <div class="uk-grid">
+            <div class="uk-width-1-4@s">
+              <strong>Nom</strong><br>
+              {{ user.nom }}
+            </div>
+            <div class="uk-width-1-4@s">
+              <strong>Prénom</strong><br>
+              {{ user.pnom }}
+            </div>
+            <div class="uk-width-1-4@s">
+              <strong>Résidence</strong><br>
+              {{ user.residence }}
+            </div>
+            <div class="uk-width-1-4@s">
+              <strong>Numéro de téléphone</strong><br>
+              {{ user.phoneNumber }}
+            </div>
+          </div><br>
+          <div class="uk-grid">
+            <div class="uk-width-1-4@s">
+              <strong>Date de naissance</strong><br>
+              {{ user.dateNaissance|date('d-m-Y') }}
+            </div>
+            <div class="uk-width-1-4@s">
+              <strong>Sexe</strong><br>
+              {{ user.sexeType }}
+            </div>
+            <div class="uk-width-1-4@s">
+              <strong>Email</strong><br>
+              {{ user.email }}
+            </div>
+            <div class="uk-width-1-4@s">
+              <strong>Date d'inscription</strong><br>
+              {{ user.createdAt|date('d-m-y à H:i') }}
+            </div>
+          </div><br>
+        </li>
+        <li>
+          <p uk-margin>
+            <a class="uk-button uk-button-default uk-button-large" href="{{ path('change_pwd') }}">Modifier votre mot de passe</a>
+            <!-- <a class="uk-button uk-button-primary uk-button-large">Large button</a>
+            <a class="uk-button uk-button-secondary uk-button-large">Large button</a> -->
+          </p>
+        </li>
+      </ul>
+  </div>
+{% endblock %}
+
+
+{% block javascripts %}
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title 'En attente de réinitialisation de mot de passe compte Smart Market' %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="uk-container">
+    <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Réinitialisation de compte</span></h1>
+    <hr class="uk-divider-icon"><br>
+    <div class="uk-margin-auto uk-margin-auto-vertical uk-width-1-2@s uk-card uk-card-default uk-card-body">
+      <div class="uk-text-center">
+        <p>As salaamu alaykoum wa rahmatoullahi wa barakaatouh <strong> {{ user.username }}</strong>.</p><br>
+        <p>Votre demande de réinitialisation a été prise en compte.</p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

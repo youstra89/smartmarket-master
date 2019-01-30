@@ -1,0 +1,25 @@
+{% extends 'base-admin.html.twig' %}
+
+
+{% block title %}Les marchandises{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Marchandises</h2>
+    <a href="{{ path('category') }}" class="btn btn-primary">Gestion des catégories</a>
+    <div class="row row-bottom-padded-md">
+      <div class="col-md-3 col-sm-6 col-padding text-center animate-box">
+        <a href="#" class="work image-popup" style="background-image: url({{ asset('images/img-1.jpg') }});">
+          <div class="desc">
+            <h3>Project Name</h3>
+            <span>Illustration</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

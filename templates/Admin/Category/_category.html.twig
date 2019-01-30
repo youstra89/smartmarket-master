@@ -1,0 +1,11 @@
+{{ form_start(form, {'attr': {'class': ''}}) }}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="">{{ form_label(form.name) }}</label>
+                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
+{{ form_end(form) }}

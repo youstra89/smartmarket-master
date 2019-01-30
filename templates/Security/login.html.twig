@@ -1,0 +1,68 @@
+{% extends 'Security/base.html.twig' %}
+
+
+{% block title 'Connexion | Smart Market' %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+
+{% block body %}
+  <div class="uk-container">
+    <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Connexion</span></h1>
+    <hr class="uk-divider-icon"><br>
+    {% if error %}
+      <div class="uk-margin-auto uk-margin-auto-vertical">
+        <div class="uk-alert-danger" uk-alert>
+          <a class="uk-alert-close" uk-close></a>
+          {{ error.messageKey }}
+        </div>
+      </div>
+    {% endif %}
+    <div class="uk-margin-auto uk-margin-auto-vertical uk-width-1-2@s uk-card uk-card-default uk-card-body">
+      <div class="uk-text-center">
+        <form action="{{ path('login') }}" method="post">
+          <div class="uk-margin">
+            <div class="form-group">
+              <span class="uk-form-icon" uk-icon="icon: user"></span>
+              <input type="text" id="username" name="_username" value="{{ last_username }}" class="form-control"/>
+            </div>
+            <div class="form-group">
+              <span class="uk-form-icon uk-form-icon-flip" uk-icon="icon: lock"></span>
+              <input type="password" id="password" name="_password" class="form-control" />
+            </div>
+          </div>
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"/><br><br>
+          <button type="submit" class="btn btn-danger btn-learn">
+            <i class="fa fa-sign-in" aria-hidden="true"></i> Connexion
+          </button>
+        </form>
+      </div>
+      <p><a href="{{ path('resetting') }}">Mot de passe oublié ?</a> </p>
+    </div>
+    <br>
+  </div>
+{% endblock %}

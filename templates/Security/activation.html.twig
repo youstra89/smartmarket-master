@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title 'Confirmatioin activation compte Smart Market' %}
+
+{% block body %}
+  <div class="uk-container">
+    <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Activation de compte</span></h1>
+    <hr class="uk-divider-icon"><br>
+    <div class="uk-margin-auto uk-margin-auto-vertical uk-width-1-2@s uk-card uk-card-default uk-card-body">
+      <div class="uk-text-center">
+        <p>As salaamu alaykoum wa rahmatoullahi wa barakaatouh <strong> {{ user.username }}</strong>.</p><br>
+        <p>Votre compte est désormais actif.</p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

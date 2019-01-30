@@ -1,0 +1,114 @@
+{% extends 'Security/base.html.twig' %}
+
+
+{% block title 'Inscription | Smart Market' %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+
+{% block body %}
+    <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Inscription</span></h1>
+    {% if not form.vars.valid %}
+      <div class="uk-alert-danger" uk-alert>
+        <a class="uk-alert-close" uk-close></a>
+        <p>Votre formulaire n'est pas valide</p>
+      </div>
+    {% endif %}
+      {{ form_start(form)}}
+        <div class="row">
+          <div class="col-md-12">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form_row(form.lastname, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form_row(form.firstname, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form_row(form.gender, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form_row(form.phone_number, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form_row(form.residence, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  {{ form_row(form.birthday, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form_row(form.email, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form_row(form.username, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form_row(form.password.first, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  {{ form_row(form.password.second, { 'attr': {'class': 'form-control'} }) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('registration') }}"/>{##}
+        <button type="submit" class="btn btn-primary btn-demo popup-vimeo">
+          <i class="fa fa-sign-in" aria-hidden="true"></i> S'inscrire
+        </button>
+        {{ form_rest(form) }}
+      {{ form_end(form)}}
+    </div>
+{% endblock %}
