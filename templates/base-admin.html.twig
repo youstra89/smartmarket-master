@@ -54,6 +54,7 @@
 	<link rel="stylesheet" href="{{ asset('css/flexslider.css') }}">
 	<!-- Theme style  -->
 	<link rel="stylesheet" href="{{ asset('css/style.css') }}">
+	{% block stylesheets %}{% endblock %}
 
 	<!-- Modernizr JS -->
 	<script src="{{ asset('js/modernizr-2.6.2.min.js') }}"></script>
@@ -74,7 +75,7 @@
 					<li class="{% if current == 'index' %}fh5co-active{% endif %}"><a href="{{ path('admin') }}">Accueil</a></li>
 					<li class="{% if current == 'products' %}fh5co-active{% endif %}"><a href="{{ path('product') }}">Marchandises</a></li>
 					<li class="{% if current == 'purchases' %}fh5co-active{% endif %}"><a href="{{ path('purchase') }}">Achats</a></li>
-					<li class="{% if current == 'ventes' %}fh5co-active{% endif %}"><a href="about.html">Ventes</a></li>
+					<li class="{% if current == 'sells' %}fh5co-active{% endif %}"><a href="{{ path('sell') }}">Ventes</a></li>
 					<li class="{% if current == 'comptabilite' %}fh5co-active{% endif %}"><a href="contact.html">Comptabilité</a></li>
 				</ul>
 			</nav>

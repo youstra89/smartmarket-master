@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Product;
+use App\Entity\ProductSearch;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -27,6 +28,33 @@ class ProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    public function findAllProductsQuery(ProductSearch $search)
+    {
+      $query = $this->createQueryBuilder('p');
+
+      if($search->getCategory()){
+        $query = $query
+          ->join('p.category', 'c')
+          ->andWhere('c.id = :categoryId')
+          ->setParameter('categoryId', $search->getCategory()->getId());
+      }
+
+      if($search->getMark()){
+        $query = $query
+          ->join('p.mark', 'm')
+          ->andWhere('m.id = :markId')
+          ->setParameter('markId', $search->getMark()->getId());
+      }
+
+      if($search->getDescription()){
+        $query = $query
+          ->andWhere('p.description LIKE :description')
+          ->setParameter('description', '%'.addcslashes($search->getDescription(), '%_').'%');
+      }
+
+      return $query->getQuery();
     }
 
     // /**

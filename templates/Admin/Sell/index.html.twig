@@ -6,7 +6,7 @@
 {% endblock %}
 
 
-{% block title %}Les achats{% endblock %}
+{% block title %}Les ventes{% endblock %}
 
 
 {% block notifications %}
@@ -36,9 +36,9 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Achats</h2>
-    <a href="{{ path('provider') }}" class="btn btn-primary">Gestion des fournisseurs</a>
-    <a href="{{ path('provider.order.add') }}" class="btn btn-primary">Ajouter un achat</a>
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ventes</h2>
+    <a href="{{ path('provider') }}" class="btn btn-primary">Gestion des clients</a>
+    <a href="{{ path('provider.order.add') }}" class="btn btn-primary">Ajouter une vente</a>
     <div class="row">
       {{ form_start(form) }}
       <div class="row">
@@ -63,7 +63,7 @@
                 <tr>
                   <th>#</th>
                   <th>Date</th>
-                  <th>Fournisseur</th>
+                  <th>Clients</th>
                   <th>Actions</th>
                 </tr>
               </thead>

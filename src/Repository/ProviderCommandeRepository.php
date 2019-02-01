@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\ProviderCommande;
+use App\Entity\ProviderCommandeSearch;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -17,6 +18,31 @@ class ProviderCommandeRepository extends ServiceEntityRepository
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, ProviderCommande::class);
+    }
+
+    public function findAllVisibleQuery(ProviderCommandeSearch $search)
+    {
+      $query = $this->createQueryBuilder('p')
+                    ->join('p.commande', 'c')
+                    ->addSelect('c')
+                    ->orderBy('c.date', 'DESC')
+                    ;
+
+      if($search->getProvider()){
+        $query = $query
+          ->andWhere('p.provider = :provider')
+          ->setParameter('provider', $search->getProvider()->getId());
+      }
+
+      if($search->getProducts()->count() > 0){
+        foreach($search->getProducts() as $k => $option){
+          $query = $query
+          ->andWhere(":product$k MEMBER OF p.providerCommandeDetails")
+          ->setParameter("product$k", $option);
+        }
+      }
+
+      return $query->getQuery();
     }
 
     // /**

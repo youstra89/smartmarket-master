@@ -34,6 +34,24 @@
     <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Marchandises</h2>
     <a href="{{ path('category') }}" class="btn btn-primary">Gestion des catégories</a>
     <a href="{{ path('product.add') }}" class="btn btn-primary">Ajouter une marchandise</a>
+    <div class="row">
+      {{ form_start(form) }}
+      <div class="row">
+        <div class="col-md-4">
+          {{ form_row(form.category, {'attr': {'class': 'form-control mb-4'}}) }}
+        </div>
+        <div class="col-md-4">
+          {{ form_row(form.mark, { 'attr': {'class': 'form-control mb-4'} }) }}
+        </div>
+        <div class="col-md-4">
+          {{ form_row(form.description, { 'attr': {'class': 'form-control mb-4'} }) }}
+        </div>
+        <div class="col-md-4"><br>
+          <button type="submit" class="btn btn-success btn-sm">{{ 'Rechercher'|trans }}</button>
+        </div>
+      </div>
+      {{ form_end(form) }}
+    </div>
     <div class="row row-bottom-padded-md">
       {% for product in products %}
           <div class="col-md-3 col-sm-6 col-padding animate-box" data-animate-effect="fadeInLeft">
@@ -48,6 +66,12 @@
             </div>
           </div>
       {% endfor %}
+    </div>
+    <div class="row">
+      <div class="navigation">
+        {{ knp_pagination_render(products) }}
+      </div>
+    </div>
     </div>
   </div>
 {% endblock %}

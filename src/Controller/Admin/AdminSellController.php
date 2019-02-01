@@ -20,12 +20,12 @@ use App\Entity\ProviderCommandeSearch;
 use App\Form\ProviderCommandeSearchType;
 
 /**
- * @Route("/admin/achats")
+ * @Route("/admin/ventes")
  */
-class AdminPurchaseController extends AbstractController
+class AdminSellController extends AbstractController
 {
   /**
-   * @Route("/", name="purchase")
+   * @Route("/", name="sell")
    * @IsGranted("ROLE_ADMIN")
    */
    public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
@@ -39,9 +39,9 @@ class AdminPurchaseController extends AbstractController
          $request->query->getInt('page', 1),
          20
        );
-       return $this->render('Admin/Purchase/index.html.twig', [
+       return $this->render('Admin/Sell/index.html.twig', [
          'form'      => $form->createView(),
-         'current'   => 'purchases',
+         'current'   => 'sells',
          'commandes' => $commandes
        ]);
    }
@@ -79,8 +79,8 @@ class AdminPurchaseController extends AbstractController
               return $this->redirectToRoute('provider.order.add.product', ['id' => $commande->getId()]);
             }
         }
-        return $this->render('Admin/Purchase/purchase-add.html.twig', [
-          'current' => 'purchases',
+        return $this->render('Admin/Sell/purchase-add.html.twig', [
+          'current' => 'sells',
           'form'    => $form->createView()
         ]);
     }
@@ -101,8 +101,8 @@ class AdminPurchaseController extends AbstractController
             $manager->flush();
             return $this->redirectToRoute('product');
         }
-        return $this->render('Admin/Purchase/purchase-edit.html.twig', [
-          'current' => 'purchases',
+        return $this->render('Admin/Sell/purchase-edit.html.twig', [
+          'current' => 'sells',
           'product' => $product,
           'form'    => $form->createView()
         ]);
@@ -116,8 +116,8 @@ class AdminPurchaseController extends AbstractController
     public function addProduct(Request $request, ObjectManager $manager, ProviderCommande $commande)
     {
         $products = $manager->getRepository(Product::class)->findAll();
-        return $this->render('Admin/Purchase/purchase-add-products.html.twig', [
-          'current'  => 'purchases',
+        return $this->render('Admin/Sell/purchase-add-products.html.twig', [
+          'current'  => 'sells',
           'products' => $products,
           'commande' => $commande,
         ]);
@@ -248,9 +248,9 @@ class AdminPurchaseController extends AbstractController
           }
         }
 
-        return $this->render('Admin/Purchase/purchase-details-save.html.twig', [
+        return $this->render('Admin/Sell/purchase-details-save.html.twig', [
             // 'form' => $form->createView(),
-            'current'  => 'purchases',
+            'current'  => 'sells',
             'products' => $products,
             'commande' => $commande
         ]);
@@ -289,8 +289,8 @@ class AdminPurchaseController extends AbstractController
           }
         }
 
-        return $this->render('Admin/Purchase/purchase-selling-price.html.twig', [
-            'current'  => 'purchases',
+        return $this->render('Admin/Sell/purchase-selling-price.html.twig', [
+            'current'  => 'sells',
             'commande' => $commande
         ]);
     }
@@ -302,8 +302,8 @@ class AdminPurchaseController extends AbstractController
      */
      public function provider_order_details(ProviderCommande $commande)
      {
-       return $this->render('Admin/Purchase/purchase-details.html.twig', [
-         'current'  => 'purchases',
+       return $this->render('Admin/Sell/purchase-details.html.twig', [
+         'current'  => 'sells',
          'commande' => $commande
        ]);
      }

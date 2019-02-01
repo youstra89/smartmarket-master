@@ -11,6 +11,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Knp\Component\Pager\PaginatorInterface;
+use App\Entity\ProductSearch;
+use App\Form\ProductSearchType;
 
 /**
  * @Route("/admin/products")
@@ -21,10 +24,20 @@ class AdminProductController extends AbstractController
    * @Route("/", name="product")
    * @IsGranted("ROLE_ADMIN")
    */
-   public function index(ObjectManager $manager)
+   public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
    {
-       $products = $manager->getRepository(Product::class)->findAll();
+       $search = new ProductSearch();
+       $form = $this->createForm(ProductSearchType::class, $search);
+       $form->handleRequest($request);
+
+       $products = $paginator->paginate(
+         $manager->getRepository(Product::class)->findAllProductsQuery($search),
+         $request->query->getInt('page', 1),
+         12
+       );
+
        return $this->render('Admin/Product/index.html.twig', [
+         'form'     => $form->createView(),
          'current'  => 'products',
          'products' => $products
        ]);
