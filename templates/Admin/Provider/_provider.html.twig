@@ -1,0 +1,51 @@
+{{ form_start(form, {'attr': {'class': ''}}) }}
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.reference) }}</label>
+            {{ form_widget(form.reference, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.firstname) }}</label>
+                {{ form_widget(form.firstname, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.lastname) }}</label>
+                {{ form_widget(form.lastname, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="">{{ form_label(form.phone_number) }}</label>
+                {{ form_widget(form.phone_number, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="">{{ form_label(form.email) }}</label>
+                {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="">{{ form_label(form.country) }}</label>
+                {{ form_widget(form.country, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="">{{ form_label(form.city) }}</label>
+                {{ form_widget(form.city, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
+{{ form_end(form) }}

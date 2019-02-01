@@ -73,7 +73,7 @@
 				<ul>
 					<li class="{% if current == 'index' %}fh5co-active{% endif %}"><a href="{{ path('admin') }}">Accueil</a></li>
 					<li class="{% if current == 'products' %}fh5co-active{% endif %}"><a href="{{ path('product') }}">Marchandises</a></li>
-					<li class="{% if current == 'achats' %}fh5co-active{% endif %}"><a href="portfolio.html">Achats</a></li>
+					<li class="{% if current == 'purchases' %}fh5co-active{% endif %}"><a href="{{ path('purchase') }}">Achats</a></li>
 					<li class="{% if current == 'ventes' %}fh5co-active{% endif %}"><a href="about.html">Ventes</a></li>
 					<li class="{% if current == 'comptabilite' %}fh5co-active{% endif %}"><a href="contact.html">Comptabilité</a></li>
 				</ul>
@@ -81,9 +81,10 @@
 		</aside>
 
 		<div id="fh5co-main">
-			{% block notifications %}
-			{% endblock %}
-			{% block body %}
+			<div class="container">
+				{% block notifications %}
+				{% endblock %}
+				{% block body %}
 				<div class="fh5co-narrow-content">
 					<h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Services</h2>
 					<div class="row">
@@ -151,9 +152,10 @@
 						</div>
 					</div>
 				</div>
-			{% endblock %}
+				{% endblock %}
+			</div>
 		</div>
-	</div>
+			</div>
 
 	<!-- jQuery -->
 	<script src="{{ asset('js/jquery.min.js') }}"></script>

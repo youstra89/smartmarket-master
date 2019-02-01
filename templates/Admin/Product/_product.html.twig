@@ -1,0 +1,31 @@
+{{ form_start(form, {'attr': {'class': ''}}) }}
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.reference) }}</label>
+            {{ form_widget(form.reference, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.category) }}</label>
+                {{ form_widget(form.category, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.mark) }}</label>
+                {{ form_widget(form.mark, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.description) }}</label>
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
+{{ form_end(form) }}

@@ -1,0 +1,79 @@
+{% extends 'base-admin.html.twig' %}
+
+
+{% block title %}Les achats{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Achats</h2>
+    <a href="{{ path('provider') }}" class="btn btn-primary">Gestion des fournisseurs</a>
+    <a href="{{ path('provider.order.add') }}" class="btn btn-primary">Ajouter un achat</a>
+    <div class="row row-bottom-padded-md">
+      {% if commandes|length != 0 %}
+        <div class="col-md-8">
+          <div class="table-responsive">
+            <table class="table" width="75%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date</th>
+                  <th>Fournisseur</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set i = 0 %}
+                {% for commande in commandes %}
+                  {% set i = i + 1 %}
+                  <tr>
+                    <td>{{ i }}</td>
+                    <td>{{ commande.commande.date|date('d-m-Y') }}</td>
+                    <td>{{ commande.provider.firstname }} {{ commande.provider.lastname }} ({{ commande.provider.country.name }})</td>
+                    <td><a href="{{ path('provider.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% else %}
+        <p>Aucune commande fournisseur n'a été enregistrée pour le moment.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script type="text/javascript">
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+{% endblock %}

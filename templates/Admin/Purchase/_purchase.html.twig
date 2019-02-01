@@ -1,0 +1,51 @@
+{{ form_start(form, {'attr': {'class': ''}}) }}
+    <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="">{{ form_label(form.provider) }}</label>
+            {{ form_widget(form.provider, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="">Date de la commande</label>
+            <input type="date" name="date" value="" class="form-control" required>
+          </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.transport) }}</label>
+            {{ form_widget(form.transport, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.dedouanement) }}</label>
+                {{ form_widget(form.dedouanement, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.currency_cost) }}</label>
+                {{ form_widget(form.currency_cost, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.forwarding_cost) }}</label>
+            {{ form_widget(form.forwarding_cost, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.additional_fees) }}</label>
+                {{ form_widget(form.additional_fees, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
+{{ form_end(form) }}

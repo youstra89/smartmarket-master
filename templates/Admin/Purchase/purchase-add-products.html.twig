@@ -1,0 +1,88 @@
+{% extends 'base-admin.html.twig' %}
+
+
+{% block title %}Ajout de marchandises pour l'achat du {{ commande.commande.date|date('d-m-Y') }}{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour l'achat du {{ commande.commande.date|date('d-m-Y') }}</h2>
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    {% if products|length != 0 %}
+      <div class="row">
+        <div class="col-md-8">
+          <div class="table-responsive">
+            <table class="table" width="75%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nom de la marchandise</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set i = 0 %}
+                {% for product in products %}
+                {% set i = i + 1 %}
+                <tr>
+                  <td>{{ i }}</td>
+                  <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
+                  <td>
+                    <a href="{{ path('add.order.product', {id: product.id, commandeId: commande.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
+                      <i class="icon-plus"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="row md-8">
+        {% if app.session.get('idProductsProviderOrder')|length != 0 %}
+          <div class="col-lg-6">
+            <a href="{{ path('provider.commande.details.save', {id: commande.id}) }}" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsProviderOrder')|length }} produits]</a>
+          </div>
+          <div class="col-lg-6">
+            <a href="{{ path('provider.commande.reset', {id: commande.id}) }}" class="btn-danger btn-sm">Annuler la commande en cours</a>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script type="text/javascript">
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+{% endblock %}
