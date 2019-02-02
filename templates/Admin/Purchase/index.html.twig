@@ -36,9 +36,9 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Achats</h2>
-    <a href="{{ path('provider') }}" class="btn btn-primary">Gestion des fournisseurs</a>
-    <a href="{{ path('provider.order.add') }}" class="btn btn-primary">Ajouter un achat</a>
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Commandes</h2>
+    <a href="{{ path('provider') }}" class="btn btn-primary btn-sm">Gestion des fournisseurs</a>
+    <a href="{{ path('provider.order.add') }}" class="btn btn-primary btn-sm">Ajouter une commande</a>
     <div class="row">
       {{ form_start(form) }}
       <div class="row">
@@ -49,7 +49,7 @@
           {{ form_row(form.products, { 'attr': {'class': 'js-example-basic-single'} }) }}
         </div>
         <div class="col-md-4">
-          <button type="submit" class="btn btn-success btn-xs">{{ 'Rechercher'|trans }}</button>
+          <button type="submit" class="btn btn-success btn-sm">{{ 'Rechercher'|trans }}</button>
         </div>
       </div>
       {{ form_end(form) }}

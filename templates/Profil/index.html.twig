@@ -1,23 +1,36 @@
-{% extends 'base.html.twig' %}
+{% extends 'base-admin.html.twig' %}
 
 {% block stylesheets %}
 {% endblock %}
 
 
 
-{% block title user.username ~ ' | Compte Orientation Authentique' %}
+{% block title user.username ~ ' | Compte Smart Market' %}
 
 
 
-{% block contextual_menu %}
-{% endblock %}
-
-
-{% block content %}
-{% endblock %}
-
-
-{% block notification %}
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
 {% endblock %}
 
 
@@ -27,57 +40,59 @@
     <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Mon compte</span></h1>
     <p class="uk-text-center"></p>
     <h2>Profil de <strong>{{ user.username }}</strong><br> </h2>
-    <ul class="uk-subnav uk-subnav-pill" uk-switcher="animation: uk-animation-fade">
-      <li><a href="#">Informations personnelles</a></li>
-      <li><a href="#">Paramètres</a></li>
-    </ul>
-    <ul class="uk-switcher uk-margin">
-        <li>
-          <div class="uk-grid">
-            <div class="uk-width-1-4@s">
-              <strong>Nom</strong><br>
-              {{ user.nom }}
-            </div>
-            <div class="uk-width-1-4@s">
-              <strong>Prénom</strong><br>
-              {{ user.pnom }}
-            </div>
-            <div class="uk-width-1-4@s">
-              <strong>Résidence</strong><br>
-              {{ user.residence }}
-            </div>
-            <div class="uk-width-1-4@s">
-              <strong>Numéro de téléphone</strong><br>
-              {{ user.phoneNumber }}
-            </div>
-          </div><br>
-          <div class="uk-grid">
-            <div class="uk-width-1-4@s">
-              <strong>Date de naissance</strong><br>
-              {{ user.dateNaissance|date('d-m-Y') }}
-            </div>
-            <div class="uk-width-1-4@s">
-              <strong>Sexe</strong><br>
-              {{ user.sexeType }}
-            </div>
-            <div class="uk-width-1-4@s">
-              <strong>Email</strong><br>
-              {{ user.email }}
-            </div>
-            <div class="uk-width-1-4@s">
-              <strong>Date d'inscription</strong><br>
-              {{ user.createdAt|date('d-m-y à H:i') }}
-            </div>
-          </div><br>
-        </li>
-        <li>
-          <p uk-margin>
-            <a class="uk-button uk-button-default uk-button-large" href="{{ path('change_pwd') }}">Modifier votre mot de passe</a>
-            <!-- <a class="uk-button uk-button-primary uk-button-large">Large button</a>
-            <a class="uk-button uk-button-secondary uk-button-large">Large button</a> -->
-          </p>
+      <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#sectionA">Informations personnelles</a></li>
+        <li><a data-toggle="tab" href="#sectionB">Paramètres</a></li>
+        <li class="dropdown">
+          <a data-toggle="dropdown" class="dropdown-toggle" href="#">Réglage <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a data-toggle="tab" href="#dropdown1">Modifier mes Informations</a></li>
+            <li><a data-toggle="tab" href="#dropdown2">Modifier mon mot de passe</a></li>
+          </ul>
         </li>
       </ul>
+      <div class="tab-content">
+        <br>
+          <div id="sectionA" class="tab-pane fade in active">
+            <div class="row">
+              <div class="col-lg-3 col-md-4 col-md-4 col-sm-12">
+                <div class="uk-width-1-4@s">
+                  <strong>Nom</strong><br>
+                  {{ user.lastname }}
+                </div>
+                <div class="uk-width-1-4@s">
+                  <strong>Prénom</strong><br>
+                  {{ user.firstname }}
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4 col-md-4 col-sm-12">
+                <div class="uk-width-1-4@s">
+                  <strong>Numéro de téléphone</strong><br>
+                  {{ user.phoneNumber }}
+                </div>
+                <div class="uk-width-1-4@s">
+                  <strong>Email</strong><br>
+                  {{ user.email }}
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-4 col-md-4 col-sm-12">
+                <div class="uk-width-1-4@s">
+                  <strong>Date d'inscription</strong><br>
+                  {{ user.createdAt|date('d-m-y à H:i') }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="sectionB" class="tab-pane fade">
+              <p>Paramètres</p>
+          </div>
+          <div id="dropdown1" class="tab-pane fade">
+              <p>Contenu en élaboration</p>
+          </div>
+          <div id="dropdown2" class="tab-pane fade">
+              <p><a class="btn btn-danger btn-sm" href="{{ path('change_pwd') }}">Modifier votre mot de passe</a></p>
+          </div>
+      </div>
   </div>
 {% endblock %}
 

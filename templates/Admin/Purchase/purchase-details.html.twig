@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Détails ccommande fournisseur du {{ commande.commande.date|date('d-mY') }}
+  Détails de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}
 {% endblock %}
 
 
@@ -38,20 +38,10 @@
 
 {% block body %}
     <h2>Détails commande fournisseur du {{ commande.commande.date|date('d-mY') }}</h2>
+    <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
     <div class="row">
-      <div class="col-md-6">
-        <h3>Fournisseur</h3>
-        <strong>Nom fournisseur:</strong>
-        <span>{{ commande.provider.firstname }} {{ commande.provider.lastname }}</span><br>
-        <strong>Adresse fournisseur:</strong>
-        <span>{{ commande.provider.country.name }} {{ commande.provider.city }}</span><br>
-        <strong>Numéro de téléphone fournisseur:</strong>
-        <span>{{ commande.provider.phoneNumber }}</span><br>
-        <strong>Email de téléphone fournisseur:</strong>
-        <span>{{ commande.provider.email }}</span><br>
-      </div>
-      <div class="col-md-6">
-        <h3>Charges</h3>
+      <div class="col-lg-4 col-md-4 col-sm-6">
+        <span style="font-weight: bold; font-size: 2em">Charges</span><br>
         <strong>Transport:</strong>
         <span>{{ commande.transport|number_format(0, ',', ' ') }} F CFA</span><br>
         <strong>Dédouanement:</strong>
@@ -62,6 +52,26 @@
         <span>{{ commande.forwardingCost|number_format(0, ',', ' ') }} F CFA</span><br>
         <strong>Autres charges:</strong>
         <span>{{ commande.additionalFees|number_format(0, ',', ' ') }} F CFA</span><br>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-6">
+        <span style="font-weight: bold; font-size: 2em">Fournisseur</span><br>
+        <strong>Nom fournisseur:</strong>
+        <span>{{ commande.provider.firstname }} {{ commande.provider.lastname }}</span><br>
+        <strong>Adresse fournisseur:</strong>
+        <span>{{ commande.provider.country.name }} {{ commande.provider.city }}</span><br>
+        <strong>Numéro de téléphone fournisseur:</strong>
+        <span>{{ commande.provider.phoneNumber }}</span><br>
+        <strong>Email fournisseur:</strong>
+        <span>{{ commande.provider.email }}</span><br>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-6">
+        <span style="font-weight: bold; font-size: 2em">Bilan commande</span><br>
+        <strong>Nombre de produit:</strong>
+        <span>{{ commande.globalTotal|number_format(0, ',', ' ') }} F CFA</span><br>
+        <strong>Total des charges</strong>
+        <span>{{ commande.totalFees|number_format(0, ',', ' ') }} F CFA</span><br>
+        <strong>Coût total de la commande:</strong>
+        <span>{{ commande.providerCommandeDetails|length }} </span><br>
       </div>
     </div><br><br>
     <div class="row">
@@ -75,7 +85,7 @@
                 <th>Produit</th>
                 <th>Quantité</th>
                 <th>Prix Unitaire</th>
-                <th>Prix minimum</th>
+                <th>Prix de revient</th>
                 <th>Prix de vente</th>
               </tr>
             </thead>
@@ -92,22 +102,14 @@
                   </tr>
                 </tbody>
             {% endfor %}
+            <tfoot>
+              <tr>
+                <th colspan="3">Total des marchandises</th>
+                <th><span>{{ commande.commande.totalAmount|number_format(0, ',', ' ') }} F CFA</span></th>
+              </tr>
+            </tfoot>
           </table>
-        </div><br><br>
-        <div class="row">
-          <div class="col-lg-2 col-md-4 col-sm-6">
-            <strong>Total des charges</strong><br>
-            <span>{{ commande.totalFees|number_format(0, ',', ' ') }} F CFA</span>
-          </div>
-          <div class="col-lg-2 col-md-4 col-sm-6">
-            <strong>Total des marchandises</strong><br>
-            <span>{{ commande.commande.totalAmount|number_format(0, ',', ' ') }} F CFA</span>
-          </div>
-          <div class="col-lg-2 col-md-4 col-sm-6">
-            <strong>Coût total de la commande</strong><br>
-            <span>{{ commande.globalTotal|number_format(0, ',', ' ') }} F CFA</span>
-          </div>
-        </div>
+        </div><br>
       </div>
     </div>
 {% endblock %}

@@ -20,7 +20,7 @@ use App\Entity\ProviderCommandeSearch;
 use App\Form\ProviderCommandeSearchType;
 
 /**
- * @Route("/admin/achats")
+ * @Route("/admin/commandes")
  */
 class AdminPurchaseController extends AbstractController
 {
@@ -73,7 +73,7 @@ class AdminPurchaseController extends AbstractController
               $providerCommande->setReference($reference);
               $providerCommande->setCommande($commande);
               $providerCommande->setTotalFees($totalCharge);
-              $this->addFlash('success', '<li>Enregistrement de l\'achat du <strong>'.$providerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
+              $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               $manager->persist($providerCommande);
               $manager->flush();
               return $this->redirectToRoute('provider.order.add.product', ['id' => $commande->getId()]);
@@ -109,7 +109,7 @@ class AdminPurchaseController extends AbstractController
     }
 
     /**
-     * @Route("/ajout-de-marchandises-pour-un-achat/{id}", name="provider.order.add.product")
+     * @Route("/ajout-de-marchandises-pour-une-commande/{id}", name="provider.order.add.product")
      * @IsGranted("ROLE_ADMIN")
      * @param ProviderCommande $commande
      */
@@ -258,7 +258,7 @@ class AdminPurchaseController extends AbstractController
 
 
     /**
-     * @Route("/prix-de-revient-des-marchandises-d-un-achat/{id}", name="purchase.selling.price")
+     * @Route("/prix-de-revient-des-marchandises-d-une-commande/{id}", name="purchase.selling.price")
      * @IsGranted("ROLE_ADMIN")
      * @param ProviderCommande $commande
      */

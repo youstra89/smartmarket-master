@@ -33,7 +33,7 @@ class ResettingController extends AbstractController
           $data = $form->getData();
           $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
           if ($user === null) {
-              $this->addFlash('error', 'L\'adresse email saisie n\'est pas correcte.');
+              $this->addFlash('danger', 'L\'adresse email saisie n\'est pas correcte.');
               return $this->redirectToRoute('resetting');
           }
 
@@ -86,7 +86,7 @@ class ResettingController extends AbstractController
       dump($user);
 
       if ($user === null) {
-          $this->addFlash('error', 'Voulez-vous réinitialiser votre mot de passe ?.');
+          $this->addFlash('danger', 'Voulez-vous réinitialiser votre mot de passe ?.');
           return $this->redirectToRoute('resetting');
       }
 
@@ -103,7 +103,7 @@ class ResettingController extends AbstractController
             $data = $form->getData();
             if($data['pwd'] != $data['pwd1'])
             {
-              $this->addFlash('error', 'La confirmation du nouveau mot de passe a échoué. Les mots de passe saisis ne sont pas identiques.');
+              $this->addFlash('danger', 'La confirmation du nouveau mot de passe a échoué. Les mots de passe saisis ne sont pas identiques.');
               return $this->redirectToRoute('resetting_compte', ['token' => $user->getToken()]);
             }
             $password = $passwordEncoder->encodePassword($user, $data['pwd']);

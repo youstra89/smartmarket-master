@@ -76,7 +76,7 @@ class RegistrationController extends AbstractController
       $user = $em->getRepository(User::class)->findUserByToken($token);
 
       if ($user === null) {
-          $this->addFlash('error', 'Vous n\'avez pas de compte en attente d\'activation.');
+          $this->addFlash('danger', 'Vous n\'avez pas de compte en attente d\'activation.');
           return $this->redirectToRoute('homepage');
       }
       $user->setToken(NULL);

@@ -13,7 +13,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
- * @Route("/profile")
+ * @Route("/mon-compte")
  * @Security("has_role('ROLE_USER')")
  */
 class ProfileController extends AbstractController
@@ -28,7 +28,8 @@ class ProfileController extends AbstractController
       $user = $this->getUser();
       // dump($user);
       return $this->render('Profil/index.html.twig', [
-        'user' => $user
+        'user'    => $user,
+        'current' => 'account',
       ]);
     }
 
@@ -60,14 +61,14 @@ class ProfileController extends AbstractController
 
         if(!$passwordEncoder->isPasswordValid($user, $pwd->getPassword()))
         {
-          $this->addFlash('error', 'L\'ancien mot de passe que vous avez saisi n\'est pas correct.');
+          $this->addFlash('danger', 'L\'ancien mot de passe que vous avez saisi n\'est pas correct.');
           return $this->redirectToRoute('change_pwd');
         }
         else{
           // return new Response(var_dump($form));
           if($pwd->getNewPassword() != $pwd->getNewPassword1())
           {
-            $this->addFlash('error', 'La confirmation du nouveau mot de passe a échoué. Les mots de passe saisis ne sont pas identiques.');
+            $this->addFlash('danger', 'La confirmation du nouveau mot de passe a échoué. Les mots de passe saisis ne sont pas identiques.');
             return $this->redirectToRoute('change_pwd');
           }
           else{
@@ -82,8 +83,9 @@ class ProfileController extends AbstractController
         }
       }
       return $this->render('Profil/changer-mot-de-passe.html.twig', [
-        'user' => $user,
-        'form' => $form->createView()
+        'user'    => $user,
+        'form'    => $form->createView(),
+        'current' => 'account',
       ]);
     }
 }

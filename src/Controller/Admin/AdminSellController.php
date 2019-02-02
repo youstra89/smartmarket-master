@@ -47,7 +47,7 @@ class AdminSellController extends AbstractController
    }
 
     /**
-     * @Route("/add", name="provider.order.add")
+     * @Route("/add", name="customer.order.add")
      * @IsGranted("ROLE_ADMIN")
      */
     public function add(Request $request, ObjectManager $manager)
@@ -61,7 +61,7 @@ class AdminSellController extends AbstractController
             if(empty($data['date']))
             {
               $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
-              return $this->redirectToRoute('provider.order.add');
+              return $this->redirectToRoute('customer.order.add');
             }
             else {
               $commande = new Commande();
@@ -76,7 +76,7 @@ class AdminSellController extends AbstractController
               $this->addFlash('success', '<li>Enregistrement de l\'achat du <strong>'.$providerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               $manager->persist($providerCommande);
               $manager->flush();
-              return $this->redirectToRoute('provider.order.add.product', ['id' => $commande->getId()]);
+              return $this->redirectToRoute('customer.order.add.product', ['id' => $commande->getId()]);
             }
         }
         return $this->render('Admin/Sell/purchase-add.html.twig', [
@@ -86,7 +86,7 @@ class AdminSellController extends AbstractController
     }
 
     /**
-     * @Route("/edit/{id}", name="provider.order.edit")
+     * @Route("/edit/{id}", name="customer.order.edit")
      * @IsGranted("ROLE_ADMIN")
      * @param ProviderCommande $commande
      */
@@ -109,7 +109,7 @@ class AdminSellController extends AbstractController
     }
 
     /**
-     * @Route("/ajout-de-marchandises-pour-un-achat/{id}", name="provider.order.add.product")
+     * @Route("/ajout-de-marchandises-pour-un-achat/{id}", name="customer.order.add.product")
      * @IsGranted("ROLE_ADMIN")
      * @param ProviderCommande $commande
      */
@@ -137,7 +137,7 @@ class AdminSellController extends AbstractController
         // if($stock->getQuantity() == 0)
         // {
         //   $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est fini en stock.');
-        //   return $this->redirectToRoute('provider.order.add.product', ['id' => $commandeId]);
+        //   return $this->redirectToRoute('customer.order.add.product', ['id' => $commandeId]);
         // }
         // On va vérifier la session pour voir si le produit n'est pas déjà sélectionné
         if(!empty($ids)){
@@ -145,7 +145,7 @@ class AdminSellController extends AbstractController
           foreach ($ids as $key => $value) {
             if($value === $productId){
               $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est déjà ajouté(e).');
-              return $this->redirectToRoute('provider.order.add.product', ['id' => $commandeId]);
+              return $this->redirectToRoute('customer.order.add.product', ['id' => $commandeId]);
             }
           }
         }
@@ -155,7 +155,7 @@ class AdminSellController extends AbstractController
         $this->get('session')->set('idProductsProviderOrder', $ids);
 
         $this->addFlash('success', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> ajouté(e) à la commande.');
-        return $this->redirectToRoute('provider.order.add.product', ['id' => $commandeId]);
+        return $this->redirectToRoute('customer.order.add.product', ['id' => $commandeId]);
     }
 
     /**
@@ -166,7 +166,7 @@ class AdminSellController extends AbstractController
     {
         $this->get('session')->remove('idProductsProviderOrder');
         $this->addFlash('success', 'La commande a été réinitialisée.');
-        return $this->redirectToRoute('provider.order.add.product', ['id' => $id]);
+        return $this->redirectToRoute('customer.order.add.product', ['id' => $id]);
     }
 
     /**
@@ -296,7 +296,7 @@ class AdminSellController extends AbstractController
     }
 
     /**
-     * @Route("/details-de-commande-fournisseur/{id}", name="provider.order.details")
+     * @Route("/details-commande-fournisseur/{id}", name="customer.order.details")
      * @IsGranted("ROLE_ADMIN")
      * @param ProviderCommande $commande
      */
