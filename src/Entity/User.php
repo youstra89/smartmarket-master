@@ -118,10 +118,16 @@ class User implements UserInterface, \Serializable
      */
     private $password_requested_at;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\CustomerCommande", mappedBy="seller")
+     */
+    private $customerCommandes;
+
 
     public function __construct()
     {
       $this->created_at = new \DateTime();
+      $this->customerCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -378,6 +384,37 @@ class User implements UserInterface, \Serializable
     public function setPasswordRequestedAt(?\DateTimeInterface $password_requested_at): self
     {
         $this->password_requested_at = $password_requested_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CustomerCommande[]
+     */
+    public function getCustomerCommandes(): Collection
+    {
+        return $this->customerCommandes;
+    }
+
+    public function addCustomerCommande(CustomerCommande $customerCommande): self
+    {
+        if (!$this->customerCommandes->contains($customerCommande)) {
+            $this->customerCommandes[] = $customerCommande;
+            $customerCommande->setSeller($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCustomerCommande(CustomerCommande $customerCommande): self
+    {
+        if ($this->customerCommandes->contains($customerCommande)) {
+            $this->customerCommandes->removeElement($customerCommande);
+            // set the owning side to null (unless already changed)
+            if ($customerCommande->getSeller() === $this) {
+                $customerCommande->setSeller(null);
+            }
+        }
 
         return $this;
     }

@@ -20,7 +20,7 @@ class ProviderCommandeRepository extends ServiceEntityRepository
         parent::__construct($registry, ProviderCommande::class);
     }
 
-    public function findAllVisibleQuery(ProviderCommandeSearch $search)
+    public function commandesFournisseurs(ProviderCommandeSearch $search)
     {
       $query = $this->createQueryBuilder('p')
                     ->join('p.commande', 'c')

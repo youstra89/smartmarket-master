@@ -6,13 +6,38 @@
 
 
 {% block title %}
-  Enregistrement des détails de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}
+  Enregistrement des détails de la vente du {{ commande.commande.date|date('d-m-Y') }}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
 {% endblock %}
 
 
 {% block body %}
-    <h2>Enregistrement des détails de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}</h2>
-    {{ include('Admin/Purchase/_purchase-details.html.twig') }}
+    <h2>Enregistrement des détails de la vente du {{ commande.commande.date|date('d-m-Y') }}</h2>
+    {{ include('Admin/Sell/_sell-details.html.twig') }}
 {% endblock %}
 
 

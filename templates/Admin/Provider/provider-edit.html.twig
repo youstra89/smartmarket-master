@@ -1,7 +1,7 @@
 {% extends 'base-admin.html.twig' %}
 
 
-{% block title %}Modification de l'achat du {{ product.description }}{% endblock %}
+{% block title %}Mise à jour des informations du client {{ provider.firstname }} {{ provider.lastname }}{% endblock %}
 
 
 {% block notifications %}{% endblock %}
@@ -9,7 +9,7 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Modification d'un achat <strong>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</strong> </h2>
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Mise à jour des informations du client <strong>{{ provider.firstname }} {{ provider.lastname }}</strong> </h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     {{ include('Admin/Provider/_provider.html.twig', {button: 'Editer'}) }}
   </div>

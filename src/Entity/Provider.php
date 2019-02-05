@@ -20,6 +20,7 @@ class Provider
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @ORM\Column(unique=true)
      */
     private $reference;
 

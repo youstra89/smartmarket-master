@@ -1,0 +1,17 @@
+{{ form_start(form, {'attr': {'class': ''}}) }}
+    <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="">{{ form_label(form.customer) }}</label>
+            {{ form_widget(form.customer, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="">Date de la commande</label>
+            <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="form-control" required>
+          </div>
+        </div>
+    </div>
+    <button class="btn btn-success btn-sm">{{ button|default('Enregistrer') }}</button>
+{{ form_end(form) }}

@@ -1,7 +1,7 @@
 {% extends 'base-admin.html.twig' %}
 
 
-{% block title %}Ajout de marchandises pour l'achat du {{ commande.commande.date|date('d-m-Y') }}{% endblock %}
+{% block title %}Ajout de marchandises pour la vente du {{ commande.commande.date|date('d-m-Y') }}{% endblock %}
 
 
 {% block notifications %}
@@ -31,7 +31,7 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour l'achat du {{ commande.commande.date|date('d-m-Y') }}</h2>
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour la vente du {{ commande.commande.date|date('d-m-Y') }}</h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     {% if products|length != 0 %}
       <div class="row">
@@ -42,6 +42,7 @@
                 <tr>
                   <th>#</th>
                   <th>Nom de la marchandise</th>
+                  <th>Stock</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -53,9 +54,20 @@
                   <td>{{ i }}</td>
                   <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
                   <td>
-                    <a href="{{ path('add.order.product', {id: product.id, commandeId: commande.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
-                      <i class="icon-plus"></i>
-                    </a>
+                    {% if product.stock != 0 %}
+                      {{ product.stock }}
+                    {% else %}
+                      Stock épuisé
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if product.stock != 0 %}
+                      <a href="{{ path('add.order.product', {id: product.id, commandeId: commande.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
+                        <i class="icon-plus"></i>
+                      </a>
+                    {% else %}
+                      Stock épuisé
+                    {% endif %}
                   </td>
                 </tr>
                 {% endfor %}
@@ -65,12 +77,12 @@
         </div>
       </div>
       <div class="row md-8">
-        {% if app.session.get('idProductsProviderOrder')|length != 0 %}
+        {% if app.session.get('idProductsForSelling')|length != 0 %}
           <div class="col-lg-6">
-            <a href="{{ path('provider.commande.details.save', {id: commande.id}) }}" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsProviderOrder')|length }} produits]</a>
+            <a href="{{ path('customer.commande.details.save', {id: commande.id}) }}" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsForSelling')|length }} produits]</a>
           </div>
           <div class="col-lg-6">
-            <a href="{{ path('provider.commande.reset', {id: commande.id}) }}" class="btn-danger btn-sm">Annuler la commande en cours</a>
+            <a href="{{ path('customer.commande.reset', {id: commande.id}) }}" class="btn-danger btn-sm">Annuler la vente en cours</a>
           </div>
         {% endif %}
       </div>

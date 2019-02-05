@@ -57,8 +57,9 @@ class Product
      */
     private $mark;
 
+    // * @ORM\Column(type="integer", unsigned=true)
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(columnDefinition="integer unsigned")
      */
     private $stock;
 
@@ -67,12 +68,18 @@ class Product
      */
     private $providerCommandeDetails;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\CustomerCommandeDetails", mappedBy="product")
+     */
+    private $customerCommandeDetails;
+
 
     public function __construct()
     {
       $this->stock = 0;
       $this->created_at = new \DateTime();
       $this->providerCommandeDetails = new ArrayCollection();
+      $this->customerCommandeDetails = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -189,6 +196,37 @@ class Product
             // set the owning side to null (unless already changed)
             if ($providerCommandeDetail->getProduct() === $this) {
                 $providerCommandeDetail->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CustomerCommandeDetails[]
+     */
+    public function getCustomerCommandeDetails(): Collection
+    {
+        return $this->customerCommandeDetails;
+    }
+
+    public function addCustomerCommandeDetail(CustomerCommandeDetails $customerCommandeDetail): self
+    {
+        if (!$this->customerCommandeDetails->contains($customerCommandeDetail)) {
+            $this->customerCommandeDetails[] = $customerCommandeDetail;
+            $customerCommandeDetail->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCustomerCommandeDetail(CustomerCommandeDetails $customerCommandeDetail): self
+    {
+        if ($this->customerCommandeDetails->contains($customerCommandeDetail)) {
+            $this->customerCommandeDetails->removeElement($customerCommandeDetail);
+            // set the owning side to null (unless already changed)
+            if ($customerCommandeDetail->getProduct() === $this) {
+                $customerCommandeDetail->setProduct(null);
             }
         }
 

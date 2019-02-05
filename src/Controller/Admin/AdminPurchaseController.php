@@ -35,7 +35,7 @@ class AdminPurchaseController extends AbstractController
        $form->handleRequest($request);
 
        $commandes = $paginator->paginate(
-         $manager->getRepository(ProviderCommande::class)->findAllVisibleQuery($search),
+         $manager->getRepository(ProviderCommande::class)->commandesFournisseurs($search),
          $request->query->getInt('page', 1),
          20
        );
@@ -76,7 +76,7 @@ class AdminPurchaseController extends AbstractController
               $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               $manager->persist($providerCommande);
               $manager->flush();
-              return $this->redirectToRoute('provider.order.add.product', ['id' => $commande->getId()]);
+              return $this->redirectToRoute('provider.order.add.product', ['id' => $providerCommande->getId()]);
             }
         }
         return $this->render('Admin/Purchase/purchase-add.html.twig', [

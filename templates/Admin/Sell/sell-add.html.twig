@@ -1,0 +1,16 @@
+{% extends 'base-admin.html.twig' %}
+
+
+{% block title %}Enregistrement d'une vente{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une vente</h2>
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    {{ include('Admin/Sell/_sell.html.twig') }}
+  </div>
+{% endblock %}

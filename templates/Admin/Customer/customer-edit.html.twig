@@ -1,0 +1,16 @@
+{% extends 'base-admin.html.twig' %}
+
+
+{% block title %}Mise à jour des informations du client {{ customer.firstname }} {{ customer.lastname }}{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Mise à jour des informations du client <strong>{{ customer.firstname }} {{ customer.lastname }}</strong> </h2>
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    {{ include('Admin/Customer/_customer.html.twig', {button: 'Editer'}) }}
+  </div>
+{% endblock %}
