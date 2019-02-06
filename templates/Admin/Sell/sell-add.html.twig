@@ -4,13 +4,109 @@
 {% block title %}Enregistrement d'une vente{% endblock %}
 
 
-{% block notifications %}{% endblock %}
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
 
 
 {% block body %}
   <div class="fh5co-narrow-content">
     <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une vente</h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    {{ include('Admin/Sell/_sell.html.twig') }}
+    <form class="" action="" method="post">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="">Client</label>
+            <select class="form-control" name="customer">
+              <option value="">Choisir un client</option>
+              {% for customer in customers %}
+                  <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="">Date de la commande</label>
+            <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="form-control" required>
+          </div>
+        </div>
+      </div>
+      <br><br>
+      {% if products|length != 0 %}
+      <div class="col-md-8">
+        <div class="table-responsive">
+          <table class="table" width="75%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nom de la marchandise</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% for product in products %}
+              {% set i = i + 1 %}
+              <tr>
+                <td>{{ i }}</td>
+                <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
+                <td>
+                  {% if product.stock != 0 %}
+                  {{ product.stock }}
+                  {% else %}
+                  Stock épuisé
+                  {% endif %}
+                </td>
+                <td>
+                  {% if product.stock != 0 %}
+                  <a href="{{ path('add.commande.product', {id: product.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
+                    <i class="icon-plus"></i>
+                  </a>
+                  {% else %}
+                  Stock épuisé
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-8">
+        {% if app.session.get('idProductsForSelling')|length != 0 %}
+          <div class="col-lg-6">
+            <input type="hidden" name="token" value="{{ csrf_token('vente') }}">
+            <button type="submit" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsForSelling')|length }} produits]</button>
+          </div>
+          <div class="col-lg-6">
+            <a href="{{ path('customer.commande.reset') }}" class="btn-danger btn-sm">Annuler la vente en cours</a>
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </form>
   </div>
 {% endblock %}

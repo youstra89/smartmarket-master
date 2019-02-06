@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -41,10 +43,16 @@ class Commande
      */
     private $updated_at;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Settlement", mappedBy="commande")
+     */
+    private $settlements;
+
     public function __construct()
     {
       $this->ended = false;
       $this->created_at = new \DateTime();
+      $this->settlements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -108,6 +116,37 @@ class Commande
     public function setUpdatedAt(?\DateTimeInterface $updated_at): self
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Settlement[]
+     */
+    public function getSettlements(): Collection
+    {
+        return $this->settlements;
+    }
+
+    public function addSettlement(Settlement $settlement): self
+    {
+        if (!$this->settlements->contains($settlement)) {
+            $this->settlements[] = $settlement;
+            $settlement->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSettlement(Settlement $settlement): self
+    {
+        if ($this->settlements->contains($settlement)) {
+            $this->settlements->removeElement($settlement);
+            // set the owning side to null (unless already changed)
+            if ($settlement->getCommande() === $this) {
+                $settlement->setCommande(null);
+            }
+        }
 
         return $this;
     }

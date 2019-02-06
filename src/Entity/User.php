@@ -123,11 +123,17 @@ class User implements UserInterface, \Serializable
      */
     private $customerCommandes;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Settlement", mappedBy="receiver")
+     */
+    private $settlements;
+
 
     public function __construct()
     {
       $this->created_at = new \DateTime();
       $this->customerCommandes = new ArrayCollection();
+      $this->settlements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -413,6 +419,37 @@ class User implements UserInterface, \Serializable
             // set the owning side to null (unless already changed)
             if ($customerCommande->getSeller() === $this) {
                 $customerCommande->setSeller(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Settlement[]
+     */
+    public function getSettlements(): Collection
+    {
+        return $this->settlements;
+    }
+
+    public function addSettlement(Settlement $settlement): self
+    {
+        if (!$this->settlements->contains($settlement)) {
+            $this->settlements[] = $settlement;
+            $settlement->setReceiver($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSettlement(Settlement $settlement): self
+    {
+        if ($this->settlements->contains($settlement)) {
+            $this->settlements->removeElement($settlement);
+            // set the owning side to null (unless already changed)
+            if ($settlement->getReceiver() === $this) {
+                $settlement->setReceiver(null);
             }
         }
 

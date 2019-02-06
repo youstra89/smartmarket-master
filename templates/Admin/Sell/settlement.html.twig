@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Détails de la vente du {{ commande.commande.date|date('d-mY') }}
+  Règlement de la vente du {{ commande.commande.date|date('d-mY') }}
 {% endblock %}
 
 
@@ -102,6 +102,22 @@
             {% endif %}
           </div>
         </div><br><br>
+        <form class="" action="" method="post">
+          <div class="row">
+            <div class="col-lg-3 col-md-4 col-sm-12">
+              <label for="date">Date de règlement</label>
+              <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="form-control">
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-12">
+              <label for="date">Montant règlement</label>
+              <input type="integer" name="amount" value=""class="form-control">
+            </div>
+          </div><br>
+          <div class="row">
+            <input type="hidden" name="token" value="{{ csrf_token('token_reglement') }}">
+            <button type="submit" name="button" class="btn btn-primary btn-sm">Enregistrer</button>
+          </div>
+        </form>
       </div>
     </div>
 {% endblock %}

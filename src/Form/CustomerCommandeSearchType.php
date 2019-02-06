@@ -33,19 +33,19 @@ class CustomerCommandeSearchType extends AbstractType
               },
               'multiple' => false
             ])
-            ->add('products', EntityType::class, [
-              'required' => false,
-              'label' => false,
-              'placeholder' => 'Marchandises',
-              'choice_label' => function ($product) {
-                    return $product->getCategory()->getName() . ' ' . $product->getMark()->getLabel() . ' ' . $product->getDescription();
-              },
-              'class' => Product::class,
-              'query_builder' => function (EntityRepository $er) {
-                  return $er->createQueryBuilder('p');
-              },
-              'multiple' => true
-            ])
+            // ->add('products', EntityType::class, [
+            //   'required' => false,
+            //   'label' => false,
+            //   'placeholder' => 'Marchandises',
+            //   'choice_label' => function ($product) {
+            //         return $product->getCategory()->getName() . ' ' . $product->getMark()->getLabel() . ' ' . $product->getDescription();
+            //   },
+            //   'class' => Product::class,
+            //   'query_builder' => function (EntityRepository $er) {
+            //       return $er->createQueryBuilder('p');
+            //   },
+            //   'multiple' => true
+            // ])
         ;
     }
 
