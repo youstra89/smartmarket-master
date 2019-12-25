@@ -71,11 +71,14 @@
 			<h1 id="fh5co-logo"><a href="index.html">Marble</a></h1>
 			<nav id="fh5co-main-menu" role="navigation">
 				<ul>
-					<li class="fh5co-active"><a href="index.html">Home</a></li>
-					<li><a href="blog.html">Blog</a></li>
-					<li><a href="portfolio.html">Portfolio</a></li>
-					<li><a href="about.html">About</a></li>
-					<li><a href="contact.html">Contact</a></li>
+					{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+						<li class="{% if current == 'index' %}fh5co-active{% endif %}"><a href="{{ path('admin') }}">Accueil</a></li>
+						<li class="{% if current == 'products' %}fh5co-active{% endif %}"><a href="{{ path('product') }}">Marchandises</a></li>
+						<li class="{% if current == 'purchases' %}fh5co-active{% endif %}"><a href="{{ path('purchase') }}">Commandes</a></li>
+						<li class="{% if current == 'sells' %}fh5co-active{% endif %}"><a href="{{ path('sell') }}">Ventes</a></li>
+						<li class="{% if current == 'account' %}fh5co-active{% endif %}"><a href="{{ path('profile') }}">Mon compte</a></li>
+						<li><a href="{{ path('logout') }}">Déconnexion</a></li>
+					{% endif %}
 				</ul>
 			</nav>
 

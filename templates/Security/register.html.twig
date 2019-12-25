@@ -1,4 +1,4 @@
-{% extends 'Security/base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 
 {% block title 'Inscription | Smart Market' %}
@@ -104,9 +104,9 @@
             </div>
           </div>
         </div>
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('registration') }}"/>{##}
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('registration') }}"/>
         <button type="submit" class="btn btn-primary btn-demo popup-vimeo">
-          <i class="fa fa-sign-in" aria-hidden="true"></i> S'inscrire
+          <i class="fa fa-sign-in" aria-hidden="true"></i> Enregistrer
         </button>
         {{ form_rest(form) }}
       {{ form_end(form)}}

@@ -16,32 +16,32 @@ use App\Entity\ProductSearch;
 use App\Form\ProductSearchType;
 
 /**
- * @Route("/admin/products")
+ * @Route("/products")
  */
 class AdminProductController extends AbstractController
 {
-  /**
-   * @Route("/", name="product")
-   * @IsGranted("ROLE_ADMIN")
-   */
-   public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
-   {
-       $search = new ProductSearch();
-       $form = $this->createForm(ProductSearchType::class, $search);
-       $form->handleRequest($request);
+    /**
+     * @Route("/", name="product")
+     * @IsGranted("ROLE_USER")
+     */
+    public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+    {
+      $search = new ProductSearch();
+      $form = $this->createForm(ProductSearchType::class, $search);
+      $form->handleRequest($request);
 
-       $products = $paginator->paginate(
-         $manager->getRepository(Product::class)->findAllProductsQuery($search),
-         $request->query->getInt('page', 1),
-         12
-       );
+      $products = $paginator->paginate(
+        $manager->getRepository(Product::class)->findAllProductsQuery($search),
+        $request->query->getInt('page', 1),
+        12
+      );
 
-       return $this->render('Admin/Product/index.html.twig', [
-         'form'     => $form->createView(),
-         'current'  => 'products',
-         'products' => $products
-       ]);
-   }
+      return $this->render('Admin/Product/index.html.twig', [
+        'form'     => $form->createView(),
+        'current'  => 'products',
+        'products' => $products
+      ]);
+    }
 
     /**
      * @Route("/add", name="product.add")
@@ -54,10 +54,16 @@ class AdminProductController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Enregistrement de <strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> réussie.');
-            $manager->persist($product);
+          $product->setCreatedBy($this->getUser());
+          $manager->persist($product);
+          try{
             $manager->flush();
-            return $this->redirectToRoute('product');
+            $this->addFlash('success', 'Enregistrement de <strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
+          return $this->redirectToRoute('product');
         }
         return $this->render('Admin/Product/product-add.html.twig', [
           'current' => 'products',
@@ -76,15 +82,73 @@ class AdminProductController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Mise à jour de <strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> réussie.');
-            $product->setUpdatedAt(new \DateTime());
+          $product->setUpdatedAt(new \DateTime());
+          $product->setUpdatedBy($this->getUser());
+          try{
             $manager->flush();
-            return $this->redirectToRoute('product');
+            $this->addFlash('success', 'Mise à jour de <strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
+          return $this->redirectToRoute('product');
         }
         return $this->render('Admin/Product/product-edit.html.twig', [
           'current' => 'products',
           'product' => $product,
           'form'    => $form->createView()
         ]);
+    }
+
+    /**
+     * @Route("/edit-unit-prices", name="edit.product.unit.price")
+     * @IsGranted("ROLE_SUPER_ADMIN")
+     */
+    public function edit_unit_price(Request $request, ObjectManager $manager)
+    {
+      $repoProduct = $manager->getRepository(Product::class);
+      $products = $repoProduct->findAll();
+
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        $token = $data['token'];
+        $prices = $data['price'];
+        // return new Response(var_dump($data));
+        if($this->isCsrfTokenValid('unit_prices', $token)){
+          // On va initialiser un compteur qui va compter le nombre de prix modifié
+          $cpt = 0;
+          foreach ($prices as $key => $value) {
+            $product = $repoProduct->find($key);
+            if ($value != 0 && $value != $product->getUnitPrice()) {
+              $product->setUnitPrice($value);
+              $product->setUpdatedAt(new \DateTime());
+              $product->setUpdatedBy($this->getUser());
+              $cpt++;
+            };
+          }
+
+          // Si la valeur du compteur est différente de 0, alors il y a eu modification quelque part
+          if($cpt != 0)
+          {
+            try{
+              $manager->flush();
+              $this->addFlash('success', '<li>Mise à jour des prix unitaires de <strong>'.$cpt.' produits </strong> réussie.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            }
+          }
+          else{
+            $this->addFlash('warning', 'Aucun changement observé.');
+          }
+          return $this->redirectToRoute('product');
+        }
+      }
+
+      return $this->render('Admin/Product/edit-products-unit-prices.html.twig', [
+        'current'  => 'products',
+        'products' => $products
+      ]);
     }
 }

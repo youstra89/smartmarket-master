@@ -41,37 +41,51 @@ class AdminCategoryController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Enregistrement de la catégorie <strong>'.$category->getName().'</strong> réussie.');
-            $manager->persist($category);
+          $category->setCreatedBy($this->getUser());
+          $manager->persist($category);
+          try{
             $manager->flush();
+            $this->addFlash('success', 'Enregistrement de la catégorie <strong>'.$category->getName().'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
             return $this->redirectToRoute('category');
-        }
-        return $this->render('Admin/Category/category-add.html.twig', [
-          'current' => 'products',
-          'form'    => $form->createView()
-        ]);
-    }
-
-    /**
+          }
+          
+          return $this->render('Admin/Category/category-add.html.twig', [
+            'current' => 'products',
+            'form'    => $form->createView()
+            ]);
+          }
+          
+          /**
      * @Route("/edit/{id}", name="category.edit")
      * @IsGranted("ROLE_ADMIN")
      * @param Category $category
      */
     public function edit(Request $request, ObjectManager $manager, Category $category)
     {
-        $form = $this->createForm(CategoryType::class, $category);
-        $form->handleRequest($request);
-        if($form->isSubmitted() && $form->isValid())
-        {
-            $this->addFlash('success', 'Mise à jour de la catégorie <strong>'.$category->getName().'</strong> réussie.');
-            $category->setUpdatedAt(new \DateTime());
-            $manager->flush();
-            return $this->redirectToRoute('category');
-        }
-        return $this->render('Admin/Category/category-edit.html.twig', [
-          'current'  => 'products',
-          'category' => $category,
-          'form'     => $form->createView()
-        ]);
+      $form = $this->createForm(CategoryType::class, $category);
+      $form->handleRequest($request);
+      if($form->isSubmitted() && $form->isValid())
+      {
+        $category->setUpdatedAt(new \DateTime());
+        $category->setUpdatedBy($this->getUser());
+        try{
+          $manager->flush();
+          $this->addFlash('success', 'Mise à jour de la catégorie <strong>'.$category->getName().'</strong> réussie.');
+        } 
+        catch(\Exception $e){
+          $this->addFlash('danger', $e->getMessage());
+        } 
+        return $this->redirectToRoute('category');
+      }
+
+      return $this->render('Admin/Category/category-edit.html.twig', [
+        'current'  => 'products',
+        'category' => $category,
+        'form'     => $form->createView()
+      ]);
     }
 }

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="no-js"> <!--<![endif]-->
+	<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>
+		{% block title %}Index Page d'administration - Smart Market{% endblock %}
+	</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Free HTML5 Website Template by FreeHTML5.co" />
+	<meta name="keywords" content="free html5, free template, free bootstrap, free website template, html5, css3, mobile first, responsive" />
+	<meta name="author" content="FreeHTML5.co" />
+
+  	<!--
+	//////////////////////////////////////////////////////
+
+	FREE HTML5 TEMPLATE
+	DESIGNED & DEVELOPED by FreeHTML5.co
+
+	Website: 		http://freehtml5.co/
+	Email: 			info@freehtml5.co
+	Twitter: 		http://twitter.com/fh5co
+	Facebook: 		https://www.facebook.com/fh5co
+
+	//////////////////////////////////////////////////////
+	-->
+
+  	<!-- Facebook and Twitter integration -->
+	<meta property="og:title" content=""/>
+	<meta property="og:image" content=""/>
+	<meta property="og:url" content=""/>
+	<meta property="og:site_name" content=""/>
+	<meta property="og:description" content=""/>
+	<meta name="twitter:title" content="" />
+	<meta name="twitter:image" content="" />
+	<meta name="twitter:url" content="" />
+	<meta name="twitter:card" content="" />
+
+	<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+	<link rel="shortcut icon" href="favicon.ico">
+
+	<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet">
+
+	<!-- Animate.css -->
+	<link rel="stylesheet" href="{{ asset('css/animate.css') }}">
+	<!-- Icomoon Icon Fonts-->
+	<link rel="stylesheet" href="{{ asset('css/icomoon.css') }}">
+	<!-- Bootstrap  -->
+	<link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
+	<!-- Flexslider  -->
+	<link rel="stylesheet" href="{{ asset('css/flexslider.css') }}">
+	<!-- Theme style  -->
+	<link rel="stylesheet" href="{{ asset('css/style.css') }}">
+	{% block stylesheets %}{% endblock %}
+
+	<!-- Modernizr JS -->
+	<script src="{{ asset('js/modernizr-2.6.2.min.js') }}"></script>
+	<!-- FOR IE9 below -->
+	<!--[if lt IE 9]>
+	<script src="js/respond.min.js"></script>
+	<![endif]-->
+
+	</head>
+	<body>
+	<div id="fh5co-page">
+		<a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle"><i></i></a>
+		<aside id="fh5co-aside" role="complementary" class="border js-fullheight">
+
+			<h1 id="fh5co-logo"><a href="{{ path('admin') }}">Smart Market</a></h1>
+			<nav id="fh5co-main-menu" role="navigation">
+				<ul>
+					{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+						<li class="{% if current == 'index' %}fh5co-active{% endif %}"><a href="{{ path('homepage') }}">Accueil</a></li>
+						<li class="{% if current == 'products' %}fh5co-active{% endif %}"><a href="{{ path('product') }}">Marchandises</a></li>
+						<li class="{% if current == 'sells' %}fh5co-active{% endif %}"><a href="{{ path('sell') }}">Ventes</a></li>
+						{% if is_granted('ROLE_ADMIN') %}
+							<li class="{% if current == 'purchases' %}fh5co-active{% endif %}"><a href="{{ path('purchase') }}">Commandes</a></li>
+							<li class="{% if current == 'accounting' %}fh5co-active{% endif %}"><a href="{{ path('accounting') }}">Comptabilité</a></li>
+							<li class="{% if current == 'users' %}fh5co-active{% endif %}"><a href="{{ path('users') }}">Utilisateurs</a></li>
+						{% endif %}	
+						<li class="{% if current == 'account' %}fh5co-active{% endif %}"><a href="{{ path('profile') }}">Mon compte</a></li>
+						<li><a href="{{ path('logout') }}">Déconnexion</a></li>
+					{% endif %}	
+				</ul>
+			</nav>
+		</aside>
+
+		<div id="fh5co-main">
+			<div class="container">
+				{% block notifications %}
+				{% endblock %}
+				{% block body %}
+					<div class="fh5co-narrow-content">
+						<h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Panel Admin</h2>
+						<div class="row">
+							<a href="{{ path('product') }}">
+								<div class="col-md-6">
+									<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
+										<div class="fh5co-icon">
+											<i class="icon-settings"></i>
+										</div>
+										<div class="fh5co-text">
+											<h3>Marchandises</h3>
+											<p>Gérez vos marchandises en toute simplicité</p>
+										</div>
+									</div>
+								</div>
+							</a>
+							<a href="{{ path('purchase') }}">
+								<div class="col-md-6">
+									<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
+										<div class="fh5co-icon">
+											<i class="glyphicon glyphicon-shopping-cart"></i>
+										</div>
+										<div class="fh5co-text">
+											<h3>Commandes</h3>
+											<p>Toutes les commandes de marchandises chez vos fournisseurs</p>
+										</div>
+									</div>
+								</div>
+							</a>
+							<a href="{{ path('sell') }}">
+								<div class="col-md-6">
+									<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
+										<div class="fh5co-icon">
+											<i class="icon-paperplane"></i>
+										</div>
+										<div class="fh5co-text">
+											<h3>Ventes</h3>
+											<p>Les clients et les ventes</p>
+										</div>
+									</div>
+								</div>
+							</a>
+							<a href="{{ path('admin') }}">
+								<div class="col-md-6">
+									<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
+										<div class="fh5co-icon">
+											<i class="icon-params"></i>
+										</div>
+										<div class="fh5co-text">
+											<h3>Comptabilité</h3>
+											<p>Suivez toutes les entrées de devises dans</p>
+										</div>
+									</div>
+								</div>
+							</a>
+						</div>
+					</div>
+				{% endblock %}
+			</div>
+		</div>
+	</div>
+
+	<!-- jQuery -->
+	<script src="{{ asset('js/jquery.min.js') }}"></script>
+	<!-- jQuery Easing -->
+	<script src="{{ asset('js/jquery.easing.1.3.js') }}"></script>
+	<!-- Bootstrap -->
+	<script src="{{ asset('js/bootstrap.min.js') }}"></script>
+	<!-- Waypoints -->
+	<script src="{{ asset('js/jquery.waypoints.min.js') }}"></script>
+	<!-- Flexslider -->
+	<script src="{{ asset('js/jquery.flexslider-min.js') }}"></script>
+	<!-- MAIN JS -->
+	<script src="{{ asset('js/main.js') }}"></script>
+	{% block javascript %}{% endblock %}
+
+	</body>
+</html>

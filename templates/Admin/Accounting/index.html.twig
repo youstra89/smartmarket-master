@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Index Comptabilité{% endblock %}
+
+
+{% block notifications %}
+{% endblock %}
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+  <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Comptabilité</h2>
+  <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a>
+  <div class="row row-bottom-padded-md">
+      <span>
+        <a href="{{ path('dayly.accounting') }}" class="btn btn-primary sm">
+          Compte journalier
+        </a>
+      </span>
+      <span>
+        <a href="{{ path('monthly.accounting') }}" class="btn btn-primary sm">
+          Compte mensuel
+        </a>
+      </span>
+      <span>
+        <a href="{{ path('accounting.debtor') }}" class="btn btn-primary sm">
+          Débiteurs
+        </a>
+      </span>
+  </div>
+</div>
+{% endblock %}

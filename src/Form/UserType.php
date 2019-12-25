@@ -18,21 +18,21 @@ class UserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('email',     EmailType::class, ['required' => true, 'label' => 'Votre mail'])
-            ->add('username',  TextType::class, ['required' => true])
-            ->add('firstname', TextType::class, ['required' => true, 'label' => 'Prénom'])
-            ->add('lastname',  TextType::class, ['required' => true, 'label' => 'Nom'])
-            ->add('password',  RepeatedType::class, array(
-                'type' =>      PasswordType::class,
-                'first_options'  => array('label' => 'Mot de passe'),
-                'second_options' => array('label' => 'Confirmation du mot de passe'),
+            ->add('email',     EmailType      ::class, ['required' => true, 'label' => 'Email'])
+            ->add('username',  TextType       ::class, ['required' => true])
+            ->add('firstname', TextType       ::class, ['required' => true, 'label' => 'Prénom'])
+            ->add('lastname',  TextType       ::class, ['required' => true, 'label' => 'Nom'])
+            ->add('password',  RepeatedType   ::class, array(
+                'type'                        =>PasswordType       :: class,
+                'first_options'               =>array('label'      => 'Mot de passe'),
+                'second_options'              =>array('label'      => 'Confirmation du mot de passe'),
             ))
-            ->add('gender',     ChoiceType::class, [
-              'choices' => $this->getChoices()
+            ->add('gender',     ChoiceType    ::class, [
+              'choices'                       =>$this->getChoices()
             ])
-            ->add('residence',    TextType::class, ['required' => true, 'label' => 'Commune/Ville'])
+            ->add('residence',    TextType    ::class, ['required' => true, 'label' => 'Commune/Ville'])
             ->add('birthday',     BirthdayType::class, ['required' => true])
-            ->add('phone_number', TextType::class, ['label' => 'Numéro de téléphone'])
+            ->add('phone_number', TextType    ::class, ['label'    => 'Numéro de téléphone'])
         ;
     }
 

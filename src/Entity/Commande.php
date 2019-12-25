@@ -34,6 +34,11 @@ class Commande
     private $ended;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $created_by;
+
+    /**
      * @ORM\Column(type="datetime")
      */
     private $created_at;
@@ -42,6 +47,11 @@ class Commande
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $updated_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $updated_by;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Settlement", mappedBy="commande")
@@ -147,6 +157,30 @@ class Commande
                 $settlement->setCommande(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->created_by;
+    }
+
+    public function setCreatedBy(?User $created_by): self
+    {
+        $this->created_by = $created_by;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?User
+    {
+        return $this->updated_by;
+    }
+
+    public function setUpdatedBy(?User $updated_by): self
+    {
+        $this->updated_by = $updated_by;
 
         return $this;
     }

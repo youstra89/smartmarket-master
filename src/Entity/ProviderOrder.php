@@ -27,12 +27,6 @@ class ProviderOrder
     private $additional_fees;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\order", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $ordeer;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Provider", inversedBy="providerOrders")
      * @ORM\JoinColumn(nullable=false)
      */

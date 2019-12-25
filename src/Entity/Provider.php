@@ -50,6 +50,11 @@ class Provider
     private $city;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $created_by;
+
+    /**
      * @ORM\Column(type="datetime")
      */
     private $created_at;
@@ -58,6 +63,11 @@ class Provider
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $updated_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $updated_by;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Country", inversedBy="providers")
@@ -209,6 +219,61 @@ class Provider
     }
 
     public function removeProviderCommande(ProviderCommande $providerOrder): self
+    {
+        if ($this->providerOrders->contains($providerOrder)) {
+            $this->providerOrders->removeElement($providerOrder);
+            // set the owning side to null (unless already changed)
+            if ($providerOrder->getProvider() === $this) {
+                $providerOrder->setProvider(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->created_by;
+    }
+
+    public function setCreatedBy(?User $created_by): self
+    {
+        $this->created_by = $created_by;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?User
+    {
+        return $this->updated_by;
+    }
+
+    public function setUpdatedBy(?User $updated_by): self
+    {
+        $this->updated_by = $updated_by;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProviderOrder[]
+     */
+    public function getProviderOrders(): Collection
+    {
+        return $this->providerOrders;
+    }
+
+    public function addProviderOrder(ProviderOrder $providerOrder): self
+    {
+        if (!$this->providerOrders->contains($providerOrder)) {
+            $this->providerOrders[] = $providerOrder;
+            $providerOrder->setProvider($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProviderOrder(ProviderOrder $providerOrder): self
     {
         if ($this->providerOrders->contains($providerOrder)) {
             $this->providerOrders->removeElement($providerOrder);

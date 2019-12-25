@@ -19,6 +19,18 @@ class SettlementRepository extends ServiceEntityRepository
         parent::__construct($registry, Settlement::class);
     }
 
+    public function reglementsIncomplets()
+    {
+        return $this->createQueryBuilder('s')
+            ->select('c.id, SUM(s.amount) AS montant')
+            ->join('s.commande', 'c')
+            ->where('c.ended = FALSE')
+            ->groupBy('c.id')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Settlement[] Returns an array of Settlement objects
     //  */

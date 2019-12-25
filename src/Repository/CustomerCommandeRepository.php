@@ -45,6 +45,61 @@ class CustomerCommandeRepository extends ServiceEntityRepository
       return $query->getQuery();
     }
 
+    public function dayCommande($date)
+    {
+      return $this->createQueryBuilder('c')
+          ->join('c.commande', 'cmd')
+          ->addSelect('cmd')
+          ->where('cmd.date LIKE :date')
+          ->setParameter('date', '%'.$date.'%')
+          ->orderBy('c.id', 'DESC')
+          ->getQuery()
+          ->getResult()
+      ;
+    }
+
+    public function differentDates()
+    {
+        $manager = $this->getEntityManager()->getConnection();
+        $query = 'SELECT DISTINCT(SUBSTRING(c.created_at, 1, 7)) AS `date` FROM customer_commande cc JOIN commande c ON cc.commande_id = c.id ORDER BY `date` ASC;';
+        $statement = $manager->prepare($query);
+        $statement->execute();
+        return $statement->fetchAll();
+        ;
+    }
+
+    public function monthSells($date)
+    {
+        $manager = $this->getEntityManager()->getConnection();
+        $requete_eentrees = 'SELECT SUM(c.total_amount) AS somme FROM customer_commande cc JOIN commande c ON cc.commande_id = c.id WHERE c.date LIKE :date ORDER BY c.date ASC, c.id ASC;';
+        $statement = $manager->prepare($requete_eentrees);
+        $statement->bindValue('date', $date.'%');
+        $statement->execute();
+        return $statement->fetchAll();
+        return $this->createQueryBuilder('c')
+            ->join('c.commande', 'cmd')
+            ->addSelect('cmd')
+            ->select('SUM(cmd.total_amount), cmd.date')
+            ->where('cmd.date LIKE :date')
+            ->groupBy('cmd.date')
+            ->setParameter('date', $date.'%')
+            ->orderBy('cmd.date', 'ASC')
+            ->orderBy('cmd.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function lesDebiteurs()
+    {
+        return $this->createQueryBuilder('c')
+            ->join('c.commande', 'cmd')
+            ->addSelect('cmd')
+            ->where('cmd.ended = false')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     // /**
     //  * @return CustomerCommande[] Returns an array of CustomerCommande objects
     //  */

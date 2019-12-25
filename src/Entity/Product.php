@@ -36,6 +36,11 @@ class Product
     private $description;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $created_by;
+
+    /**
      * @ORM\Column(type="datetime")
      */
     private $created_at;
@@ -44,6 +49,11 @@ class Product
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $updated_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $updated_by;
 
     /**
      * @Assert\NotBlank()
@@ -73,11 +83,17 @@ class Product
      */
     private $customerCommandeDetails;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $unit_price;
+
 
     public function __construct()
     {
-      $this->stock = 0;
-      $this->created_at = new \DateTime();
+      $this->stock                   = 0;
+      $this->unit_price              = 0;
+      $this->created_at              = new \DateTime();
       $this->providerCommandeDetails = new ArrayCollection();
       $this->customerCommandeDetails = new ArrayCollection();
     }
@@ -229,6 +245,42 @@ class Product
                 $customerCommandeDetail->setProduct(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->created_by;
+    }
+
+    public function setCreatedBy(?User $created_by): self
+    {
+        $this->created_by = $created_by;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?User
+    {
+        return $this->updated_by;
+    }
+
+    public function setUpdatedBy(?User $updated_by): self
+    {
+        $this->updated_by = $updated_by;
+
+        return $this;
+    }
+
+    public function getUnitPrice(): ?int
+    {
+        return $this->unit_price;
+    }
+
+    public function setUnitPrice(int $unit_price): self
+    {
+        $this->unit_price = $unit_price;
 
         return $this;
     }

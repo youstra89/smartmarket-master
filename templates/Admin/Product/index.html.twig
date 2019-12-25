@@ -1,4 +1,4 @@
-{% extends 'base-admin.html.twig' %}
+{% extends 'base.html.twig' %}
 
 
 {% block title %}Les marchandises{% endblock %}
@@ -32,8 +32,11 @@
 {% block body %}
   <div class="fh5co-narrow-content">
     <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Marchandises</h2>
-    <a href="{{ path('category') }}" class="btn btn-primary">Gestion des catégories</a>
-    <a href="{{ path('product.add') }}" class="btn btn-primary">Ajouter une marchandise</a>
+    {% if is_granted('ROLE_SUPER_ADMIN') %}
+      <a href="{{ path('category') }}" class="btn btn-primary btn-sm">Gestion des catégories</a>
+      <a href="{{ path('product.add') }}" class="btn btn-primary btn-sm">Ajouter une marchandise</a>
+      <a href="{{ path('edit.product.unit.price') }}" class="btn btn-primary btn-sm">Modifier les prix unitaires</a>
+    {% endif %}
     <div class="row">
       {{ form_start(form) }}
       <div class="row">
@@ -52,21 +55,49 @@
       </div>
       {{ form_end(form) }}
     </div>
-    <div class="row row-bottom-padded-md">
-      {% for product in products %}
-          <div class="col-md-3 col-sm-6 col-padding animate-box" data-animate-effect="fadeInLeft">
-            <div class="blog-entry">
-              <a href="#" class="blog-img"><img src="{{ asset('images/img-1.jpg') }}" class="img-responsive" alt="Free HTML5 Bootstrap Template by FreeHTML5.co"></a>
-              <div class="desc">
-                <h3><a href="#">{{ product.mark.label }} {{ product.description }}</a></h3>
-                <span>{{ product.category.name }}</span>
-                <p>Produit disponible en <strong>{{ product.stock }}</strong> exemplaire(s)</p>
-                <a href="{{ path('product.edit', {id: product.id}) }}" class="lead">Modifier<i class="icon-arrow-right3"></i></a>
-              </div>
-            </div>
-          </div>
-      {% endfor %}
-    </div>
+    <div class="table-responsive">
+        <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Catégorie</th>
+              <th>Marque</th>
+              <th>Description</th>
+              <th>Stock</th>
+              <th>Prix unitaire</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <th>N°</th>
+              <th>Catégorie</th>
+              <th>Marque</th>
+              <th>Description</th>
+              <th>Stock</th>
+              <th>Prix unitaire</th>
+              <th>Actions</th>
+            </tr>
+          </tfoot>
+          <tbody>
+            {% set i = 0 %}
+            {% for product in products %}
+              {% set i = i + 1 %}
+              <tr>
+                <td>{{ i }}</td>
+                <td>{{ product.category.name }}</td>
+                <td>{{ product.mark.label }}</td>
+                <td>{{ product.description }}</td>
+                <td>{{ product.stock }}</td>
+                <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
+                <td>
+                  <a href="{{ path('product.edit', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-edit"></i></a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     <div class="row">
       <div class="navigation">
         {{ knp_pagination_render(products) }}

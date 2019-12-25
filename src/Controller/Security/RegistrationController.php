@@ -9,11 +9,14 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+
 
 class RegistrationController extends AbstractController
 {
     /**
-     * @Route("/register", name="registration")
+     * @Route("/admin/register", name="registration")
+     * @Security("has_role('ROLE_ADMIN')")
      */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, \Swift_Mailer $mailer)
     {
@@ -40,8 +43,8 @@ class RegistrationController extends AbstractController
 
             $url = $this->generateUrl('activation_compte', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $message = (new \Swift_Message('Activation de compte Orientation Authentique'))
-                ->setFrom('orientationauthentique@gmail.com')
+            $message = (new \Swift_Message('Activation de SmartMarket'))
+                ->setFrom('contact.youstra@gmail.com')
                 ->setTo($user->getEmail())
                 ->setBody(
                     $this->renderView(
@@ -56,14 +59,14 @@ class RegistrationController extends AbstractController
             $mailer->send($message);
 
             $this->addFlash('success', 'Votre compte a été créé avec succès. Mais vous devez l\'activer par mail. Regardez dans votre email.');
-            return $this->redirectToRoute('homepage');
+            return $this->redirectToRoute('users');
           }
         }
 
-        return $this->render(
-            'Security/register.html.twig',
-            array('form' => $form->createView())
-        );
+        return $this->render('Security/register.html.twig',[
+          'form' => $form->createView(),
+          'current' => 'users',
+        ]);
     }
 
 
@@ -85,7 +88,8 @@ class RegistrationController extends AbstractController
       $em->flush();
       return $this->render(
           'Security/activation.html.twig',[
-            'user' => $user
+            'user' => $user,
+            'current' => 'users',
           ]
       );
     }

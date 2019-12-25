@@ -23,13 +23,13 @@ use App\Entity\CustomerCommandeSearch;
 use App\Form\CustomerCommandeSearchType;
 
 /**
- * @Route("/admin/ventes")
+ * @Route("/ventes")
  */
 class AdminSellController extends AbstractController
 {
   /**
    * @Route("/", name="sell")
-   * @IsGranted("ROLE_ADMIN")
+   * @IsGranted("ROLE_USER")
    */
    public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
    {
@@ -51,7 +51,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/add", name="customer.order.add")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_USER")
      */
     public function add(Request $request, ObjectManager $manager)
     {
@@ -75,6 +75,7 @@ class AdminSellController extends AbstractController
               $commande = new Commande();
               $date = new \DateTime($data['date']);
               $commande->setDate($date);
+              $commande->setCreatedBy($this->getUser());
               $manager->persist($commande);
               $seller = $this->getUser();
               $reference = $date->format('Ymd').'.'.(new \DateTime())->format('hm');
@@ -89,9 +90,14 @@ class AdminSellController extends AbstractController
               $customerCommande->setReference($reference);
               $customerCommande->setCommande($commande);
               $customerCommande->setSeller($seller);
-              $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               $manager->persist($customerCommande);
-              $manager->flush();
+              try{
+                $manager->flush();
+                $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+              }
               return $this->redirectToRoute('customer.commande.details.save', ['id' => $customerCommande->getId()]);
             }
           }
@@ -114,10 +120,16 @@ class AdminSellController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Mise à jour de la commande du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.');
-            $product->setUpdatedAt(new \DateTime());
+          $product->setUpdatedAt(new \DateTime());
+          $product->setUpdatedBy($this->getUser());
+          try{
             $manager->flush();
-            return $this->redirectToRoute('product');
+            $this->addFlash('success', 'Mise à jour de la commande du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          }
+          return $this->redirectToRoute('product');
         }
         return $this->render('Admin/Sell/sell-edit.html.twig', [
           'current' => 'sells',
@@ -128,7 +140,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/ajouter-ce-produit-a-la-commande-{id}", name="add.commande.product")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_USER")
      * @param Product $product
      */
     public function add_product_command(Request $request, ObjectManager $manager, Product $product)
@@ -162,7 +174,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/annuler-la-vente-en-cours", name="customer.commande.reset")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_USER")
      */
     public function reset_commande(ObjectManager $manager)
     {
@@ -173,7 +185,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/enregistrement-d-une-vente/{id}", name="customer.commande.details.save")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_USER")
      * @param CustomerCommande $commande
      */
     public function save_customer_commande_details(Request $request, ObjectManager $manager, CustomerCommande $commande)
@@ -192,6 +204,7 @@ class AdminSellController extends AbstractController
             //  - $totalCharge, le coût total de toutes les charges
             $qte = $data['quantityH'];
             $price = $data['priceH'];
+            // return new Response(var_dump($price));
             $totalGeneral = 0;
             $totalCommande = 0;
             foreach ($data['sousTotal'] as $key => $value) {
@@ -245,9 +258,15 @@ class AdminSellController extends AbstractController
             }
             $commande->getCommande()->setTotalAmount($totalGeneral);
             $commande->getCommande()->setUpdatedAt(new \DateTime());
-            $manager->flush();
+            $commande->getCommande()->setUpdatedBy($this->getUser());
             $this->get('session')->remove('idProductsForSelling');
-            $this->addFlash('success', 'Enregistrement des détails de la vente du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+            try{
+              $manager->flush();
+              $this->addFlash('success', 'Enregistrement des détails de la vente du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            }
             return $this->redirectToRoute('settlement', ['id' => $commande->getId()]);
           }
         }
@@ -262,7 +281,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/reglement-de-vente/{id}", name="settlement")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_USER")
      * @param CustomerCommande $commande
      */
     public function settlement(Request $request, CustomerCommande $commande, ObjectManager $manager)
@@ -330,9 +349,15 @@ class AdminSellController extends AbstractController
           $settlement->setDate($date);
           $settlement->setAmount($amount);
           $settlement->setReceiver($user);
+          $settlement->setCreatedBy($this->getUser());
           $settlement->setCommande($commande->getCommande());
           $manager->persist($settlement);
-          $manager->flush();
+          try{
+            $manager->flush();
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          }
           return $this->redirectToRoute('sell');
         }
       }
@@ -348,14 +373,14 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/details-vente/{id}", name="customer.order.details")
-     * @IsGranted("ROLE_ADMIN")
      * @param CustomerCommande $commande
+     * @IsGranted("ROLE_USER")
      */
-     public function customer_order_details(CustomerCommande $commande)
+     public function customer_order_details(int $id, ObjectManager $manager, CustomerCommande $commande)
      {
-       return $this->render('Admin/Sell/sell-details.html.twig', [
-         'current'  => 'sells',
-         'commande' => $commande
-       ]);
+        return $this->render('Admin/Sell/sell-details.html.twig', [
+          'current'  => 'sells',
+          'commande' => $commande
+        ]);
      }
 }

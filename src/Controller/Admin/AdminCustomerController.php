@@ -13,13 +13,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 /**
- * @Route("/admin/clients")
+ * @Route("/clients")
  */
 class AdminCustomerController extends AbstractController
 {
   /**
    * @Route("/", name="customer")
-   * @IsGranted("ROLE_ADMIN")
+   * @IsGranted("ROLE_USER")
    */
    public function index(ObjectManager $manager)
    {
@@ -32,7 +32,7 @@ class AdminCustomerController extends AbstractController
 
     /**
      * @Route("/add", name="customer.add")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_USER")
      */
     public function add(Request $request, ObjectManager $manager)
     {
@@ -41,10 +41,16 @@ class AdminCustomerController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Enregistrement du fournisseur <strong>'.$customer->getFirstname().' '.$customer->getLastname().'</strong> réussie.');
-            $manager->persist($customer);
+          $customer->setCreatedBy($this->getUser());
+          $manager->persist($customer);
+          try{
             $manager->flush();
-            return $this->redirectToRoute('customer');
+            $this->addFlash('success', 'Enregistrement du fournisseur <strong>'.$customer->getFirstname().' '.$customer->getLastname().'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
+          return $this->redirectToRoute('customer');
         }
         return $this->render('Admin/Customer/customer-add.html.twig', [
           'current' => 'sells',
@@ -63,11 +69,17 @@ class AdminCustomerController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Mise à jour de <strong>'.$customer->getCategory()->getName().' '.$customer->getMark()->getLabel().' - '.$customer->getDescription().'</strong> réussie.');
-            $customer->setUpdatedAt(new \DateTime());
-            $manager->persist($customer);
+          $customer->setUpdatedAt(new \DateTime());
+          $customer->setUpdatedBy($this->getUser());
+          $manager->persist($customer);
+          try{
             $manager->flush();
-            return $this->redirectToRoute('customer');
+            $this->addFlash('success', 'Mise à jour de <strong>'.$customer->getFirstname().' '.$customer->getLastname().'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
+          return $this->redirectToRoute('customer');
         }
         return $this->render('Admin/Customer/customer-edit.html.twig', [
           'current' => 'sells',

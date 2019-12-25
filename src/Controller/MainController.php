@@ -14,6 +14,13 @@ class MainController extends AbstractController
    */
     public function index()
     {
-        return $this->render('base-user.html.twig');
+        $user = $this->getUser();
+        if(empty($user))
+          return $this->redirectToRoute('login');
+        $hasAccess = $this->isGranted('ROLE_SUPER_ADMIN');
+        // if ($this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN'))
+        if($hasAccess)
+            return $this->redirectToRoute('admin');
+        return $this->render('base.html.twig', ["current" => "index"]);
     }
 }

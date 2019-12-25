@@ -41,10 +41,16 @@ class AdminProviderController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Enregistrement du fournisseur <strong>'.$provider->getFirstname().' '.$provider->getLastname().'</strong> réussie.');
-            $manager->persist($provider);
+          $provider->setCreatedBy($this->getUser());
+          $manager->persist($provider);
+          try{
             $manager->flush();
-            return $this->redirectToRoute('provider');
+            $this->addFlash('success', 'Enregistrement du fournisseur <strong>'.$provider->getFirstname().' '.$provider->getLastname().'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
+          return $this->redirectToRoute('provider');
         }
         return $this->render('Admin/Provider/provider-add.html.twig', [
           'current' => 'purchases',
@@ -63,11 +69,17 @@ class AdminProviderController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Mise à jour de <strong>'.$provider->getCategory()->getName().' '.$provider->getMark()->getLabel().' - '.$provider->getDescription().'</strong> réussie.');
-            $provider->setUpdatedAt(new \DateTime());
-            $manager->persist($provider);
+          $provider->setUpdatedAt(new \DateTime());
+          $provider->setUpdatedBy($this->getUser());
+          $manager->persist($provider);
+          try{
             $manager->flush();
-            return $this->redirectToRoute('provider');
+            $this->addFlash('success', 'Mise à jour de <strong>'.$provider->getFirstname().' '.$provider->getLastname().'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
+          return $this->redirectToRoute('provider');
         }
         return $this->render('Admin/Provider/provider-edit.html.twig', [
           'current' => 'purchases',

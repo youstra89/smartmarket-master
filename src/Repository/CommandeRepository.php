@@ -19,6 +19,32 @@ class CommandeRepository extends ServiceEntityRepository
         parent::__construct($registry, Commande::class);
     }
 
+
+    public function monthlySelling($dateActuelle)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('SUM(c.total_amount), c.date')
+            ->where('c.date LIKE :dateActuelle')
+            ->groupBy('c.date')
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            // ->orderBy('c.date', 'ASC')
+            // ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function differentDates()
+    {
+        return $this->createQueryBuilder('c')
+            ->select('DISTINCT(SUBSTRING(c.date, 1, 7))')
+            ->orderBy('c.date', 'ASC')
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Commande[] Returns an array of Commande objects
     //  */

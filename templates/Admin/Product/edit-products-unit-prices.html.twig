@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+
+{% block title %}
+  Mise à jour des prix unitaires
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+    <h2>Mise à jour des prix unitaires des produits</h2>
+    <section class="contact-area container">
+        <form class="ui form" action="" method="post">
+            {% set i = 0 %}
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Produits</th>
+                  <th>Prix unitaires</th>
+                </tr>
+              </thead>
+              {% for product in products %}
+                {% set i = i + 1 %}
+                  <tbody>
+                    <tr>
+                      <td>
+                        {{ i }}
+                      </td>
+                      <td>
+                        {{ product.category.name }} {{ product.mark.label }} - {{ product.description }}
+                      </td>
+                      <td>
+                        <input type="number" class="price" name="price[{{ product.id }}]" value="{{ product.unitPrice }}" required>
+                      </td>
+                    </tr>
+                  </tbody>
+              {% endfor %}
+            </table>
+            <input type="hidden" name="token" value="{{ csrf_token('unit_prices') }}"/>
+            <button class="btn btn-primary">{{ button|default('Enregistrer') }}</button><br><br>
+        </form>
+    </section>    
+{% endblock %}
+
+
+{% block javascript %}
+{% endblock %}

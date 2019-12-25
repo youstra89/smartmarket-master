@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+{% endblock %}
+
+
+
+{% block title 'Comptes d\'utilisateurs SIGE' %}
+
+
+
+{% block notifications %}
+{% endblock %}
+
+
+
+{% block body %}
+  <!-- Begin Page Content -->
+  <div class="container-fluid">
+
+    <!-- Page Heading -->
+    <h1 class="h3 mb-1 text-gray-800">Informatiosns utilisateur - {{ user.username }}</h1>
+    {# <p class="mb-4">Bootstrap's default utility classes can be found on the official <a href="https://getbootstrap.com/docs">Bootstrap Documentation</a> page. The custom utilities below were created to extend this theme past the default utility classes built into Bootstrap's framework.</p> #}
+
+    <!-- Content Row -->
+    <div class="row">
+
+      <div class="col-lg-6">
+        <!-- Overflow Hidden -->
+        <div class="card mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Identification personnelle</h6>
+          </div>
+          <div class="card-body">  
+            <strong>Nom & prénoms :</strong> {{ user.nom }} {{ user.pnom }}<br>
+            <strong>Date de naissance :</strong> {{ user.dateNaissance|date('d-m-Y') }}<br>
+            <strong>Email :</strong> {{ user.email }}<br>
+            <strong>Numéro de téléphone :</strong> {{ user.phoneNumber }}<br>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <!-- Dropdown No Arrow -->
+        <div class="card mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Rôles</h6>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled p-auto">
+              {% for role in user.roles %}
+                <li>{{ role }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- /.container-fluid -->
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

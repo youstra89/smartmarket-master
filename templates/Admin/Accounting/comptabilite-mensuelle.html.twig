@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Comptabilité Mensuelle{% endblock %}
+
+
+{% block notification %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <h4 class="alert-heading">Succès!</h4>
+      {{ message|raw }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('error') %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <h4 class="alert-heading">Avertissement!</h4>
+      {{ message|raw }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+  <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Les ventes mensuelles</h2>
+  <a href="javascript:history.back()" class="btn btn-primary sm">
+    <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
+  </a><br><br>
+  <div class="row">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Mois</th>
+          <th>Total des ventes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set i = 0 %}
+        {% for m in mois %}
+          {% set i = i + 1 %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ m['date']|date('m-Y') }}</td>
+            <td>{{ gains[m['date']]|number_format(0, ',', ' ') }} F CFA</td>
+            <td>
+              <a href="{{ path('dayly.accounting', {mois: m['date']}) }}" class=" circle arrow small">Plus de détails</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

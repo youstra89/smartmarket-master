@@ -31,9 +31,9 @@
 
 
 {% block body %}
-  <div class="uk-container">
-    <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Connexion</span></h1>
-    <hr class="uk-divider-icon"><br>
+  <div class="container">
+    <h1 class="heading-line uk-heading-primary uk-text-center"><span>Connexion</span></h1>
+    <hr class="divider-icon"><br>
     {% if error %}
       <div class="uk-margin-auto uk-margin-auto-vertical">
         <div class="uk-alert-danger" uk-alert>
@@ -42,7 +42,7 @@
         </div>
       </div>
     {% endif %}
-    <div class="uk-margin-auto uk-margin-auto-vertical uk-width-1-2@s uk-card uk-card-default uk-card-body">
+    <div class="">
       <div class="uk-text-center">
         <form action="{{ path('login') }}" method="post">
           <div class="uk-margin">

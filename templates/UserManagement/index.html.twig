@@ -1,0 +1,110 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+  <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block title 'Comptes d\'utilisateurs SIGE' %}
+
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Utilisateurs du système</h2>
+    <a href="{{ path('registration') }}" class="btn btn-info btn-icon-split float-right">
+      <span class="icon text-white-50">
+        <i class="fas fa-plus"></i>
+      </span>
+      <span class="text">Ajouter utilisateur</span>
+    </a>
+    <div class="table-responsive">
+      <table class="table" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Nom d'utilisateur</th>
+            <th>Nom & Prénom</th>
+            <th>Numéro téléphone</th>
+            <th>Rôles</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>N°</th>
+            <th>Nom d'utilisateur</th>
+            <th>Nom & Prénom</th>
+            <th>Numéro téléphone</th>
+            <th>Rôles</th>
+            <th>Actions</th>
+          </tr>
+        </tfoot>
+        <tbody>
+          {% set i = 0 %}
+          {% for user in users %}
+            {% set i = i + 1 %}
+            <tr>
+              <td>{{ i }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.firstname }} {{ user.lastname }}</td>
+              <td>{{ user.phoneNumber }}</td>
+              <td>
+                <ul class="list-unstyled p-auto">
+                  {% for role in user.roles %}
+                    <li>{{ role }}</li>
+                  {% endfor %}
+                </ul>
+              </td>
+              <td>
+                <a href="{{ path('edit_user', {'userId': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Editer l'utilisateur {{ user.username }}">
+                  <i class="icon-edit"></i>
+                </a>&nbsp;&nbsp;
+                <a  href="{{ path('delete_user', {'userId': user.id, '_csrf_token': csrf_token('delete_user')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer l'utilisateur {{ user.username }}" onclick="return confirm('Etes-vous sûrs de supprimer cet utilisateur ?')">
+                  <i class="icon-trash"></i>
+                </a>&nbsp;&nbsp;
+                <a href="{{ path('user_roles', {'userId': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Gestion des rôles de l'utilisateur {{ user.username }}">
+                  <i class="icon-settings"></i>
+                </a>&nbsp;&nbsp;
+                <a  href="{{ path('user_info', {'userId': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Informations sur l'utilisateur {{ user.username }}">
+                  <i class="icon-info"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

@@ -20,7 +20,7 @@ use App\Entity\ProviderCommandeSearch;
 use App\Form\ProviderCommandeSearchType;
 
 /**
- * @Route("/admin/commandes")
+ * @Route("/commandes")
  */
 class AdminPurchaseController extends AbstractController
 {
@@ -67,15 +67,21 @@ class AdminPurchaseController extends AbstractController
               $commande = new Commande();
               $date = new \DateTime($data['date']);
               $commande->setDate($date);
+              $commande->setCreatedBy($this->getUser());
               $manager->persist($commande);
               $reference = $date->format('Ymd').'.'.(new \DateTime())->format('hm');
               $totalCharge = $providerCommande->getAdditionalFees() + $providerCommande->getTransport() + $providerCommande->getDedouanement() + $providerCommande->getCurrencyCost() + $providerCommande->getForwardingCost();
               $providerCommande->setReference($reference);
               $providerCommande->setCommande($commande);
               $providerCommande->setTotalFees($totalCharge);
-              $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               $manager->persist($providerCommande);
-              $manager->flush();
+              try{
+                $manager->flush();
+                $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+              } 
               return $this->redirectToRoute('provider.order.add.product', ['id' => $providerCommande->getId()]);
             }
         }
@@ -96,10 +102,15 @@ class AdminPurchaseController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->addFlash('success', 'Mise à jour de la commande du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.');
-            $product->setUpdatedAt(new \DateTime());
+          $product->setUpdatedAt(new \DateTime());
+          try{
             $manager->flush();
-            return $this->redirectToRoute('product');
+            $this->addFlash('success', 'Mise à jour de la commande du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          }
+          return $this->redirectToRoute('product');
         }
         return $this->render('Admin/Purchase/purchase-edit.html.twig', [
           'current' => 'purchases',
@@ -241,9 +252,16 @@ class AdminPurchaseController extends AbstractController
             $commande->setGlobalTotal($coutGlobal);
             $commande->getCommande()->setTotalAmount($totalGeneral);
             $commande->getCommande()->setUpdatedAt(new \DateTime());
-            $manager->flush();
+            $commande->getCommande()->setUpdatedBy($this->getUser());
+
             $this->get('session')->remove('idProductsProviderOrder');
-            $this->addFlash('success', 'Enregistrement des détails de la commande fournisseur du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+            try{
+              $manager->flush();
+              $this->addFlash('success', 'Enregistrement des détails de la commande fournisseur du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            }
             return $this->redirectToRoute('purchase.selling.price', ['id' => $commande->getId()]);
           }
         }
@@ -283,8 +301,13 @@ class AdminPurchaseController extends AbstractController
                 $product->setFixedAmount($fixedPrice);
               }
             }
-            $manager->flush();
-            $this->addFlash('success', 'Enregistrement des prix de vente de la commande fournisseur du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+            try{
+              $manager->flush();
+              $this->addFlash('success', 'Enregistrement des prix de vente de la commande fournisseur du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            }
             return $this->redirectToRoute('purchase');
           }
         }

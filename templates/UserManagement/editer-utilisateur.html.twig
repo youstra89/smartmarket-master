@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title 'Edition utilisateur | SIGE' %}
+
+
+
+{% block body %}
+  <div class="container">
+    <div class="card o-hidden border-0 shadow-lg my-5">
+      <div class="card-body p-0">
+        <!-- Nested Row within Card Body -->
+        <div class="row">
+          <div class="col-lg-5 d-none d-lg-block bg-register-image"></div>
+          <div class="col-lg-7">
+            <div class="p-5">
+              <div class="text-center">
+                <h1 class="h4 text-gray-900 mb-4">Editer utilisateur - {{ user.username }}</h1>
+              </div>
+              {{ form_start(form, {'attr': {'class': 'user'}}) }}
+              {# <form class="user" action="#" method="post"> #}
+                <div class="form-group row">
+                  <div class="col-sm-6 mb-3 mb-sm-0">
+                    {# <input type="text" class="form-control form-control-user" id="exampleFirstName" placeholder="First Name"> #}
+                    {{ form_row(form.nom, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Nom de l'utilisateur"} }) }}
+                  </div>
+                  <div class="col-sm-6">
+                    {# <input type="text" class="form-control form-control-user" id="exampleLastName" placeholder="Last Name"> #}
+                    {{ form_row(form.pnom, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Prénoms de l'utilisateur"} }) }}
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-sm-6 mb-3 mb-sm-0">
+                    {# <input type="text" class="form-control form-control-user" id="exampleFirstName" placeholder="First Name"> #}
+                    {{ form_row(form.sexe, { 'attr': {'class': 'custom-select custom-select-lg', 'placeholder': "Nom de l'utilisateur"} }) }}
+                  </div>
+                  <div class="col-sm-6">
+                    {# <input type="text" class="form-control form-control-user" id="exampleLastName" placeholder="Last Name"> #}
+                    <input type="date" name="date" class="form-control form-control-user" value="{{ user.dateNaissance|date('Y-m-d') }}">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-sm-6 mb-3 mb-sm-0">
+                    {# <input type="text" class="form-control form-control-user" id="exampleFirstName" placeholder="First Name"> #}
+                    {{ form_row(form.residence, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Commune/Quartier"} }) }}
+                  </div>
+                  <div class="col-sm-6">
+                    {# <input type="text" class="form-control form-control-user" id="exampleLastName" placeholder="Last Name"> #}
+                    {{ form_row(form.phone_number, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Numéro de téléphone"} }) }}
+                  </div>
+                </div>
+                <div class="form-group">
+                  {# <input type="email" class="form-control form-control-user" id="exampleInputEmail" placeholder="Email Address"> #}
+                  {{ form_row(form.username, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Username/Login"} }) }}
+                </div>
+                <div class="form-group">
+                  {# <input type="email" class="form-control form-control-user" id="exampleInputEmail" placeholder="Email Address"> #}
+                  {{ form_row(form.email, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Adresse email"} }) }}
+                </div>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('edit_user') }}"/>
+                <hr>
+                <button class="btn btn-primary btn-user btn-block">
+                  Enregistrer
+                </button>
+              {# </form> #}
+              {{ form_end(form) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
