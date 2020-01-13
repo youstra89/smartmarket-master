@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Product;
+use App\Entity\Category;
 use App\Entity\Commande;
 use App\Form\CommandeType;
 use App\Entity\ProviderCommande;
@@ -26,7 +27,7 @@ class AdminPurchaseController extends AbstractController
 {
   /**
    * @Route("/", name="purchase")
-   * @IsGranted("ROLE_ADMIN")
+   * @IsGranted("ROLE_APPROVISIONNEMENT")
    */
    public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
    {
@@ -48,7 +49,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/add", name="provider.order.add")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      */
     public function add(Request $request, ObjectManager $manager)
     {
@@ -93,7 +94,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/edit/{id}", name="provider.order.edit")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
     public function edit(Request $request, ObjectManager $manager, ProviderCommande $commande)
@@ -121,22 +122,44 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/ajout-de-marchandises-pour-une-commande/{id}", name="provider.order.add.product")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
-    public function addProduct(Request $request, ObjectManager $manager, ProviderCommande $commande)
+    public function addProduct(Request $request, ObjectManager $manager, ProviderCommande $commande, int $id)
     {
-        $products = $manager->getRepository(Product::class)->findAll();
+        $products   = $manager->getRepository(Product::class)->allProductsByCategory();
+        $categories = $manager->getRepository(Category::class)->distinctCategories();
+
+        if($request->isMethod('post'))
+        {
+          $data = $request->request->all();
+          $token = $data['_csrf_token'];
+          if($this->isCsrfTokenValid('provider.order', $token)){
+            $idsProducts = $data["products"];
+            if(empty($idsProducts))
+            {
+              $this->addFlash('danger', 'Impossible de continuer. Vous devez obligatoirement sélectionner des produits.');
+              return $this->redirectToRoute('provider.order.add.product', ["id" => $id]);
+            }
+            else{
+              // $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
+              $this->get('session')->set('idProductsProviderOrder', $idsProducts);
+              return $this->redirectToRoute('provider.commande.details.save', ["id" => $id]);
+            }
+            return new Response(var_dump($data));
+          }
+        }
         return $this->render('Admin/Purchase/purchase-add-products.html.twig', [
-          'current'  => 'purchases',
-          'products' => $products,
-          'commande' => $commande,
+          'current'    => 'purchases',
+          'products'   => $products,
+          'commande'   => $commande,
+          'categories' => $categories,
         ]);
     }
 
     /**
      * @Route("/ajouter-produit-a-la-commande-{id}-{commandeId}", name="add.order.product")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param Product $product
      */
     public function add_product_command(Request $request, ObjectManager $manager, Product $product, int $commandeId)
@@ -171,7 +194,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/annuler-la-commande-en-cours/{id}", name="provider.commande.reset")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      */
     public function reset_commande(ObjectManager $manager, int $id)
     {
@@ -182,7 +205,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/enregistrement-d-une-commande/{id}", name="provider.commande.details.save")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
     public function save_provider_commande_details(Request $request, ObjectManager $manager, ProviderCommande $commande)
@@ -277,7 +300,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/prix-de-revient-des-marchandises-d-une-commande/{id}", name="purchase.selling.price")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
     public function prix_de_revient(Request $request, ObjectManager $manager, ProviderCommande $commande)
@@ -320,7 +343,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/details-de-commande-fournisseur/{id}", name="provider.order.details")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
      public function provider_order_details(ProviderCommande $commande)

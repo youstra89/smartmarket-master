@@ -72,10 +72,16 @@
 					{% if is_granted('IS_AUTHENTICATED_FULLY') %}
 						<li class="{% if current == 'index' %}fh5co-active{% endif %}"><a href="{{ path('homepage') }}">Accueil</a></li>
 						<li class="{% if current == 'products' %}fh5co-active{% endif %}"><a href="{{ path('product') }}">Marchandises</a></li>
-						<li class="{% if current == 'sells' %}fh5co-active{% endif %}"><a href="{{ path('sell') }}">Ventes</a></li>
-						{% if is_granted('ROLE_ADMIN') %}
+						{% if is_granted('ROLE_VENTE') %}
+						    <li class="{% if current == 'sells' %}fh5co-active{% endif %}"><a href="{{ path('sell') }}">Ventes</a></li>
+						{% endif %}	
+						{% if is_granted('ROLE_APPROVISIONNEMENT') %}
 							<li class="{% if current == 'purchases' %}fh5co-active{% endif %}"><a href="{{ path('purchase') }}">Commandes</a></li>
+						{% endif %}
+						{% if is_granted('ROLE_COMPTABLE') %}
 							<li class="{% if current == 'accounting' %}fh5co-active{% endif %}"><a href="{{ path('accounting') }}">Comptabilité</a></li>
+						{% endif %}	
+						{% if is_granted('ROLE_SUPER_ADMIN') %}
 							<li class="{% if current == 'users' %}fh5co-active{% endif %}"><a href="{{ path('users') }}">Utilisateurs</a></li>
 						{% endif %}	
 						<li class="{% if current == 'account' %}fh5co-active{% endif %}"><a href="{{ path('profile') }}">Mon compte</a></li>
@@ -132,7 +138,7 @@
 									</div>
 								</div>
 							</a>
-							<a href="{{ path('admin') }}">
+							<a href="{{ path('accounting') }}">
 								<div class="col-md-6">
 									<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
 										<div class="fh5co-icon">

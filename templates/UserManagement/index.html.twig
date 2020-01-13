@@ -38,7 +38,7 @@
 
 {% block body %}
 <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Utilisateurs du système</h2>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Utilisateurs du système</h2>
     <a href="{{ path('registration') }}" class="btn btn-info btn-icon-split float-right">
       <span class="icon text-white-50">
         <i class="fas fa-plus"></i>
@@ -84,16 +84,16 @@
                 </ul>
               </td>
               <td>
-                <a href="{{ path('edit_user', {'userId': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Editer l'utilisateur {{ user.username }}">
+                <a href="{{ path('edit_user', {'id': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Editer l'utilisateur {{ user.username }}">
                   <i class="icon-edit"></i>
                 </a>&nbsp;&nbsp;
                 <a  href="{{ path('delete_user', {'userId': user.id, '_csrf_token': csrf_token('delete_user')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer l'utilisateur {{ user.username }}" onclick="return confirm('Etes-vous sûrs de supprimer cet utilisateur ?')">
                   <i class="icon-trash"></i>
                 </a>&nbsp;&nbsp;
-                <a href="{{ path('user_roles', {'userId': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Gestion des rôles de l'utilisateur {{ user.username }}">
+                <a href="{{ path('user_roles', {'id': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Gestion des rôles de l'utilisateur {{ user.username }}">
                   <i class="icon-settings"></i>
                 </a>&nbsp;&nbsp;
-                <a  href="{{ path('user_info', {'userId': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Informations sur l'utilisateur {{ user.username }}">
+                <a  href="{{ path('user_info', {'id': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Informations sur l'utilisateur {{ user.username }}">
                   <i class="icon-info"></i>
                 </a>
               </td>

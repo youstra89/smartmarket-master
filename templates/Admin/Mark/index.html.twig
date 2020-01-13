@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Les marques{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <a href="javascript:history.back()" class="btn-primary btn-sm">Retour</a><br><br>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Marques de produits</h2>
+    <a href="{{ path('mark.add') }}" class="btn-sm btn-primary">Ajouter une nouvelle marque</a>
+    <div class="row row-bottom-padded-md">
+      {% set i = 0 %}
+      {% for mark in marks %}
+        {% set i = i + 1 %}
+        <div class="col-md-3 col-sm-6 col-padding text-center animate-box">
+          <a href="{{ path('mark.edit', {id: mark.id}) }}" class="work image-popup" style="background-image: url({{ asset('images/img-1.jpg') }});">
+            <div class="desc">
+              <h3>{{ mark.label }}</h3>
+              <span>Marque {{ i }}</span>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      // $(".alert").alert('close');
+    })
+  </script>
+{% endblock %}

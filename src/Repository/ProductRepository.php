@@ -57,6 +57,39 @@ class ProductRepository extends ServiceEntityRepository
       return $query->getQuery();
     }
 
+    public function allProductsByCategory()
+    {
+        $query = $this->createQueryBuilder('p');
+        $query = $query
+            ->join('p.category', 'c')
+            ->addSelect('c')
+            ->join('p.mark', 'm')
+            ->addSelect('m')
+            ->orderBy('c.name')
+            ->addOrderBy('c.id')
+            ->addOrderBy('m.label')
+            ->addOrderBy('m.id')
+        ;
+
+        return $query->getQuery()->getResult();
+    }
+
+    public function last_saved_product()
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        $offset = 0;
+        $limit = 1;
+        $qb->select('p')
+            ->orderBy('p.id', 'DESC')
+            ->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+        ;
+        return $qb
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     // /**
     //  * @return Product[] Returns an array of Product objects
     //  */

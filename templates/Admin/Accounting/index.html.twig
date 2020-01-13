@@ -9,24 +9,43 @@
 
 {% block body %}
 <div class="fh5co-narrow-content">
-  <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Comptabilité</h2>
   <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Comptabilité</h2>
   <div class="row row-bottom-padded-md">
-      <span>
-        <a href="{{ path('dayly.accounting') }}" class="btn btn-primary sm">
+      <div class="col-sm-2">
+        <a href="{{ path('dayly.accounting') }}" class="btn-primary btn-sm">
           Compte journalier
         </a>
-      </span>
-      <span>
-        <a href="{{ path('monthly.accounting') }}" class="btn btn-primary sm">
+      </div>
+      <div class="col-sm-2">
+        <a href="{{ path('monthly.accounting') }}" class="btn-primary btn-sm">
           Compte mensuel
         </a>
-      </span>
-      <span>
-        <a href="{{ path('accounting.debtor') }}" class="btn btn-primary sm">
+      </div>
+      <div class="col-sm-2">
+        <a href="{{ path('accounting.debtor') }}" class="btn-primary btn-sm">
           Débiteurs
         </a>
-      </span>
+      </div>
+  </div>
+
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Charges & autres dépenses</h2>
+  <div class="row row-bottom-padded-md">
+      <div class="col-sm-2">
+        <a href="{{ path('depenses_add') }}" class="btn-primary btn-sm">
+          Ajouter une dépense
+        </a>
+      </div>
+      <div class="col-sm-3">
+        <a href="{{ path('depenses_mensuelles') }}" class="btn-primary btn-sm">
+          Voir les charges mensuelles
+        </a>
+      </div>
+      <div class="col-sm-3">
+        <a href="{{ path('typedepenses') }}" class="btn-primary btn-sm">
+          Gestion des types de dépenses
+        </a>
+      </div>
   </div>
 </div>
 {% endblock %}

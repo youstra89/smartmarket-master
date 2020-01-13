@@ -30,14 +30,15 @@ class AdminProductController extends AbstractController
       $form = $this->createForm(ProductSearchType::class, $search);
       $form->handleRequest($request);
 
-      $products = $paginator->paginate(
-        $manager->getRepository(Product::class)->findAllProductsQuery($search),
-        $request->query->getInt('page', 1),
-        12
-      );
+      // $products = $paginator->paginate(
+      //   $manager->getRepository(Product::class)->findAllProductsQuery($search),
+      //   $request->query->getInt('page', 1),
+      //   12
+      // );
+      $products = $manager->getRepository(Product::class)->findAll();
 
       return $this->render('Admin/Product/index.html.twig', [
-        'form'     => $form->createView(),
+        // 'form'     => $form->createView(),
         'current'  => 'products',
         'products' => $products
       ]);
@@ -52,8 +53,11 @@ class AdminProductController extends AbstractController
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
+        $reference = $this->generateReference();
+        // dump($reference);
         if($form->isSubmitted() && $form->isValid())
         {
+          // $product->setReference($reference);
           $product->setCreatedBy($this->getUser());
           $manager->persist($product);
           try{
@@ -67,7 +71,8 @@ class AdminProductController extends AbstractController
         }
         return $this->render('Admin/Product/product-add.html.twig', [
           'current' => 'products',
-          'form'    => $form->createView()
+          'form'    => $form->createView(),
+          'product_reference' => $reference,
         ]);
     }
 
@@ -150,5 +155,31 @@ class AdminProductController extends AbstractController
         'current'  => 'products',
         'products' => $products
       ]);
+    }
+
+    // Cette fonction permet de générer les matricules automatiquement
+    public function generateReference()
+    {
+      $manager   = $this->getDoctrine()->getManager();
+      $repoProduct = $manager->getRepository(Product::class);
+      $product     = $repoProduct->last_saved_product();
+      
+      if(!empty($product))
+      {
+        $zero = "";
+        $number = (int) substr($product->getReference(), 2);
+        $numero_ordre = $number + 1;
+        if(strlen($numero_ordre) == 1){
+          $zero = '00';
+        } 
+        elseif (strlen($numero_ordre) == 2) {
+          $zero = '0';
+        }
+        $matricule = "PR".$zero.$numero_ordre;
+      }
+      else{
+        $matricule = "PR001";            
+      }
+      return $matricule;
     }
 }

@@ -22,8 +22,7 @@ class CategoryRepository extends ServiceEntityRepository
     // /**
     //  * @return Category[] Returns an array of Category objects
     //  */
-    /*
-    public function findByExampleField($value)
+    public function test()
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.exampleField = :val')
@@ -34,7 +33,14 @@ class CategoryRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-    */
+
+    public function distinctCategories()
+    {
+        $categories = $this->_em->createQuery(
+        'SELECT DISTINCT(c.name) AS name, c.id FROM App\Entity\Category c JOIN App\Entity\Product p WHERE p.category = c.id');
+
+        return $categories->getResult();
+    }
 
     /*
     public function findOneBySomeField($value): ?Category

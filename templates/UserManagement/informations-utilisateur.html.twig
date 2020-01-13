@@ -32,8 +32,8 @@
             <h6 class="m-0 font-weight-bold text-primary">Identification personnelle</h6>
           </div>
           <div class="card-body">  
-            <strong>Nom & prénoms :</strong> {{ user.nom }} {{ user.pnom }}<br>
-            <strong>Date de naissance :</strong> {{ user.dateNaissance|date('d-m-Y') }}<br>
+            <strong>Nom & prénoms :</strong> {{ user.lastname }} {{ user.firstname }}<br>
+            <strong>Date de naissance :</strong> {{ user.birthday|date('d-m-Y') }}<br>
             <strong>Email :</strong> {{ user.email }}<br>
             <strong>Numéro de téléphone :</strong> {{ user.phoneNumber }}<br>
           </div>

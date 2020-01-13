@@ -49,6 +49,7 @@
                   <th>Quantité</th>
                   <th>Prix Unitaire</th>
                   <th>Prix de revient</th>
+                  <th>Prix de vente</th>
                   <th>Marge bénéficiaire</th>
                 </tr>
               </thead>
@@ -61,8 +62,9 @@
                       <td>{{ item.quantity }}</td>
                       <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
                       <td>{{ item.minimumSellingPrice|number_format(0, ',', ' ') }} F CFA</td>
+                      <td>{{ item.product.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
                       <td>
-                        <input type="number" class="price" id="price[{{ item.id }}]" name="price[{{ item.id }}]" value="0" required>
+                        <input type="number" class="price" id="price[{{ item.id }}]" name="price[{{ item.id }}]" value="{{ item.product.unitPrice - item.minimumSellingPrice }}" required>
                       </td>
                     </tr>
                   </tbody>

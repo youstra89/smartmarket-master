@@ -67,11 +67,11 @@
       <div class="col-lg-4 col-md-4 col-sm-6">
         <span style="font-weight: bold; font-size: 2em">Bilan commande</span><br>
         <strong>Nombre de produit:</strong>
-        <span>{{ commande.globalTotal|number_format(0, ',', ' ') }} F CFA</span><br>
+        <span>{{ commande.providerCommandeDetails|length }} </span><br>
         <strong>Total des charges</strong>
         <span>{{ commande.totalFees|number_format(0, ',', ' ') }} F CFA</span><br>
         <strong>Coût total de la commande:</strong>
-        <span>{{ commande.providerCommandeDetails|length }} </span><br>
+        <span>{{ commande.globalTotal|number_format(0, ',', ' ') }} F CFA</span><br>
       </div>
     </div><br><br>
     <div class="row">

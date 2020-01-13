@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Comptabilité Mensuelle{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+  <a href="javascript:history.back()" class="btn-primary btn-sm">
+    <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
+  </a><br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Dépenses mensuelles</h2>
+  <div class="row">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Mois</th>
+          <th>Total des dépenses</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set i = 0 %}
+        {% for m in mois %}
+          {% set i = i + 1 %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ m['date']|date('m-Y') }}</td>
+            <td>{{ gains[m['date']]|number_format(0, ',', ' ') }} F CFA</td>
+            <td>
+              <a href="{{ path('depenses_du_mois', {mois: m['date']}) }}" class=" circle arrow small">Plus de détails</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

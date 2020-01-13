@@ -34,46 +34,23 @@ class UserManagementController extends AbstractController
 
 
   /**
-   * @Route("/gestion-roles-utilisateur/{userId}", name="user_roles", methods="GET|POST", requirements={"userId" = "\d+"})
+   * @Route("/gestion-roles-utilisateur/{id}", name="user_roles", methods="GET|POST", requirements={"id" = "\d+"})
+   * @param User $user
    */
-  public function gestion_des_roles_utilisateurs(Request $request, ObjectManager $manager, int $id, int $userId)
+  public function gestion_des_roles_utilisateurs(Request $request, ObjectManager $manager, int $id, User $user)
   {
-    $repoUser = $manager->getRepository(User::class);
-    $user = $repoUser->find($userId);
-
     if ($request->isMethod('post')) {
       $token = $request->get('_csrf_token');
       if($this->isCsrfTokenValid('roles_management', $token))
       {
         $data  = $request->request->all();
-        if (isset($data["roles"])) {
+        if(empty($data["roles"]))
+          $roles[] = "ROLE_USER";
+        else
           $roles = $data["roles"];
-          if($user->getIsEnseignant() == true)
-          {
-            foreach ($user->getRoles() as $key => $value) {
-              if($value == "ROLE_ENSEIGNANT_PRIMAIRE" or $value == "ROLE_ENSEIGNANT_SECONDAIRE")
-                array_push($roles, $value);
-            }
-          }
-            
-          $user->setRoles($roles);
-          $user->setUpdatedAt(new \DateTime());
-        }
-        else{
-          $roles = [];
-          if($user->getIsEnseignant() == true)
-          {
-            foreach ($user->getRoles() as $key => $value) {
-              if($value == "ROLE_ENSEIGNANT_PRIMAIRE" or $value == "ROLE_ENSEIGNANT_SECONDAIRE")
-                array_push($roles, $value);
-            }
-          }
-          else{
-            $roles[] = "ROLE_USER";
-          }
-          $user->setRoles($roles);
-          $user->setUpdatedAt(new \DateTime());
-        }
+        // return new Response(var_dump($roles));
+        $user->setRoles($roles);
+        $user->setUpdatedAt(new \DateTime());
         try{
           $manager->flush();
           $this->addFlash('success', 'Les rôles de l\'utilisateur <strong>'.$user->getUsername().'</strong> ont été mise à jour avec succès.');
@@ -93,12 +70,11 @@ class UserManagementController extends AbstractController
   }
 
   /**
-   * @Route("/edition-utilisateur/{userId}", name="edit_user", methods="GET|POST", requirements={"userId" = "\d+"})
+   * @Route("/edition-utilisateur/{id}", name="edit_user", methods="GET|POST", requirements={"id" = "\d+"})
+   * @param User $user
    */
-  public function editer_utilisateur(Request $request, ObjectManager $manager, int $id, int $userId)
+  public function editer_utilisateur(Request $request, ObjectManager $manager, int $id, User $user)
   {
-    $repoUser = $manager->getRepository(User::class);
-    $user = $repoUser->find($userId);
     $form = $this->createForm(UserType::class, $user);
 
     $form->handleRequest($request);
@@ -110,8 +86,8 @@ class UserManagementController extends AbstractController
       {
         $data = $request->request->all();
         $date = $data['date'];
-        if($date != $user->getDateNaissance())
-          $user->setDateNaissance(new \DateTime($date));
+        if($date != $user->getBirthday())
+          $user->setBirthday(new \DateTime($date));
         $user->setUpdatedAt(new \DateTime());
         try{
           $manager->flush();
@@ -164,12 +140,11 @@ class UserManagementController extends AbstractController
   }
 
   /**
-   * @Route("/informations-utilisateur/{userId}", name="user_info", requirements={"userId" = "\d+"})
+   * @Route("/informations-utilisateur/{id}", name="user_info", requirements={"id" = "\d+"})
+   * @param User $user
    */
-  public function user_informations(ObjectManager $manager, int $userId)
+  public function user_informations(ObjectManager $manager, User $user)
   {
-      $repoUser = $manager->getRepository(User::class);
-      $user = $repoUser->find($userId);
       return $this->render('UserManagement/informations-utilisateur.html.twig', [
         'user' => $user,
         'current' => 'users',

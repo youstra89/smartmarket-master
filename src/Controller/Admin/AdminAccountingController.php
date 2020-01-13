@@ -17,7 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
  * @Route("/admin/comptabilite")
- * @Security("has_role('ROLE_ADMIN')")
+ * @Security("has_role('ROLE_COMPTABLE')")
  */
 class AdminAccountingController extends AbstractController
 {

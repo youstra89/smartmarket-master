@@ -22,21 +22,21 @@
                 <div class="form-group row">
                   <div class="col-sm-6 mb-3 mb-sm-0">
                     {# <input type="text" class="form-control form-control-user" id="exampleFirstName" placeholder="First Name"> #}
-                    {{ form_row(form.nom, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Nom de l'utilisateur"} }) }}
+                    {{ form_row(form.lastname, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Nom de l'utilisateur"} }) }}
                   </div>
                   <div class="col-sm-6">
                     {# <input type="text" class="form-control form-control-user" id="exampleLastName" placeholder="Last Name"> #}
-                    {{ form_row(form.pnom, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Prénoms de l'utilisateur"} }) }}
+                    {{ form_row(form.firstname, { 'attr': {'class': 'form-control form-control-user', 'placeholder': "Prénoms de l'utilisateur"} }) }}
                   </div>
                 </div>
                 <div class="form-group row">
                   <div class="col-sm-6 mb-3 mb-sm-0">
                     {# <input type="text" class="form-control form-control-user" id="exampleFirstName" placeholder="First Name"> #}
-                    {{ form_row(form.sexe, { 'attr': {'class': 'custom-select custom-select-lg', 'placeholder': "Nom de l'utilisateur"} }) }}
+                    {{ form_row(form.gender, { 'attr': {'class': 'custom-select custom-select-lg', 'placeholder': "Nom de l'utilisateur"} }) }}
                   </div>
                   <div class="col-sm-6">
                     {# <input type="text" class="form-control form-control-user" id="exampleLastName" placeholder="Last Name"> #}
-                    <input type="date" name="date" class="form-control form-control-user" value="{{ user.dateNaissance|date('Y-m-d') }}">
+                    <input type="date" name="date" class="form-control form-control-user" value="{{ user.birthday|date('Y-m-d') }}">
                   </div>
                 </div>
                 <div class="form-group row">

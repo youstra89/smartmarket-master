@@ -34,46 +34,24 @@
     <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour l'achat du {{ commande.commande.date|date('d-m-Y') }}</h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     {% if products|length != 0 %}
-      <div class="row">
-        <div class="col-md-8">
-          <div class="table-responsive">
-            <table class="table" width="75%">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Nom de la marchandise</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% set i = 0 %}
-                {% for product in products %}
-                {% set i = i + 1 %}
-                <tr>
-                  <td>{{ i }}</td>
-                  <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
-                  <td>
-                    <a href="{{ path('add.order.product', {id: product.id, commandeId: commande.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
-                      <i class="icon-plus"></i>
-                    </a>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div class="row md-8">
-        {% if app.session.get('idProductsProviderOrder')|length != 0 %}
-          <div class="col-lg-6">
-            <a href="{{ path('provider.commande.details.save', {id: commande.id}) }}" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsProviderOrder')|length }} produits]</a>
-          </div>
-          <div class="col-lg-6">
-            <a href="{{ path('provider.commande.reset', {id: commande.id}) }}" class="btn-danger btn-sm">Annuler la commande en cours</a>
-          </div>
-        {% endif %}
-      </div>
+      <form action="" method="post">
+        {% for category in categories %}
+          <h3>{{ category.name }}</h3>
+          <div class="row">
+            {% for item in products if category.id == item.category.id %}
+              <div class="col-md-4">
+                <label for="product[{{item.id}}]">
+                  <input type="checkbox" name="products[{{item.id}}]" id="product[{{item.id}}]" value="{{item.id}}">
+                  {{ item.category.name }} {{ item.mark.label }} - {{ item.description }}
+                </label>
+              </div>
+            {% endfor %}
+          </div><br><br>
+        {% endfor %}
+        <input type="hidden" name="commandeId" value="{{ commande.id }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('provider.order') }}"/>
+        <button type="submit" name="valider" id="valider" class="btn btn-primary btn-sm">Valider</button>
+      </form>
     {% endif %}
   </div>
 {% endblock %}
@@ -83,6 +61,10 @@
   <script type="text/javascript">
     $(document).ready(function(){
         $('[data-toggle="tooltip"]').tooltip();
+
+        // $('#valider').on('click', function(){
+        //   this.prop('disabled', false)
+        // })
     });
   </script>
 {% endblock %}

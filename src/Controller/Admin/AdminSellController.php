@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Product;
+use App\Entity\ProductSearch;
+use App\Form\ProductSearchType;
 use App\Entity\Commande;
 use App\Entity\Settlement;
 use App\Form\CommandeType;
@@ -29,7 +31,7 @@ class AdminSellController extends AbstractController
 {
   /**
    * @Route("/", name="sell")
-   * @IsGranted("ROLE_USER")
+   * @IsGranted("ROLE_VENTE")
    */
    public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
    {
@@ -51,21 +53,90 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/add", name="customer.order.add")
-     * @IsGranted("ROLE_USER")
+     * @IsGranted("ROLE_VENTE")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
     {
-        $products = $manager->getRepository(Product::class)->findAll();
+        // $products = $manager->getRepository(Product::class)->findAll();
         $customers = $manager->getRepository(Customer::class)->findAll();
-        // dump($this->getUser());
+        $search = new ProductSearch();
+        $form = $this->createForm(ProductSearchType::class, $search);
+        $form->handleRequest($request);
+        $products = $paginator->paginate(
+          $manager->getRepository(Product::class)->findAllProductsQuery($search),
+          $request->query->getInt('page', 1),
+          12
+        );
+
         if($request->isMethod('post'))
         {
           $data = $request->request->all();
-          $token = $data['token'];
           // return new Response(var_dump($data));
+          if(!empty($data['token']) and empty($data["recherhcer"]) and !empty($data["valider"]))
+          {
+            $token = $data['token'];
+            if($this->isCsrfTokenValid('vente', $token)){
+              $data = $request->request->all();
+              if(empty($data['date']))
+              {
+                $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
+                return $this->redirectToRoute('customer.order.add');
+              }
+              else {
+                $commande = new Commande();
+                $date = new \DateTime($data['date']);
+                $commande->setDate($date);
+                $commande->setCreatedBy($this->getUser());
+                $manager->persist($commande);
+                $seller = $this->getUser();
+                $reference = $date->format('Ymd').'.'.(new \DateTime())->format('hm');
+                $customerCommande = new CustomerCommande();
+                if(isset($data['customer']))
+                {
+                  $customer = (int) $data['customer'];
+                  $customer = $manager->getRepository(Customer::class)->find($data['customer']);
+                  $customerCommande->setCustomer($customer);
+                }
+                $customerCommande->setReference($reference);
+                $customerCommande->setCommande($commande);
+                $customerCommande->setSeller($seller);
+                $manager->persist($customerCommande);
+                try{
+                  $manager->flush();
+                  $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
+                } 
+                catch(\Exception $e){
+                  $this->addFlash('danger', $e->getMessage());
+                }
+                return $this->redirectToRoute('customer.commande.details.save', ['id' => $customerCommande->getId()]);
+              }
+            }
+          }
+        }
+        
+        return $this->render('Admin/Sell/sell-add.html.twig', [
+          'current'   => 'sells',
+          'products'  => $products,
+          'customers' => $customers,
+          'form'      => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/save-customer-order", name="customer.order.save.action")
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function save_customer_order(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+    {
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        return new Response(var_dump($data));
+        if(!empty($data['token']))
+        {
+          $token = $data['token'];
           if($this->isCsrfTokenValid('vente', $token)){
             $data = $request->request->all();
-            // return new Response(var_dump([(int) $data['customer'], $data['customer']]));
             if(empty($data['date']))
             {
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
@@ -83,7 +154,6 @@ class AdminSellController extends AbstractController
               if(isset($data['customer']))
               {
                 $customer = (int) $data['customer'];
-                // return new Response(var_dump($customer));
                 $customer = $manager->getRepository(Customer::class)->find($data['customer']);
                 $customerCommande->setCustomer($customer);
               }
@@ -102,11 +172,7 @@ class AdminSellController extends AbstractController
             }
           }
         }
-        return $this->render('Admin/Sell/sell-add.html.twig', [
-          'current'   => 'sells',
-          'products'  => $products,
-          'customers' => $customers
-        ]);
+      }
     }
 
     /**
@@ -140,7 +206,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/ajouter-ce-produit-a-la-commande-{id}", name="add.commande.product")
-     * @IsGranted("ROLE_USER")
+     * @IsGranted("ROLE_VENTE")
      * @param Product $product
      */
     public function add_product_command(Request $request, ObjectManager $manager, Product $product)
@@ -174,7 +240,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/annuler-la-vente-en-cours", name="customer.commande.reset")
-     * @IsGranted("ROLE_USER")
+     * @IsGranted("ROLE_VENTE")
      */
     public function reset_commande(ObjectManager $manager)
     {
@@ -185,7 +251,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/enregistrement-d-une-vente/{id}", name="customer.commande.details.save")
-     * @IsGranted("ROLE_USER")
+     * @IsGranted("ROLE_VENTE")
      * @param CustomerCommande $commande
      */
     public function save_customer_commande_details(Request $request, ObjectManager $manager, CustomerCommande $commande)
@@ -281,7 +347,7 @@ class AdminSellController extends AbstractController
 
     /**
      * @Route("/reglement-de-vente/{id}", name="settlement")
-     * @IsGranted("ROLE_USER")
+     * @IsGranted("ROLE_VENTE")
      * @param CustomerCommande $commande
      */
     public function settlement(Request $request, CustomerCommande $commande, ObjectManager $manager)
@@ -374,7 +440,7 @@ class AdminSellController extends AbstractController
     /**
      * @Route("/details-vente/{id}", name="customer.order.details")
      * @param CustomerCommande $commande
-     * @IsGranted("ROLE_USER")
+     * @IsGranted("ROLE_VENTE")
      */
      public function customer_order_details(int $id, ObjectManager $manager, CustomerCommande $commande)
      {

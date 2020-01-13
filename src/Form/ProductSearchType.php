@@ -49,7 +49,7 @@ class ProductSearchType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ProductSearch::class,
-            'method' => 'get',
+            'method' => 'post',
             'csrf_protection' => false,
         ]);
     }

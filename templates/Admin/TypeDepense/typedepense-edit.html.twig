@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Modification de type de dépense - {{ typedepense.label }}{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Modification du type de dépense <strong>{{ typedepense.label }}</strong> </h2>
+    <a href="javascript:history.back()" class="btn-sm btn-primary">Retour</a><br><br>
+    {{ include('Admin/TypeDepense/_typedepense.html.twig', {button: 'Editer'}) }}
+  </div>
+{% endblock %}

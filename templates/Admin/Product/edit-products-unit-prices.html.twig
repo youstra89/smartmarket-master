@@ -36,39 +36,46 @@
 
 
 {% block body %}
-    <h2>Mise à jour des prix unitaires des produits</h2>
-    <section class="contact-area container">
-        <form class="ui form" action="" method="post">
-            {% set i = 0 %}
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Produits</th>
-                  <th>Prix unitaires</th>
-                </tr>
-              </thead>
-              {% for product in products %}
-                {% set i = i + 1 %}
-                  <tbody>
-                    <tr>
-                      <td>
-                        {{ i }}
-                      </td>
-                      <td>
-                        {{ product.category.name }} {{ product.mark.label }} - {{ product.description }}
-                      </td>
-                      <td>
-                        <input type="number" class="price" name="price[{{ product.id }}]" value="{{ product.unitPrice }}" required>
-                      </td>
-                    </tr>
-                  </tbody>
-              {% endfor %}
-            </table>
-            <input type="hidden" name="token" value="{{ csrf_token('unit_prices') }}"/>
-            <button class="btn btn-primary">{{ button|default('Enregistrer') }}</button><br><br>
-        </form>
-    </section>    
+<div class="fh5co-narrow-content">
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2>Mise à jour des prix unitaires des produits</h2>
+  <section class="contact-area">
+      <form class="ui form" action="" method="post">
+          {% set i = 0 %}
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Référence</th>
+                <th>Produits</th>
+                <th>Prix unitaires</th>
+              </tr>
+            </thead>
+            {% for product in products %}
+              {% set i = i + 1 %}
+                <tbody>
+                  <tr>
+                    <td>
+                      {{ i }}
+                    </td>
+                    <td>
+                      {{ product.reference }}
+                    </td>
+                    <td>
+                      {{ product.category.name }} {{ product.mark.label }} - {{ product.description }}
+                    </td>
+                    <td>
+                      <input type="number" class="price" name="price[{{ product.id }}]" value="{{ product.unitPrice }}" required>
+                    </td>
+                  </tr>
+                </tbody>
+            {% endfor %}
+          </table>
+          <input type="hidden" name="token" value="{{ csrf_token('unit_prices') }}"/>
+          <button class="btn btn-primary">{{ button|default('Enregistrer') }}</button><br><br>
+      </form>
+  </section>    
+</div>
 {% endblock %}
 
 

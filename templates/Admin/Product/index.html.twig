@@ -4,6 +4,11 @@
 {% block title %}Les marchandises{% endblock %}
 
 
+{% block stylesheets %}
+    <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+
 {% block notifications %}
   {% for message in app.flashes('success') %}
     <div class="alert alert-success fade in">
@@ -31,35 +36,19 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Marchandises</h2>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Marchandises</h2>
     {% if is_granted('ROLE_SUPER_ADMIN') %}
-      <a href="{{ path('category') }}" class="btn btn-primary btn-sm">Gestion des catégories</a>
-      <a href="{{ path('product.add') }}" class="btn btn-primary btn-sm">Ajouter une marchandise</a>
-      <a href="{{ path('edit.product.unit.price') }}" class="btn btn-primary btn-sm">Modifier les prix unitaires</a>
+      <a href="{{ path('mark') }}" class="btn-primary btn-lg">Gestion des marques de produits</a>
+      <a href="{{ path('category') }}" class="btn-primary btn-lg">Gestion des catégories</a>
+      <a href="{{ path('product.add') }}" class="btn-primary btn-lg">Ajouter une marchandise</a>
+      <a href="{{ path('edit.product.unit.price') }}" class="btn-primary btn-lg">Modifier les prix unitaires</a><br><br>
     {% endif %}
-    <div class="row">
-      {{ form_start(form) }}
-      <div class="row">
-        <div class="col-md-4">
-          {{ form_row(form.category, {'attr': {'class': 'form-control mb-4'}}) }}
-        </div>
-        <div class="col-md-4">
-          {{ form_row(form.mark, { 'attr': {'class': 'form-control mb-4'} }) }}
-        </div>
-        <div class="col-md-4">
-          {{ form_row(form.description, { 'attr': {'class': 'form-control mb-4'} }) }}
-        </div>
-        <div class="col-md-4"><br>
-          <button type="submit" class="btn btn-success btn-sm">{{ 'Rechercher'|trans }}</button>
-        </div>
-      </div>
-      {{ form_end(form) }}
-    </div>
     <div class="table-responsive">
         <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>N°</th>
+              <th>Référence</th>
               <th>Catégorie</th>
               <th>Marque</th>
               <th>Description</th>
@@ -71,6 +60,7 @@
           <tfoot>
             <tr>
               <th>N°</th>
+              <th>Référence</th>
               <th>Catégorie</th>
               <th>Marque</th>
               <th>Description</th>
@@ -85,6 +75,7 @@
               {% set i = i + 1 %}
               <tr>
                 <td>{{ i }}</td>
+                <td>{{ product.reference }}</td>
                 <td>{{ product.category.name }}</td>
                 <td>{{ product.mark.label }}</td>
                 <td>{{ product.description }}</td>
@@ -98,11 +89,14 @@
           </tbody>
         </table>
       </div>
-    <div class="row">
-      <div class="navigation">
-        {{ knp_pagination_render(products) }}
-      </div>
-    </div>
     </div>
   </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/datatables-demo.js') }}"></script>
 {% endblock %}

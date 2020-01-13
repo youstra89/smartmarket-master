@@ -6,8 +6,11 @@ security:
                 class: App\Entity\User
                 property: username
     role_hierarchy: 
-        ROLE_ADMIN:       ROLE_USER
-        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+        ROLE_COMPTABLE:         ROLE_USER
+        ROLE_VENTE:             ROLE_USER
+        ROLE_APPROVISIONNEMENT: ROLE_USER
+        ROLE_ADMIN:             [ROLE_VENTE, ROLE_APPROVISIONNEMENT]
+        ROLE_SUPER_ADMIN:       [ROLE_ADMIN, ROLE_COMPTABLE, ROLE_APPROVISIONNEMENT, ROLE_ALLOWED_TO_SWITCH]
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/

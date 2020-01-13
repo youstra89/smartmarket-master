@@ -31,9 +31,9 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une vente</h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <form class="" action="" method="post">
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une vente</h2>
+    {{ form_start(form) }}
       <div class="row">
         <div class="col-md-6">
           <div class="form-group">
@@ -54,59 +54,90 @@
         </div>
       </div>
       <br><br>
-      {% if products|length != 0 %}
-      <div class="col-md-8">
-        <div class="table-responsive">
-          <table class="table" width="75%">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Nom de la marchandise</th>
-                <th>Stock</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% set i = 0 %}
-              {% for product in products %}
-              {% set i = i + 1 %}
-              <tr>
-                <td>{{ i }}</td>
-                <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
-                <td>
-                  {% if product.stock != 0 %}
-                  {{ product.stock }}
-                  {% else %}
-                  Stock épuisé
-                  {% endif %}
-                </td>
-                <td>
-                  {% if product.stock != 0 %}
-                  <a href="{{ path('add.commande.product', {id: product.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
-                    <i class="icon-plus"></i>
-                  </a>
-                  {% else %}
-                  Stock épuisé
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="row">
+          <div class="row">
+            <div class="col-md-4">
+              {{ form_row(form.category, {'attr': {'class': 'form-control mb-4'}}) }}
+            </div>
+            <div class="col-md-4">
+              {{ form_row(form.mark, { 'attr': {'class': 'form-control mb-4'} }) }}
+            </div>
+            <div class="col-md-4">
+              {{ form_row(form.description, { 'attr': {'class': 'form-control mb-4'} }) }}
+            </div>
+            <div class="col-md-4"><br>
+              <input type="submit" id="rechercher" name="rechercher" class="btn btn-success btn-sm" value="Rechercher">
+              {# <button type="submit" class="btn btn-success btn-sm">Rechercher</button> #}
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="col-md-8">
-        {% if app.session.get('idProductsForSelling')|length != 0 %}
-          <div class="col-lg-6">
-            <input type="hidden" name="token" value="{{ csrf_token('vente') }}">
-            <button type="submit" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsForSelling')|length }} produits]</button>
+        <div class="col-md-8">
+          <div class="table-responsive">
+            <table class="table" width="75%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nom de la marchandise</th>
+                  <th>Stock</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set i = 0 %}
+                {% for product in products %}
+                {% set i = i + 1 %}
+                <tr>
+                  <td>{{ i }}</td>
+                  <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
+                  <td>
+                    {% if product.stock != 0 %}
+                    {{ product.stock }}
+                    {% else %}
+                    Stock épuisé
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if product.stock != 0 %}
+                    <a href="{{ path('add.commande.product', {id: product.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
+                      <i class="icon-plus"></i>
+                    </a>
+                    {% else %}
+                    Stock épuisé
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
-          <div class="col-lg-6">
-            <a href="{{ path('customer.commande.reset') }}" class="btn-danger btn-sm">Annuler la vente en cours</a>
+        </div>
+        <div class="row">
+          <div class="navigation">
+            {{ knp_pagination_render(products) }} 
           </div>
-        {% endif %}
-      </div>
-      {% endif %}
-    </form>
+        </div>
+        <div class="row">
+          {% if app.session.get('idProductsForSelling')|length != 0 %}
+            <div class="col-lg-6">
+              <input type="hidden" name="token" id="token" value="{{ csrf_token('vente') }}">
+              {# <button type="submit" formaction="{{ path('customer.order.save.action') }}" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsForSelling')|length }} produits]</button> #}
+              <input type="submit" class="btn-success btn-sm" name="valider" value="Enregister la commande [{{ app.session.get('idProductsForSelling')|length }} produits]">
+            </div>
+            <div class="col-lg-6">
+              <a href="{{ path('customer.commande.reset') }}" class="btn-danger btn-sm">Annuler la vente en cours</a>
+            </div>
+          {% endif %}
+        </div>
+    {{ form_end(form) }}
   </div>
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      $('#rechercher').on('click',function(e){
+        document.getElementById('token').value = null;
+     });
+    });
+  </script>
 {% endblock %}
