@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Product;
+use App\Entity\Mark;
 use App\Entity\ProductSearch;
 use App\Form\ProductSearchType;
 use App\Entity\Commande;
@@ -23,6 +24,20 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Entity\CustomerCommandeSearch;
 use App\Form\CustomerCommandeSearchType;
+
+use JMS\Serializer\SerializerBuilder;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
+
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 
 /**
  * @Route("/ventes")
@@ -50,6 +65,49 @@ class AdminSellController extends AbstractController
          'commandes' => $commandes
        ]);
    }
+
+
+  /**
+   * @Route("/select-product/{id}", name="get_product")
+   * @IsGranted("ROLE_VENTE")
+   */
+  public function get_product(Request $request, ObjectManager $manager, int $id)
+  {
+    $product = $manager->getRepository(Product::class)->find($id);
+    $data = [
+      "id"               => $product->getId(),
+      "reference"        => $product->getReference(),
+      "label"            => $product->getLabel(),
+      "stock"            => $product->getStock(),
+      "unit_price"       => $product->getUnitPrice(),
+      "purchasing_price" => $product->getPurchasingPrice(),
+    ];
+
+    return new JsonResponse($data);
+  }
+
+  /**
+   * @Route("/select-product-by-reference/{reference}", name="get_product_by_reference")
+   * @IsGranted("ROLE_VENTE")
+   */
+  public function get_product_by_reference(Request $request, ObjectManager $manager, string $reference)
+  {
+    $product = $manager->getRepository(Product::class)->findByReference($reference);
+    $data = [];
+    if(!empty($product))
+    {
+      $data = [
+        "id"               => $product[0]->getId(),
+        "reference"        => $product[0]->getReference(),
+        "label"            => $product[0]->getLabel(),
+        "stock"            => $product[0]->getStock(),
+        "unit_price"       => $product[0]->getUnitPrice(),
+        "purchasing_price" => $product[0]->getPurchasingPrice(),
+      ];
+    }
+
+    return new JsonResponse($data);
+  }
 
     /**
      * @Route("/add", name="customer.order.add")
@@ -101,6 +159,8 @@ class AdminSellController extends AbstractController
                 $customerCommande->setCommande($commande);
                 $customerCommande->setSeller($seller);
                 $manager->persist($customerCommande);
+
+                // On va procéder à l'enregistrement des détails de la commande
                 try{
                   $manager->flush();
                   $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
@@ -119,6 +179,122 @@ class AdminSellController extends AbstractController
           'products'  => $products,
           'customers' => $customers,
           'form'      => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/unique-form-for-selling", name="unique_form_for_selling")
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function unique_form_for_selling(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+    {
+        $customers = $manager->getRepository(Customer::class)->findAll();
+        $products = $manager->getRepository(Product::class)->findAll();
+
+        if($request->isMethod('post'))
+        {
+          $data = $request->request->all();
+          // return new Response(var_dump($data));
+          if(!empty($data['token']))
+          {
+            $token = $data['token'];
+            if($this->isCsrfTokenValid('vente', $token)){
+              $data = $request->request->all();
+              if(empty($data['date']))
+              {
+                $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
+                return $this->redirectToRoute('unique_form_for_selling');
+              }
+              elseif(empty($data["products"]))
+              {
+                $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
+                return $this->redirectToRoute('unique_form_for_selling');
+              }
+              else {
+                $commande   = new Commande();
+                $date       = new \DateTime($data["date"]);
+                $prices     = $data["prices"];
+                $quantities = $data["quantities"];
+                $commande->setDate($date);
+                $commande->setCreatedBy($this->getUser());
+                $manager->persist($commande);
+                $seller = $this->getUser();
+                $reference = $date->format('Ymd').'.'.(new \DateTime())->format('hm');
+                $customerCommande = new CustomerCommande();
+                if(isset($data['customer']))
+                {
+                  $customer = (int) $data['customer'];
+                  $customer = $manager->getRepository(Customer::class)->find($data['customer']);
+                  $customerCommande->setCustomer($customer);
+                }
+                $customerCommande->setReference($reference);
+                $customerCommande->setCommande($commande);
+                $customerCommande->setSeller($seller);
+                $manager->persist($customerCommande);
+
+                // On va enregistrer les détails de la commande
+                // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
+                $commandeGlobalCost = 0;
+                foreach ($prices as $key => $value) {
+                  $product   = $manager->getRepository(Product::class)->find($key);
+                  $quantity = $quantities[$key];
+                  $subtotal = $value * $quantity;
+                  $stockQte  = $product->getStock() - $quantity;
+
+                  if($quantity <= 0)
+                  {
+                    $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                    // return new Response(var_dump("Quantité"));
+                    return $this->redirectToRoute('unique_form_for_selling');
+                  }
+                  
+                  if($value <= 0)
+                  {
+                    $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
+                    // return new Response(var_dump("Prix"));
+                    return $this->redirectToRoute('unique_form_for_selling');
+                  }
+                  
+                  if($stockQte < 0)
+                  {
+                    $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> indisponible en stock.');
+                    // return new Response(var_dump("Stock"));
+                    return $this->redirectToRoute('unique_form_for_selling');
+                  }
+                  // On enregistre d'abord les détails de commande
+                  $commandeProduit = new CustomerCommandeDetails();
+                  $commandeProduit->setCommande($customerCommande);
+                  $commandeProduit->setProduct($product);
+                  $commandeProduit->setQuantity($quantity);
+                  $commandeProduit->setUnitPrice($value);
+                  $commandeProduit->setSubtotal($subtotal);
+                  $commandeGlobalCost += $subtotal;
+                  $manager->persist($commandeProduit);
+
+                  // Ensuite, on met à jour le stock
+                  $product->setStock($stockQte);
+                  $product->setUpdatedAt(new \DateTime());
+                }
+                $commande->setTotalAmount($commandeGlobalCost);
+
+                //On va maintenant enregistrer le règlement de la commande
+                try{
+                  $manager->flush();
+                  $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                } 
+                catch(\Exception $e){
+                  $this->addFlash('danger', $e->getMessage());
+                }
+                return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
+              }
+            }
+          }
+        }
+        
+        return $this->render('Admin/Sell/unique-form-for-selling.html.twig', [
+          'current'   => 'sells',
+          'products'  => $products,
+          'customers' => $customers,
         ]);
     }
 
@@ -346,7 +522,7 @@ class AdminSellController extends AbstractController
     }
 
     /**
-     * @Route("/reglement-de-vente/{id}", name="settlement")
+     * @Route("/reglement-de-vente/{id}", name="settlement", requirements={"id"="\d+"})
      * @IsGranted("ROLE_VENTE")
      * @param CustomerCommande $commande
      */
@@ -360,6 +536,7 @@ class AdminSellController extends AbstractController
         $total += $value->getAmount();
       }
       // dump($total);
+      $reste = $commande->getCommande()->getTotalAmount() - $total;
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
@@ -429,7 +606,8 @@ class AdminSellController extends AbstractController
       }
       return $this->render('Admin/Sell/settlement.html.twig', [
         'current'  => 'sells',
-        'commande' => $commande
+        'reste'    => $reste,
+        'commande' => $commande,
       ]);
     }
 

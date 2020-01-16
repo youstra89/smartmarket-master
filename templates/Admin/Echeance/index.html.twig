@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Echéances de paiement enregistrées | Smart Market{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Echéances de paiement enregistrées</h2>
+    <div class="row row-bottom-padded-md">
+      <div class="col-md-10">
+        <div class="table-responsive">
+          <table class="table" width="75%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Client</th>
+                <th>Echéance</th>
+                <th>Montant</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% for echeance in echeances %}
+                {% set i = i + 1 %}
+                <tr>
+                  <td>{{ i }}</td>
+                  <td>{{ echeance.commande.customer.firstname }} {{ echeance.commande.customer.lastname }}</td>
+                  <td>{{ echeance.dateEcheance|date('d-m-Y') }}</td>
+                  <td>{{ echeance.amount|number_format(0, ',', ' ') }} F CFA</td>
+                  <td></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      // $(".alert").alert('close');
+    })
+  </script>
+{% endblock %}

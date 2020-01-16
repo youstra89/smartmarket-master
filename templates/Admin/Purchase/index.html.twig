@@ -62,6 +62,7 @@
               <thead>
                 <tr>
                   <th>#</th>
+                  <th>Référence</th>
                   <th>Date</th>
                   <th>Fournisseur</th>
                   <th>Actions</th>
@@ -73,6 +74,7 @@
                   {% set i = i + 1 %}
                   <tr>
                     <td>{{ i }}</td>
+                    <td>{{ commande.reference }}</td>
                     <td>{{ commande.commande.date|date('d-m-Y') }}</td>
                     <td>{{ commande.provider.firstname }} {{ commande.provider.lastname }} ({{ commande.provider.country.name }})</td>
                     <td><a href="{{ path('provider.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a></td>

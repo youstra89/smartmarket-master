@@ -19,6 +19,22 @@ class ProviderRepository extends ServiceEntityRepository
         parent::__construct($registry, Provider::class);
     }
 
+    public function last_saved_provider()
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        $offset = 0;
+        $limit = 1;
+        $qb->select('p')
+            ->orderBy('p.id', 'DESC')
+            ->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+        ;
+        return $qb
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     // /**
     //  * @return Provider[] Returns an array of Provider objects
     //  */

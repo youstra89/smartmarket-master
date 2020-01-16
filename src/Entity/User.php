@@ -128,6 +128,11 @@ class User implements UserInterface, \Serializable
      */
     private $settlements;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_root = false;
+
 
     public function __construct()
     {
@@ -452,6 +457,18 @@ class User implements UserInterface, \Serializable
                 $settlement->setReceiver(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIsRoot(): ?bool
+    {
+        return $this->is_root;
+    }
+
+    public function setIsRoot(bool $is_root): self
+    {
+        $this->is_root = $is_root;
 
         return $this;
     }

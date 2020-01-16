@@ -37,8 +37,8 @@
 {% block body %}
   <div class="fh5co-narrow-content">
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ventes</h2>
-    <a href="{{ path('customer') }}" class="btn btn-primary">Gestion des clients</a>
-    <a href="{{ path('customer.order.add') }}" class="btn btn-primary">Ajouter une vente</a>
+    <a href="{{ path('customer') }}" class="btn-lg btn-primary">Gestion des clients</a>
+    <a href="{{ path('unique_form_for_selling') }}" class="btn-lg btn-primary">Ajouter une vente</a><br><br>
     <div class="row">
       {{ form_start(form) }}
       <div class="row">
@@ -49,19 +49,20 @@
           {{ form_row(form.products, { 'attr': {'class': 'js-example-basic-single'} }) }}
         </div>#}
         <div class="col-md-4">
-          <button type="submit" class="btn btn-success btn-xs">{{ 'Rechercher'|trans }}</button>
+          <button type="submit" class="btn-success btn-lg">{{ 'Rechercher'|trans }}</button>
         </div>
       </div>
       {{ form_end(form) }}
     </div>
     <div class="row row-bottom-padded-md">
       {% if commandes|length != 0 %}
-        <div class="col-md-8">
+        <div class="col-md-10">
           <div class="table-responsive">
             <table class="table" width="75%">
               <thead>
                 <tr>
                   <th>#</th>
+                  <th>Référence</th>
                   <th>Date</th>
                   <th>Clients</th>
                   <th>Montant</th>
@@ -74,6 +75,7 @@
                   {% set i = i + 1 %}
                   <tr>
                     <td>{{ i }}</td>
+                    <td>{{ commande.reference }}</td>
                     <td>{{ commande.commande.date|date('d-m-Y') }}</td>
                     <td>
                       {% if commande.customer is not empty %}

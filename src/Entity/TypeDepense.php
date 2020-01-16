@@ -49,6 +49,11 @@ class TypeDepense
      */
     private $depenses;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $type_systeme = false;
+
     public function __construct()
     {
         $this->depenses = new ArrayCollection();
@@ -146,6 +151,18 @@ class TypeDepense
     public function setUpdatedBy(?User $updated_by): self
     {
         $this->updated_by = $updated_by;
+
+        return $this;
+    }
+
+    public function getTypeSysteme(): ?bool
+    {
+        return $this->type_systeme;
+    }
+
+    public function setTypeSysteme(bool $type_systeme): self
+    {
+        $this->type_systeme = $type_systeme;
 
         return $this;
     }

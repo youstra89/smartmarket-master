@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Enregistrement d'échéances de paiement {% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Enregistrement d'échéances de paiement</h2>
+    <form action="" method="post">
+      <div class="row">
+        <div class="col-md-4">
+          <label for="date1">Date 1<sup>ère</sup> échéance</label>
+          <input type="date" name="dates[]" id="date1" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label for="montant1">Montant 1<sup>ère</sup> échéance</label>
+          <input type="number" name="montants[]" id="montant1" step="10000" class="form-control">
+        </div>
+      </div><br>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="date2">Date 2<sup>ème</sup> échéance</label>
+          <input type="date" name="dates[]" id="date2" class="form-control" disabled>
+        </div>
+        <div class="col-md-4">
+          <label for="montant2">Montant 2<sup>ème</sup> échéance</label>
+          <input type="number" name="montants[]" id="montant2" step="10000" class="form-control" disabled>
+        </div>
+      </div><br>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="date3">Date 3<sup>ème</sup> échéance</label>
+          <input type="date" name="dates[]" id="date3" class="form-control" disabled>
+        </div>
+        <div class="col-md-4">
+          <label for="montant3">Montant 3<sup>ème</sup> échéance</label>
+          <input type="number" name="montants[]" id="montant3" step="10000" class="form-control" disabled>
+        </div>
+      </div><br>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="date4">Date 4<sup>ème</sup> échéance</label>
+          <input type="date" name="dates[]" id="date4" class="form-control" disabled>
+        </div>
+        <div class="col-md-4">
+          <label for="montant4">Montant 4<sup>ème</sup> échéance</label>
+          <input type="number" name="montants[]" id="montant4" step="10000" class="form-control" disabled>
+        </div>
+      </div><br>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="date5">Date 5<sup>ème</sup> échéance</label>
+          <input type="date" name="dates[]" id="date5" class="form-control" disabled>
+        </div>
+        <div class="col-md-4">
+          <label for="montant5">Montant 5<sup>ème</sup> échéance</label>
+          <input type="number" name="montants[]" id="montant5" step="10000" class="form-control" disabled>
+        </div>
+      </div><br>
+      <div class="row">
+        <input type="hidden" name="token" value="{{ csrf_token('token_dates_echeances') }}">
+        <button type="submit" class="btn-lg btn-info">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $("#date1").on("change", function(){
+        if (this.value !== "") {
+          $("#date2").prop('disabled', false)
+          $("#montant2").prop('disabled', false)
+        }
+        else{
+          for (let i = 2; i < 6; i++) {
+            $("#date" + i).prop('disabled', true)
+            $("#montant" + i).prop('disabled', true)
+          }
+        }
+      }) 
+
+      $("#date2").on("change", function(){
+        if (this.value !== "") {
+          $("#date3").prop('disabled', false)
+          $("#montant3").prop('disabled', false)
+        }
+        else{
+          for (let i = 3; i < 6; i++) {
+            $("#date" + i).prop('disabled', true)
+            $("#montant" + i).prop('disabled', true)
+          }
+        }
+      })
+
+      $("#date3").on("change", function(){
+        if (this.value !== "") {
+          $("#date4").prop('disabled', false)
+          $("#montant4").prop('disabled', false)
+        }
+        else{
+          for (let i = 4; i < 6; i++) {
+            $("#date" + i).prop('disabled', true)
+            $("#montant" + i).prop('disabled', true)
+          }
+        }
+      }) 
+
+      $("#date4").on("change", function(){
+        if (this.value !== "") {
+          $("#date5").prop('disabled', false)
+          $("#montant5").prop('disabled', false)
+        }
+        else{
+          for (let i = 5; i < 6; i++) {
+            $("#date" + i).prop('disabled', true)
+            $("#montant" + i).prop('disabled', true)
+          }
+        }
+      })   
+    });
+  </script>
+{% endblock %}

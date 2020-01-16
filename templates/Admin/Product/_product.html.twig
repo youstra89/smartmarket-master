@@ -3,7 +3,7 @@
         <div class="col-md-4">
           <div class="form-group">
             <label for="">{{ form_label(form.reference) }}</label>
-            {{ form_widget(form.reference, {'attr': {'class': 'form-control', 'value': product_reference}}) }}
+            {{ form_widget(form.reference, {'attr': {'class': 'form-control', 'value': reference}}) }}
           </div>
         </div>
         <div class="col-md-4">
@@ -30,8 +30,22 @@
     <div class="row">
         <div class="col-md-4">
             <div class="form-group">
+                <label for="">{{ form_label(form.purchasing_price) }}</label>
+                {{ form_widget(form.purchasing_price, {'attr': {'class': 'form-control', 'value': '0'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
                 <label for="">{{ form_label(form.unit_price) }}</label>
                 {{ form_widget(form.unit_price, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.security_stock) }}</label>
+                {{ form_widget(form.security_stock, {'attr': {'class': 'form-control', 'value': '20'}}) }}
             </div>
         </div>
     </div>

@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+  <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" /> -->
+  <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+{% endblock %}
+
+
+{% block title %}Les ventes{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ventes</h2>
+    <a href="{{ path('customer') }}" class="btn-lg btn-primary">Gestion des clients</a>
+    <a href="{{ path('customer.order.add') }}" class="btn-lg btn-primary">Ajouter une vente</a>
+    <a href="{{ path('unique_form_for_selling') }}" class="btn-lg btn-primary">Formulaire unique de vente</a><br><br>
+    <div class="row row-bottom-padded-md">
+      {{ product.label }}
+    </div>
+  </div>
+{% endblock %}
+
+
+
+{% block javascript %}
+  <script type="text/javascript">
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script> -->
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+  <script>
+  $(document).ready(function() {
+    $('.js-example-basic-single').select2();
+  });
+  </script>
+{% endblock %}

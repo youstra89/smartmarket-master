@@ -1,0 +1,239 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+
+{% block title %}
+  Enregistrement de vente
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="">
+    <h2>Enregistrement d'une nouvelle vente</h2>
+    <button type="button" class="btn-lg btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Ajouter un produit</button>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="reference" class="col-form-label">Référence de produit</label>
+                <input type="text" name="reference" class="form-control" id="reference" value="PR">
+              </div>
+              <div class="form-group">
+                <label for="products" class="col-form-label">Produits</label>
+                <select name="products" id="products" class="form-control">
+                  <option value="">Sélectionnez un produit</option>
+                  {% for product in products if product.stock > 0 %}
+                    <option value="{{ product.id }}">{{ product.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-6">
+                  <label for="quantity" class="col-form-label">Quantité:</label>
+                  <input type="number" class="form-control" id="quantity" value="1" min="1" required>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="price" class="col-form-label">Prix unitaire:</label>
+                  <input type="number" class="form-control" id="price" value="" required>
+                </div>
+              </div>
+            </div>
+            <div id="notif"><p></p></div>
+            <div class="modal-footer">
+              <input type="hidden" name="productId" id="productId" value="">
+              <input type="hidden" name="productLabel" id="productLabel" value="">
+              <button type="button" class="btn-lg btn-default" data-dismiss="modal">Fermer</button>
+              <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter un produit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <section class="">
+      <form class="ui form" action="" method="post">
+        <br>
+        <div class="row">
+          <div class="form-group col-md-6">
+            <label for="customer">Client</label>
+            <select name="customer" id="customer">
+              <option value="">Sélectionner un client</option>
+              {% for customer in customers %}
+                <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {# </div>
+        <div class="row"> #}
+          <div class="form-group col-md-6">
+            <label for="date">Date de la commande</label>
+            <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}">
+          </div>
+        </div>
+        {% set i = 0 %}
+        <table class="table" id="myTable">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Produit</th>
+              <th>Quantité</th>
+              <th>Prix Unitaire</th>
+              <th>Sous total</th>
+            </tr>
+          </thead>
+          {% set total = 0 %}
+          <tbody>
+            <tr></tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4"><h4>Total de la commande</h4></td>
+              <td><h4><input type="text" id="total" name="total" value="" readonly required></h4></td>
+            </tr>
+          </tfoot>
+        </table>
+        <input type="hidden" name="token" value="{{ csrf_token('vente') }}"/>
+        <button class="btn btn-primary">{{ button|default('Enregistrer') }}</button><br><br>
+      </form>
+    </section>
+  </div>
+  <div id="test" data-is-test="{{ products|json_encode }}"></div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      var total = $("#total").val();
+      // var test = $('#test').data("isTest")
+      // A chaque fois qu'on sélectionne un produit
+      $('#products').on('change',function(e){
+        $.ajax({
+          url: '/ventes/select-product/' + this.value,
+          type: 'GET',
+          dataType: 'json',
+          success: function (result) {                
+              $("#price").val(result.unit_price);
+              $("#productId").val(result.id);
+              $("#reference").val(result.reference);
+              $("#productLabel").val(result.label);
+              $("#quantity").val(1);
+              $("#quantity").focus();
+          },
+          error: function (xhr, status, error) {
+            console.log(error)
+          }
+        });
+      });
+
+
+      $("#reference").keyup(function(){
+        if($(this).val().length >= 5){
+          var ref = $(this).val();
+          $.ajax({
+            url: '/ventes/select-product-by-reference/' + ref,
+            type: 'GET',
+            dataType: 'json',
+            success: function (result) { 
+              if(result.length != 0 && result.stock != 0) 
+              {
+                $("#price").val(result.unit_price);
+                $("#productId").val(result.id);
+                $("#productLabel").val(result.label);
+                $("#quantity").val(1);
+                $("#quantity").focus();
+                $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
+              } 
+              else if(result.length != 0 && result.stock == 0) {
+                $("#notif p").text('Stock de (' + result.label + ') épuisé.');
+              } 
+              else{
+                $("#notif p").text('Référence (' + ref + ') incorrecte.');
+              }
+            },
+            error: function (xhr, status, error) {
+              console.log(error)
+            }
+          });
+        } else {
+          $(".nomFr").val('');
+          $(".pnomFr").val('');
+          $(".dateNaissance").val('');
+        }
+      });
+
+      // A chaque fois que la quantité change
+      $('#add_product').on('click',function(e){
+        var id = $("#productId").val();
+        var reference = $("#reference").val();
+        var label = $("#productLabel").val();
+        var price = $("#price").val();
+        var quantity = $("#quantity").val();
+        var sousTotal = quantity * price;
+        total = eval(total + sousTotal);
+        console.log(total);
+        
+        $("#total").val(total)
+
+        $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td></tr>');
+        // console.log(totaux);
+        $("#products").val(null);
+        $("#reference").val("PR");
+        $("#price").val(null);
+        $("#quantity").val(1);
+        $('#products option[value="'+ id +'"]').remove();
+
+        e.preventDefault()
+        
+        // var quantityH = document.getElementById('quantityH[' + id + ']');
+        // var price = document.getElementById('price[' + id + ']').value;
+        // var sousTotal = document.getElementById('sousTotal[' + id + ']');
+        // var total = document.getElementById('total');
+        // quantityH.value = qte;
+        // sousTotal.value = parseFloat(price) * parseFloat(qte);
+        // var st = $('.sousTotal');
+        // var tt = 0;
+        // for (var i = 0; i < st.length; i++) {
+        //   tt += eval(st[i].value);
+        //   console.log(st[i].value);
+        // }
+        // total.value = tt;
+     });
+    });
+  </script>
+{% endblock %}

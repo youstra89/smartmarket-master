@@ -12,6 +12,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
+use App\Controller\FonctionsController;
+
 /**
  * @Route("/admin/fournisseurs")
  */
@@ -34,11 +36,13 @@ class AdminProviderController extends AbstractController
      * @Route("/add", name="provider.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, ObjectManager $manager, FonctionsController $fonctions)
     {
         $provider = new Provider();
         $form = $this->createForm(ProviderType::class, $provider);
         $form->handleRequest($request);
+        $last_provider = $manager->getRepository(Provider::class)->last_saved_provider();
+        $reference = $fonctions->generateReference("provider", $last_provider);
         if($form->isSubmitted() && $form->isValid())
         {
           $provider->setCreatedBy($this->getUser());
@@ -54,7 +58,8 @@ class AdminProviderController extends AbstractController
         }
         return $this->render('Admin/Provider/provider-add.html.twig', [
           'current' => 'purchases',
-          'form'    => $form->createView()
+          'form'    => $form->createView(),
+          'reference' => $reference,
         ]);
     }
 

@@ -15,6 +15,8 @@ use Knp\Component\Pager\PaginatorInterface;
 use App\Entity\ProductSearch;
 use App\Form\ProductSearchType;
 
+use App\Controller\FonctionsController;
+
 /**
  * @Route("/products")
  */
@@ -48,21 +50,25 @@ class AdminProductController extends AbstractController
      * @Route("/add", name="product.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, ObjectManager $manager, FonctionsController $fonctions)
     {
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
-        $reference = $this->generateReference();
+        $manager   = $this->getDoctrine()->getManager();
+        $last_product  = $manager->getRepository(Product::class)->last_saved_product();
+        $reference = $fonctions->generateReference("product", $last_product);
         // dump($reference);
         if($form->isSubmitted() && $form->isValid())
         {
           // $product->setReference($reference);
+          $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
+          $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
           $product->setCreatedBy($this->getUser());
           $manager->persist($product);
           try{
             $manager->flush();
-            $this->addFlash('success', 'Enregistrement de <strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> réussie.');
+            $this->addFlash('success', 'Enregistrement de <strong>'.$label.'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -72,7 +78,7 @@ class AdminProductController extends AbstractController
         return $this->render('Admin/Product/product-add.html.twig', [
           'current' => 'products',
           'form'    => $form->createView(),
-          'product_reference' => $reference,
+          'reference' => $reference,
         ]);
     }
 
@@ -87,11 +93,13 @@ class AdminProductController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
+          $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
+          $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
           $product->setUpdatedAt(new \DateTime());
           $product->setUpdatedBy($this->getUser());
           try{
             $manager->flush();
-            $this->addFlash('success', 'Mise à jour de <strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> réussie.');
+            $this->addFlash('success', 'Mise à jour de <strong>'.$label.'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -117,16 +125,27 @@ class AdminProductController extends AbstractController
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
+        return new Response(var_dump($data));
         $token = $data['token'];
-        $prices = $data['price'];
+        $purchasingPrice = $data['purchasingPrice'];
+        $sellingPrice = $data['sellingPrice'];
         // return new Response(var_dump($data));
         if($this->isCsrfTokenValid('unit_prices', $token)){
           // On va initialiser un compteur qui va compter le nombre de prix modifié
           $cpt = 0;
-          foreach ($prices as $key => $value) {
+          foreach ($sellingPrice as $key => $value) {
             $product = $repoProduct->find($key);
             if ($value != 0 && $value != $product->getUnitPrice()) {
               $product->setUnitPrice($value);
+              $product->setUpdatedAt(new \DateTime());
+              $product->setUpdatedBy($this->getUser());
+              $cpt++;
+            };
+
+            // Pour les prix d'achat également
+            $productPurchasingPrice = $purchasingPrice[$key];
+            if ($productPurchasingPrice != 0 && $productPurchasingPrice != $product->getPurchasingPrice()) {
+              $product->setPurchasingPrice($productPurchasingPrice);
               $product->setUpdatedAt(new \DateTime());
               $product->setUpdatedBy($this->getUser());
               $cpt++;
@@ -155,31 +174,5 @@ class AdminProductController extends AbstractController
         'current'  => 'products',
         'products' => $products
       ]);
-    }
-
-    // Cette fonction permet de générer les matricules automatiquement
-    public function generateReference()
-    {
-      $manager   = $this->getDoctrine()->getManager();
-      $repoProduct = $manager->getRepository(Product::class);
-      $product     = $repoProduct->last_saved_product();
-      
-      if(!empty($product))
-      {
-        $zero = "";
-        $number = (int) substr($product->getReference(), 2);
-        $numero_ordre = $number + 1;
-        if(strlen($numero_ordre) == 1){
-          $zero = '00';
-        } 
-        elseif (strlen($numero_ordre) == 2) {
-          $zero = '0';
-        }
-        $matricule = "PR".$zero.$numero_ordre;
-      }
-      else{
-        $matricule = "PR001";            
-      }
-      return $matricule;
     }
 }

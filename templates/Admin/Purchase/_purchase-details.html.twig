@@ -11,8 +11,10 @@
               <td>Sous total</td>
             </tr>
           </thead>
+          {% set total = 0 %}
           {% for product in products %}
             {% set i = i + 1 %}
+            {% set total = total + product.purchasingPrice %}
               <tbody>
                 <tr>
                   <td>
@@ -26,11 +28,11 @@
                     <input type="hidden" name="quantityH[{{ product.id }}]"  id="quantityH[{{ product.id }}]" value="1">
                   </td>
                   <td>
-                    <input type="number" class="price" id="price[{{ product.id }}]" name="{{ product.id }}" value="0" required>
-                    <input type="hidden" name="priceH[{{ product.id }}]" id="priceH[{{ product.id }}]" value="0">
+                    <input type="number" class="price" id="price[{{ product.id }}]" name="{{ product.id }}" value="{{ product.purchasingPrice }}" required>
+                    <input type="hidden" name="priceH[{{ product.id }}]" id="priceH[{{ product.id }}]" value="{{ product.purchasingPrice }}">
                   </td>
                   <td>
-                    <input type="number" class="sousTotal" id="sousTotal[{{ product.id }}]" name="sousTotal[{{ product.id }}]" value="0" readonly>
+                    <input type="number" class="sousTotal" id="sousTotal[{{ product.id }}]" name="sousTotal[{{ product.id }}]" value="{{ product.purchasingPrice }}" readonly>
                   </td>
                 </tr>
               </tbody>
@@ -38,7 +40,7 @@
           <tfoot>
             <tr>
               <td colspan="4"><h4>Total de la commande</h4></td>
-              <td><h4><input type="text" id="total" name="total" value="0" readonly></h4></td>
+              <td><h4><input type="text" id="total" name="total" value="{{ total }}" readonly></h4></td>
             </tr>
           </tfoot>
         </table>

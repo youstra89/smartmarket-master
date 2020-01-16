@@ -45,9 +45,21 @@ class CustomerCommande
      */
     private $product;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Echeance", mappedBy="commande")
+     */
+    private $echeances;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ReturnedProduct", mappedBy="commande")
+     */
+    private $returnedProducts;
+
     public function __construct()
     {
         $this->product = new ArrayCollection();
+        $this->echeances = new ArrayCollection();
+        $this->returnedProducts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -128,6 +140,68 @@ class CustomerCommande
             // set the owning side to null (unless already changed)
             if ($product->getCustomerCommande() === $this) {
                 $product->setCustomerCommande(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Echeance[]
+     */
+    public function getEcheances(): Collection
+    {
+        return $this->echeances;
+    }
+
+    public function addEcheance(Echeance $echeance): self
+    {
+        if (!$this->echeances->contains($echeance)) {
+            $this->echeances[] = $echeance;
+            $echeance->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcheance(Echeance $echeance): self
+    {
+        if ($this->echeances->contains($echeance)) {
+            $this->echeances->removeElement($echeance);
+            // set the owning side to null (unless already changed)
+            if ($echeance->getCommande() === $this) {
+                $echeance->setCommande(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ReturnedProduct[]
+     */
+    public function getReturnedProducts(): Collection
+    {
+        return $this->returnedProducts;
+    }
+
+    public function addReturnedProduct(ReturnedProduct $returnedProduct): self
+    {
+        if (!$this->returnedProducts->contains($returnedProduct)) {
+            $this->returnedProducts[] = $returnedProduct;
+            $returnedProduct->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReturnedProduct(ReturnedProduct $returnedProduct): self
+    {
+        if ($this->returnedProducts->contains($returnedProduct)) {
+            $this->returnedProducts->removeElement($returnedProduct);
+            // set the owning side to null (unless already changed)
+            if ($returnedProduct->getCommande() === $this) {
+                $returnedProduct->setCommande(null);
             }
         }
 

@@ -48,7 +48,8 @@
                 <th>#</th>
                 <th>Référence</th>
                 <th>Produits</th>
-                <th>Prix unitaires</th>
+                <th>Prix d'achat</th>
+                <th>Prix unitaire (pour la vente)</th>
               </tr>
             </thead>
             {% for product in products %}
@@ -62,10 +63,14 @@
                       {{ product.reference }}
                     </td>
                     <td>
-                      {{ product.category.name }} {{ product.mark.label }} - {{ product.description }}
+                      {# {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} #}
+                      {{ product.label }}
                     </td>
                     <td>
-                      <input type="number" class="price" name="price[{{ product.id }}]" value="{{ product.unitPrice }}" required>
+                      <input type="number" class="price" name="purchasingPrice[{{ product.id }}]" value="{{ product.purchasingPrice }}" required>
+                    </td>
+                    <td>
+                      <input type="number" class="price" name="sellingPrice[{{ product.id }}]" value="{{ product.unitPrice }}" required>
                     </td>
                   </tr>
                 </tbody>

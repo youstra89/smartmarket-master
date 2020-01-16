@@ -39,12 +39,12 @@
 {% block body %}
 <div class="fh5co-narrow-content">
     <h2 class="animate-box" data-animate-effect="fadeInLeft">Utilisateurs du système</h2>
-    <a href="{{ path('registration') }}" class="btn btn-info btn-icon-split float-right">
+    <a href="{{ path('registration') }}" class="btn-info btn-lg float-right">
       <span class="icon text-white-50">
         <i class="fas fa-plus"></i>
       </span>
       <span class="text">Ajouter utilisateur</span>
-    </a>
+    </a><br><br>
     <div class="table-responsive">
       <table class="table" id="dataTable" width="100%" cellspacing="0">
         <thead>
@@ -69,7 +69,7 @@
         </tfoot>
         <tbody>
           {% set i = 0 %}
-          {% for user in users %}
+          {% for user in users if user.isRoot == false %}
             {% set i = i + 1 %}
             <tr>
               <td>{{ i }}</td>

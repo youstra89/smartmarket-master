@@ -38,7 +38,7 @@ class ProviderCommandeSearchType extends AbstractType
               'label' => false,
               'placeholder' => 'Marchandises',
               'choice_label' => function ($product) {
-                    return $product->getCategory()->getName() . ' ' . $product->getMark()->getLabel() . ' ' . $product->getDescription();
+                    return $product->getLabel();
               },
               'class' => Product::class,
               'query_builder' => function (EntityRepository $er) {

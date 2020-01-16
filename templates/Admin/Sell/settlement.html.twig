@@ -37,8 +37,8 @@
 
 
 {% block body %}
+  <div class="fh5co-narrow-content">
     <h2>Détails vente du {{ commande.commande.date|date('d-mY') }}</h2>
-    <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
     <div class="row">
       <div class="col-md-6">
         <h3>Client</h3>
@@ -87,7 +87,7 @@
         </div><br><br>
         <div class="row">
           <div class="col-lg-3 col-md-4 col-sm-12">
-            <h3>Règlements</h3>
+            <h3>Règlements effectués</h3>
             {% if commande.commande.settlements is not empty %}
               {% set total = 0 %}
               <ul>
@@ -99,25 +99,54 @@
               <br>
               {% set rest = commande.commande.totalAmount - total %}
               <p>Reste à Payer : {{ rest|number_format(0, ',', ' ') }} F CFA</p>
+            {% else %}
+              <p>Aucun règlement enregistré pour cette vente</p>
+            {% endif %}
+          </div>
+          <div class="col-lg-5 col-md-4 col-sm-12">
+            <h3>Nouveau règlement</h3>
+            <form class="" action="" method="post">
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="date">Date de règlement</label>
+                  <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <label for="date">Montant règlement</label>
+                  <input type="integer" name="amount" value="{{ reste }}" class="form-control">
+                </div>
+              </div><br>
+              <div class="row">
+                <div class="col-md-4">
+                  <input type="hidden" name="token" value="{{ csrf_token('token_reglement') }}">
+                  <button type="submit" name="button" class="btn-lg btn-primary">Enregistrer</button>
+                </div>
+                {% if commande.echeances is empty and commande.customer is not empty %}
+                  <div class="col-md-8">
+                    <a href="{{ path('echeance_add', {id: commande.id}) }}"><div class="btn-lg btn-default">Echéances de paiement</div></a>
+                  </div>
+                {% endif %}
+              </div>
+            </form>
+          </div>
+          <div class="col-lg-4 col-md-4 col-sm-12">
+            <h3>Echéances</h3>
+            {% if commande.echeances is not empty and commande.customer is not empty %}
+              <ul>
+                {% for item in commande.echeances %}
+                  {% set montant = item.amount|number_format(0, ',', ' ') %}
+                  {% if item.amount == 0 %}
+                    {% set montant = "Non défini" %}
+                  {% endif %}
+                  <li>{{ item.dateEcheance|date('d-m-Y') }} : {{ montant }} F CFA</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p>Pas d'échéances de paiement prévues</p>
             {% endif %}
           </div>
         </div><br><br>
-        <form class="" action="" method="post">
-          <div class="row">
-            <div class="col-lg-3 col-md-4 col-sm-12">
-              <label for="date">Date de règlement</label>
-              <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="form-control">
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-12">
-              <label for="date">Montant règlement</label>
-              <input type="integer" name="amount" value=""class="form-control">
-            </div>
-          </div><br>
-          <div class="row">
-            <input type="hidden" name="token" value="{{ csrf_token('token_reglement') }}">
-            <button type="submit" name="button" class="btn btn-primary btn-sm">Enregistrer</button>
-          </div>
-        </form>
       </div>
     </div>
+  </div>
 {% endblock %}

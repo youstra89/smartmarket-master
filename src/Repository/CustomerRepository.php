@@ -19,6 +19,22 @@ class CustomerRepository extends ServiceEntityRepository
         parent::__construct($registry, Customer::class);
     }
 
+    public function last_saved_customer()
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        $offset = 0;
+        $limit = 1;
+        $qb->select('c')
+            ->orderBy('c.id', 'DESC')
+            ->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+        ;
+        return $qb
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     // /**
     //  * @return Customer[] Returns an array of Customer objects
     //  */

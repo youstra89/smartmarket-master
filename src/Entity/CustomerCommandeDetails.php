@@ -38,7 +38,7 @@ class CustomerCommandeDetails
     private $commande;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Product", inversedBy="customerCommandeDetails")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Product")
      * @ORM\JoinColumn(nullable=false)
      */
     private $product;

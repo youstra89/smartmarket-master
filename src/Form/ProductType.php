@@ -21,7 +21,9 @@ class ProductType extends AbstractType
     {
         $builder
             ->add('description', TextType::class, ['label' => 'Description', 'required' => true])
-            ->add('unit_price', TextType::class, ['label' => 'Prix unitaire', 'required' => true])
+            ->add('unit_price', TextType::class, ['label' => 'Prix de vente unitaire', 'required' => true])
+            ->add('purchasing_price', TextType::class, ['label' => 'Prix d\'achat', 'required' => true])
+            ->add('security_stock', NumberType::class, ['label' => 'Stock de sécurité', 'required' => true])
         ;
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event)
@@ -41,7 +43,7 @@ class ProductType extends AbstractType
                 'placeholder' => 'Sélectionner un élément'
             ])
             ->add('mark',        EntityType::class, [
-                'required' => true,
+                'required' => false,
                 'class'    => Mark::class,
                 'choice_label' => 'label',
                 'label'    => 'Marque',

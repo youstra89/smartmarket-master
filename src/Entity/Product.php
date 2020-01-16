@@ -24,7 +24,7 @@ class Product
     /**
      * @Assert\NotBlank()
      * @Assert\Length(min=3, max=10)
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $reference;
 
@@ -62,7 +62,6 @@ class Product
     private $category;
 
     /**
-     * @Assert\NotBlank()
      * @ORM\ManyToOne(targetEntity="App\Entity\Mark", inversedBy="products")
      */
     private $mark;
@@ -74,33 +73,37 @@ class Product
     private $stock;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ProviderCommandeDetails", mappedBy="product")
-     */
-    private $providerCommandeDetails;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\CustomerCommandeDetails", mappedBy="product")
-     */
-    private $customerCommandeDetails;
-
-    /**
      * @ORM\Column(type="integer")
      */
     private $unit_price;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $purchasing_price;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $security_stock;
+
 
     public function __construct()
     {
-      $this->stock                   = 0;
-      $this->unit_price              = 0;
-      $this->created_at              = new \DateTime();
-      $this->providerCommandeDetails = new ArrayCollection();
-      $this->customerCommandeDetails = new ArrayCollection();
+      $this->stock      = 0;
+      $this->unit_price = 0;
+      $this->created_at = new \DateTime();
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getLabel(): ?string
+    {
+        $mark = !empty($this->mark) ? $this->mark->getLabel() : '';
+        return $this->category->getName().' '.$mark.' - '.$this->description;
     }
 
     public function getReference(): ?string
@@ -187,68 +190,6 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection|ProviderCommandeDetails[]
-     */
-    public function getProviderCommandeDetails(): Collection
-    {
-        return $this->providerCommandeDetails;
-    }
-
-    public function addProviderCommandeDetail(ProviderCommandeDetails $providerCommandeDetail): self
-    {
-        if (!$this->providerCommandeDetails->contains($providerCommandeDetail)) {
-            $this->providerCommandeDetails[] = $providerCommandeDetail;
-            $providerCommandeDetail->setProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProviderCommandeDetail(ProviderCommandeDetails $providerCommandeDetail): self
-    {
-        if ($this->providerCommandeDetails->contains($providerCommandeDetail)) {
-            $this->providerCommandeDetails->removeElement($providerCommandeDetail);
-            // set the owning side to null (unless already changed)
-            if ($providerCommandeDetail->getProduct() === $this) {
-                $providerCommandeDetail->setProduct(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|CustomerCommandeDetails[]
-     */
-    public function getCustomerCommandeDetails(): Collection
-    {
-        return $this->customerCommandeDetails;
-    }
-
-    public function addCustomerCommandeDetail(CustomerCommandeDetails $customerCommandeDetail): self
-    {
-        if (!$this->customerCommandeDetails->contains($customerCommandeDetail)) {
-            $this->customerCommandeDetails[] = $customerCommandeDetail;
-            $customerCommandeDetail->setProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCustomerCommandeDetail(CustomerCommandeDetails $customerCommandeDetail): self
-    {
-        if ($this->customerCommandeDetails->contains($customerCommandeDetail)) {
-            $this->customerCommandeDetails->removeElement($customerCommandeDetail);
-            // set the owning side to null (unless already changed)
-            if ($customerCommandeDetail->getProduct() === $this) {
-                $customerCommandeDetail->setProduct(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getCreatedBy(): ?User
     {
         return $this->created_by;
@@ -281,6 +222,30 @@ class Product
     public function setUnitPrice(int $unit_price): self
     {
         $this->unit_price = $unit_price;
+
+        return $this;
+    }
+
+    public function getPurchasingPrice(): ?int
+    {
+        return $this->purchasing_price;
+    }
+
+    public function setPurchasingPrice(?int $purchasing_price): self
+    {
+        $this->purchasing_price = $purchasing_price;
+
+        return $this;
+    }
+
+    public function getSecurityStock(): ?int
+    {
+        return $this->security_stock;
+    }
+
+    public function setSecurityStock(int $security_stock): self
+    {
+        $this->security_stock = $security_stock;
 
         return $this;
     }

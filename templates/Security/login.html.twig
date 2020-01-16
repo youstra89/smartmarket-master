@@ -31,38 +31,43 @@
 
 
 {% block body %}
-  <div class="container">
-    <h1 class="heading-line uk-heading-primary uk-text-center"><span>Connexion</span></h1>
-    <hr class="divider-icon"><br>
-    {% if error %}
-      <div class="uk-margin-auto uk-margin-auto-vertical">
-        <div class="uk-alert-danger" uk-alert>
-          <a class="uk-alert-close" uk-close></a>
-          {{ error.messageKey }}
+  <div id="fh5co-main">
+    <div class="container">
+      <div class="fh5co-narrow-content">
+        <div class="row">
+          <div class="col-md-4 p5">
+            <h1 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft"><span>Connexion</span></h1>
+            <h1 class="animate-box" data-animate-effect="fadeInRight">SmartMarket</h1>
+            <hr class="divider-icon"><br>
+            {% if error %}
+              <div class="uk-margin-auto uk-margin-auto-vertical">
+                <div class="uk-alert-danger" uk-alert>
+                  <a class="uk-alert-close" uk-close></a>
+                  {{ error.messageKey }}
+                </div>
+              </div>
+            {% endif %}
+            <form action="{{ path('login') }}" method="post">
+              <div class="uk-margin">
+                <div class="form-group">
+                  <span class="uk-form-icon" uk-icon="icon: user"></span>
+                  <input type="text" id="username" name="_username" value="{{ last_username }}" class="form-control" placeholder="Nom d'utilisateur"/>
+                </div>
+                <div class="form-group">
+                  <span class="uk-form-icon uk-form-icon-flip" uk-icon="icon: lock"></span>
+                  <input type="password" id="password" name="_password" class="form-control" placeholder="Mot de passe"/>
+                </div>
+              </div>
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"/><br><br>
+              <button type="submit" class="btn-primary btn-lg">
+                <i class="fa fa-sign-in" aria-hidden="true"></i> Connexion
+              </button>
+            </form>
+            <!-- <p><a href="{{ path('resetting') }}">Mot de passe oublié ?</a> </p> -->
+            <br>
+          </div>
         </div>
       </div>
-    {% endif %}
-    <div class="">
-      <div class="uk-text-center">
-        <form action="{{ path('login') }}" method="post">
-          <div class="uk-margin">
-            <div class="form-group">
-              <span class="uk-form-icon" uk-icon="icon: user"></span>
-              <input type="text" id="username" name="_username" value="{{ last_username }}" class="form-control"/>
-            </div>
-            <div class="form-group">
-              <span class="uk-form-icon uk-form-icon-flip" uk-icon="icon: lock"></span>
-              <input type="password" id="password" name="_password" class="form-control" />
-            </div>
-          </div>
-          <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"/><br><br>
-          <button type="submit" class="btn btn-danger btn-learn">
-            <i class="fa fa-sign-in" aria-hidden="true"></i> Connexion
-          </button>
-        </form>
-      </div>
-      <p><a href="{{ path('resetting') }}">Mot de passe oublié ?</a> </p>
     </div>
-    <br>
   </div>
 {% endblock %}

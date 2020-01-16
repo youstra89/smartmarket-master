@@ -42,7 +42,7 @@ class ProviderCommandeDetails
     private $subtotal;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Product", inversedBy="providerCommandeDetails")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Product")
      * @ORM\JoinColumn(nullable=false)
      */
     private $product;

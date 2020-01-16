@@ -12,6 +12,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
+use App\Controller\FonctionsController;
+
 /**
  * @Route("/clients")
  */
@@ -34,11 +36,13 @@ class AdminCustomerController extends AbstractController
      * @Route("/add", name="customer.add")
      * @IsGranted("ROLE_USER")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, ObjectManager $manager, FonctionsController $fonctions)
     {
         $customer = new Customer();
         $form = $this->createForm(CustomerType::class, $customer);
         $form->handleRequest($request);
+        $last_customer = $manager->getRepository(Customer::class)->last_saved_customer();
+        $reference = $fonctions->generateReference("customer", $last_customer);
         if($form->isSubmitted() && $form->isValid())
         {
           $customer->setCreatedBy($this->getUser());
@@ -54,7 +58,8 @@ class AdminCustomerController extends AbstractController
         }
         return $this->render('Admin/Customer/customer-add.html.twig', [
           'current' => 'sells',
-          'form'    => $form->createView()
+          'form'    => $form->createView(),
+          'reference' => $reference,
         ]);
     }
 

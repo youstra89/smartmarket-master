@@ -40,6 +40,20 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.purchasing_price) }}</label>
+                    {{ form_widget(form.purchasing_price, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.security_stock) }}</label>
+                    {{ form_widget(form.security_stock, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
         <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
     {{ form_end(form) }}
   </div>
