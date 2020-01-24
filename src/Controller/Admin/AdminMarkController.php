@@ -45,7 +45,7 @@ class AdminMarkController extends AbstractController
           $manager->persist($mark);
           try{
             $manager->flush();
-            $this->addFlash('success', 'Enregistrement de la catégorie <strong>'.$mark->getName().'</strong> réussie.');
+            $this->addFlash('success', 'Enregistrement de la catégorie <strong>'.$mark->getLabel().'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -74,7 +74,7 @@ class AdminMarkController extends AbstractController
         $mark->setUpdatedBy($this->getUser());
         try{
           $manager->flush();
-          $this->addFlash('success', 'Mise à jour de la catégorie <strong>'.$mark->getName().'</strong> réussie.');
+          $this->addFlash('success', 'Mise à jour de la catégorie <strong>'.$mark->getLabel().'</strong> réussie.');
         } 
         catch(\Exception $e){
           $this->addFlash('danger', $e->getMessage());

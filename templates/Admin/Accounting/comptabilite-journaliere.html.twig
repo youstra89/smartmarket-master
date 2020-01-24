@@ -3,23 +3,26 @@
 {% block title %}Comptabilité Journalière{% endblock %}
 
 
-{% block notification %}
+{% block notifications %}
   {% for message in app.flashes('success') %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <h4 class="alert-heading">Succès!</h4>
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
       {{ message|raw }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
     </div>
   {% endfor %}
-  {% for message in app.flashes('error') %}
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-      <h4 class="alert-heading">Avertissement!</h4>
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
       {{ message|raw }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
     </div>
   {% endfor %}
 {% endblock %}

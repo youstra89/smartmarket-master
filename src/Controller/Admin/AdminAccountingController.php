@@ -47,7 +47,7 @@ class AdminAccountingController extends AbstractController
         $ventes = $manager->getRepository(CustomerCommande::class)->dayCommande($date);
         // return new Response(var_dump($ventes));
         if(empty($ventes)){
-          $this->addFlash('error', 'La date saisie n\'est pas correcte.');
+          $this->addFlash('danger', 'La date saisie n\'est pas correcte.');
           return $this->redirectToRoute('dayly.accounting');
         }
         return $this->render('Admin/Accounting/vente-du-jour.html.twig', [
@@ -68,7 +68,7 @@ class AdminAccountingController extends AbstractController
         $mois = $request->get('mois');
         if(empty($mois))
           $mois = (new \DateTime())->format('Y-m');
-        $ventes = $manager->getRepository(Commande::class)->monthlySelling($mois);
+        $ventes = $manager->getRepository(CustomerCommande::class)->monthlySelling($mois);
         if(empty($ventes)){
           $this->addFlash('error', 'La date sélectionnée n\'est pas correcte.');
           // return $this->redirectToRoute('dayly.accounting');

@@ -43,7 +43,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Sélection de produits</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -73,11 +73,12 @@
                   <input type="number" class="form-control" id="price" value="" required>
                 </div>
               </div>
+              <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
             </div>
-            <div id="notif"><p></p></div>
             <div class="modal-footer">
               <input type="hidden" name="productId" id="productId" value="">
               <input type="hidden" name="productLabel" id="productLabel" value="">
+              <input type="hidden" name="productStock" id="productStock" value="">
               <button type="button" class="btn-lg btn-default" data-dismiss="modal">Fermer</button>
               <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter un produit</button>
             </div>
@@ -114,10 +115,12 @@
               <th>Quantité</th>
               <th>Prix Unitaire</th>
               <th>Sous total</th>
+              <th>Actions</th>
             </tr>
           </thead>
           {% set total = 0 %}
           <tbody>
+            <tr><td>Reference</td><td>label</td><td><input type="number" class="quantity" id="quantities[]" name="quantities[]" value="" required readonly></td><td><input type="number" class="price" id="prices[]" name="prices[]" value="" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[]" name="sousTotal[]" value="" readonly><input type="hidden" name="products[]" value=""></td><td><i class="icon-trash" title="Retirer de la vente en cours"></i></td></tr>
             <tr></tr>
           </tbody>
           <tfoot>
@@ -132,7 +135,6 @@
       </form>
     </section>
   </div>
-  <div id="test" data-is-test="{{ products|json_encode }}"></div>
 {% endblock %}
 
 
@@ -152,8 +154,10 @@
               $("#productId").val(result.id);
               $("#reference").val(result.reference);
               $("#productLabel").val(result.label);
+              $("#productStock").val(result.stock);
               $("#quantity").val(1);
               $("#quantity").focus();
+              $("#notif p").text('');
           },
           error: function (xhr, status, error) {
             console.log(error)
@@ -175,9 +179,11 @@
                 $("#price").val(result.unit_price);
                 $("#productId").val(result.id);
                 $("#productLabel").val(result.label);
+                $("#productStock").val(result.stock);
                 $("#quantity").val(1);
                 $("#quantity").focus();
                 $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
+                $("#notif p").text('');
               } 
               else if(result.length != 0 && result.stock == 0) {
                 $("#notif p").text('Stock de (' + result.label + ') épuisé.');
@@ -202,38 +208,76 @@
         var id = $("#productId").val();
         var reference = $("#reference").val();
         var label = $("#productLabel").val();
+        var stock = $("#productStock").val();
         var price = $("#price").val();
-        var quantity = $("#quantity").val();
-        var sousTotal = quantity * price;
-        total = eval(total + sousTotal);
-        console.log(total);
-        
-        $("#total").val(total)
+        var quantity = $("#quantity").val();        
 
-        $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td></tr>');
-        // console.log(totaux);
-        $("#products").val(null);
-        $("#reference").val("PR");
-        $("#price").val(null);
-        $("#quantity").val(1);
-        $('#products option[value="'+ id +'"]').remove();
-
+        if(parseInt(quantity) <= parseInt(stock)){
+          var sousTotal = quantity * price;
+          total = eval(total + sousTotal);        
+          $("#total").val(total)
+          // $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td></td></tr>');
+          $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td><i class="icon-trash" title="Retirer ' + label + ' de la vente en cours"></i></td></tr>');
+          $("#products").val(null);
+          $("#reference").val("PR");
+          $("#price").val(null);
+          $("#quantity").val(1);
+          $('#products option[value="'+ id +'"]').remove();
+          $("#notif p").text('');
+        }
+        else{
+          $("#notif p").text('Quantité demandée indisponible pour le produit ' + label );
+        }
         e.preventDefault()
-        
-        // var quantityH = document.getElementById('quantityH[' + id + ']');
-        // var price = document.getElementById('price[' + id + ']').value;
-        // var sousTotal = document.getElementById('sousTotal[' + id + ']');
-        // var total = document.getElementById('total');
-        // quantityH.value = qte;
-        // sousTotal.value = parseFloat(price) * parseFloat(qte);
-        // var st = $('.sousTotal');
-        // var tt = 0;
-        // for (var i = 0; i < st.length; i++) {
-        //   tt += eval(st[i].value);
-        //   console.log(st[i].value);
-        // }
-        // total.value = tt;
+      });
+
+
+      // A chaque fois que le prix change
+      $('.price').on('input',function(e){
+        var id = $(this).attr("name");
+        var price = $(this).val();
+        var priceH = document.getElementById('priceH[' + id + ']');
+        var qte = document.getElementById('quantity[' + id + ']').value;
+        var sousTotal = document.getElementById('sousTotal[' + id + ']');
+        var total = document.getElementById('total');
+        priceH.value = price;
+        sousTotal.value = parseFloat(qte) * parseFloat(price);
+        var st = $('.sousTotal');
+        var tt = 0;
+        for (var i = 0; i < st.length; i++) {
+          tt += eval(st[i].value);
+          console.log(st[i].value);
+        }
+        total.value = tt;
      });
+
+      // A chaque fois que la quantité change
+      $('.quantity').on('input',function(e){
+        var id = $(this).attr("name");
+        console.log(id);
+        
+        var qte = $(this).val();
+        var quantityH = document.getElementById('quantityH[' + id + ']');
+        var price = document.getElementById('price[' + id + ']').value;
+        var sousTotal = document.getElementById('sousTotal[' + id + ']');
+        var total = document.getElementById('total');
+        quantityH.value = qte;
+        sousTotal.value = parseFloat(price) * parseFloat(qte);
+        var st = $('.sousTotal');
+        var tt = 0;
+        for (var i = 0; i < st.length; i++) {
+          tt += eval(st[i].value);
+          console.log(st[i].value);
+        }
+        total.value = tt;
+     });
+     
+
+      $('.icon-trash').on("click", function(){
+        var id = $(this).parent();
+        console.log(id);
+        
+      });
     });
   </script>
 {% endblock %}

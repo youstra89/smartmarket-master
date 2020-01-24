@@ -68,6 +68,19 @@ class CustomerCommandeRepository extends ServiceEntityRepository
         ;
     }
 
+    public function monthlySelling($dateActuelle)
+    {
+        return $this->createQueryBuilder('c')
+            ->join('c.commande', 'cmd')
+            ->select('SUM(cmd.total_amount), cmd.date')
+            ->where('cmd.date LIKE :dateActuelle')
+            ->groupBy('cmd.date')
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function monthSells($date)
     {
         $manager = $this->getEntityManager()->getConnection();

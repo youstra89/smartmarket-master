@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 
-{% block title %}Modification de marchandise - {{ product.category.name }} {{ product.mark.label }} - {{ product.description }}{% endblock %}
+{% block title %}Modification de marchandise - {{ product.label }}{% endblock %}
 
 
 {% block notifications %}{% endblock %}
@@ -9,52 +9,61 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Modification de la marchandise <strong>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</strong> </h2>
+    <a href="javascript:history.back()" class="btn-sm btn-primary">Retour</a><br><br>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Modification de la marchandise <strong>{{ product.label }}</strong> </h2>
     {{ form_start(form, {'attr': {'class': ''}}) }}
-        <div class="row">
-            <div class="col-md-4">
-              <div class="form-group">
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">Référence du product</label>
+                <input type="text" name="" id="" value="{{ product.reference }}" class="form-control" readonly>
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
                 <label for="">Catégorie</label>
-                <input type="text" name="" value="{{ product.category.name }}" id="" class="form-control" readonly>
-              </div>
+                <input type="text" name="" id="" value="{{ product.category.name }}" class="form-control" readonly>
             </div>
-            <div class="col-md-4">
-              <div class="form-group">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
                 <label for="">Marque</label>
-                <input type="text" name="" value="{{ product.mark.label }}" id="" class="form-control" readonly>
-              </div>
+                <input type="text" name="" id="" value="{{ product.mark.label }}" class="form-control" readonly>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="">{{ form_label(form.description) }}</label>
-                    {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="">{{ form_label(form.unit_price) }}</label>
-                    {{ form_widget(form.unit_price, {'attr': {'class': 'form-control'}}) }}
-                </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.description) }}</label>
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="">{{ form_label(form.purchasing_price) }}</label>
-                    {{ form_widget(form.purchasing_price, {'attr': {'class': 'form-control'}}) }}
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="">{{ form_label(form.security_stock) }}</label>
-                    {{ form_widget(form.security_stock, {'attr': {'class': 'form-control'}}) }}
-                </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.purchasing_price) }}</label>
+                {{ form_widget(form.purchasing_price, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>
-        <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
-    {{ form_end(form) }}
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.unit_price) }}</label>
+                {{ form_widget(form.unit_price, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.security_stock) }}</label>
+                {{ form_widget(form.security_stock, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
+{{ form_end(form) }}
+
   </div>
 {% endblock %}
