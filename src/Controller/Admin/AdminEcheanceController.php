@@ -26,9 +26,11 @@ class AdminEcheanceController extends AbstractController
     public function index(ObjectManager $manager)
     {
         $echeances = $manager->getRepository(Echeance::class)->findAll();
+        $dates = $manager->getRepository(Echeance::class)->differentesDatesEcheances();
         return $this->render('Admin/Echeance/index.html.twig', [
-          'current'    => 'accounting',
-          'echeances' => $echeances
+          'current'   => 'accounting',
+          'dates'     => $dates,
+          'echeances' => $echeances,
         ]);
     }
 

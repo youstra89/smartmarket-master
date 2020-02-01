@@ -83,6 +83,11 @@ class Echeance
      */
     private $echeance_respectee;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_paid;
+
     public function __construct()
     {
         $this->is_deleted = false;
@@ -246,6 +251,18 @@ class Echeance
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getIsPaid(): ?bool
+    {
+        return $this->is_paid;
+    }
+
+    public function setIsPaid(bool $is_paid): self
+    {
+        $this->is_paid = $is_paid;
 
         return $this;
     }

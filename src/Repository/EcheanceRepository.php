@@ -19,6 +19,17 @@ class EcheanceRepository extends ServiceEntityRepository
         parent::__construct($registry, Echeance::class);
     }
 
+    public function differentesDatesEcheances()
+    {
+        $manager = $this->getEntityManager()->getConnection();
+        $query = 'SELECT DISTINCT(SUBSTRING(e.created_at, 1, 7)) AS `date` FROM echeance e WHERE e.is_paid = :status ORDER BY `date` ASC;';
+        $statement = $manager->prepare($query);
+        $statement->bindValue('status', false);
+        $statement->execute();
+        return $statement->fetchAll();
+        ;
+    }
+
     // /**
     //  * @return Echeance[] Returns an array of Echeance objects
     //  */

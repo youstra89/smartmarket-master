@@ -2,17 +2,13 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Commande;
 use App\Entity\Settlement;
 use App\Entity\CustomerCommande;
 use App\Entity\CustomerCommandeDetails;
 use App\Service\CheckConnectedUser;
-use App\Repository\ProductRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 

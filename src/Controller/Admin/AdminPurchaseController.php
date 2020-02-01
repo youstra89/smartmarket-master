@@ -3,17 +3,12 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Product;
-use App\Entity\Category;
-use App\Entity\Commande;
-use App\Form\CommandeType;
 use App\Entity\ProviderCommande;
 use App\Form\ProviderCommandeType;
 use App\Entity\ProviderCommandeDetails;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Knp\Component\Pager\PaginatorInterface;
@@ -46,48 +41,6 @@ class AdminPurchaseController extends AbstractController
          'commandes' => $commandes
        ]);
    }
-
-    /**
-     * @Route("/add", name="provider.order.add")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
-     */
-    public function add(Request $request, ObjectManager $manager)
-    {
-        $providerCommande = new ProviderCommande();
-        $form = $this->createForm(ProviderCommandeType::class, $providerCommande);
-        $form->handleRequest($request);
-        if($form->isSubmitted() && $form->isValid())
-        {
-            $data = $request->request->all();
-            if(empty($data['date']))
-            {
-              $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
-              return $this->redirectToRoute('provider.order.add');
-            }
-            else {
-              $date = new \DateTime($data['date']);
-              $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
-              $totalCharge = $providerCommande->getAdditionalFees() + $providerCommande->getTransport() + $providerCommande->getDedouanement() + $providerCommande->getCurrencyCost() + $providerCommande->getForwardingCost();
-              $providerCommande->setReference($reference);
-              $providerCommande->setDate($date);
-              $providerCommande->setCreatedBy($this->getUser());
-              $providerCommande->setTotalFees($totalCharge);
-              $manager->persist($providerCommande);
-              try{
-                $manager->flush();
-                $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
-              } 
-              catch(\Exception $e){
-                $this->addFlash('danger', $e->getMessage());
-              } 
-              return $this->redirectToRoute('provider.order.add.product', ['id' => $providerCommande->getId()]);
-            }
-        }
-        return $this->render('Admin/Purchase/purchase-add.html.twig', [
-          'current' => 'purchases',
-          'form'    => $form->createView()
-        ]);
-    }
 
 
     /**
@@ -144,21 +97,6 @@ class AdminPurchaseController extends AbstractController
                   // return new Response(var_dump("Prix"));
                   return $this->redirectToRoute('unique_form_provider_order');
                 }
-
-                
-                // // On enregistre d'abord les détails de commande
-                // $commandeProduit = new ProviderCommandeDetails();
-                // $commandeProduit->setCommande($providerCommande);
-                // $commandeProduit->setProduct($product);
-                // $commandeProduit->setQuantity($quantity);
-                // $commandeProduit->setUnitPrice($value);
-                // $commandeProduit->setSubtotal($subtotal);
-                // $commandeGlobalCost += $subtotal;
-                // $manager->persist($commandeProduit);
-                
-                // // Ensuite, on met à jour le stock
-                // $product->setStock($stockQte);
-                // $product->setUpdatedAt(new \DateTime());
                 
                 $part = 0;
                 $product = $manager->getRepository(Product::class)->find($key);
@@ -208,106 +146,6 @@ class AdminPurchaseController extends AbstractController
         ]);
     }
 
-
-    /**
-     * @Route("/edit/{id}", name="provider.order.edit")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
-     * @param ProviderCommande $commande
-     */
-    public function edit(Request $request, ObjectManager $manager, ProviderCommande $commande)
-    {
-        $form = $this->createForm(OrderType::class, $commande);
-        $form->handleRequest($request);
-        if($form->isSubmitted() && $form->isValid())
-        {
-          $product->setUpdatedAt(new \DateTime());
-          try{
-            $manager->flush();
-            $this->addFlash('success', 'Mise à jour de la commande du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> réussie.');
-          } 
-          catch(\Exception $e){
-            $this->addFlash('danger', $e->getMessage());
-          }
-          return $this->redirectToRoute('product');
-        }
-        return $this->render('Admin/Purchase/purchase-edit.html.twig', [
-          'current' => 'purchases',
-          'product' => $product,
-          'form'    => $form->createView()
-        ]);
-    }
-
-    /**
-     * @Route("/ajout-de-marchandises-pour-une-commande/{id}", name="provider.order.add.product")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
-     * @param ProviderCommande $commande
-     */
-    public function addProduct(Request $request, ObjectManager $manager, ProviderCommande $commande, int $id)
-    {
-        $products   = $manager->getRepository(Product::class)->allProductsByCategory();
-        $categories = $manager->getRepository(Category::class)->distinctCategories();
-
-        if($request->isMethod('post'))
-        {
-          $data = $request->request->all();
-          $token = $data['_csrf_token'];
-          if($this->isCsrfTokenValid('provider.order', $token)){
-            $idsProducts = $data["products"];
-            if(empty($idsProducts))
-            {
-              $this->addFlash('danger', 'Impossible de continuer. Vous devez obligatoirement sélectionner des produits.');
-              return $this->redirectToRoute('provider.order.add.product', ["id" => $id]);
-            }
-            else{
-              // $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
-              $this->get('session')->set('idProductsProviderOrder', $idsProducts);
-              return $this->redirectToRoute('provider.commande.details.save', ["id" => $id]);
-            }
-            return new Response(var_dump($data));
-          }
-        }
-        return $this->render('Admin/Purchase/purchase-add-products.html.twig', [
-          'current'    => 'purchases',
-          'products'   => $products,
-          'commande'   => $commande,
-          'categories' => $categories,
-        ]);
-    }
-
-    /**
-     * @Route("/ajouter-produit-a-la-commande-{id}-{commandeId}", name="add.order.product")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
-     * @param Product $product
-     */
-    public function add_product_command(Product $product, int $commandeId)
-    {
-        $productId = $product->getId();
-        // $commande = $manager->getRepository(Commande::class)->find($commandeId);
-        $ids = $this->get('session')->get('idProductsProviderOrder');
-        // $stock = $manager->getRepository(Stock::class)->findOneBy(['product' => $productId]);
-        // if($stock->getQuantity() == 0)
-        // {
-        //   $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est fini en stock.');
-        //   return $this->redirectToRoute('provider.order.add.product', ['id' => $commandeId]);
-        // }
-        // On va vérifier la session pour voir si le produit n'est pas déjà sélectionné
-        if(!empty($ids)){
-
-          foreach ($ids as $key => $value) {
-            if($value === $productId){
-              $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est déjà ajouté(e).');
-              return $this->redirectToRoute('provider.order.add.product', ['id' => $commandeId]);
-            }
-          }
-        }
-        // Append value to retrieved array.
-        $ids[] = $productId;
-        // Set value back to session
-        $this->get('session')->set('idProductsProviderOrder', $ids);
-
-        $this->addFlash('success', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> ajouté(e) à la commande.');
-        return $this->redirectToRoute('provider.order.add.product', ['id' => $commandeId]);
-    }
 
     /**
      * @Route("/annuler-la-commande-en-cours/{id}", name="provider.commande.reset")
