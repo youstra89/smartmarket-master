@@ -89,6 +89,126 @@ class AdminPurchaseController extends AbstractController
         ]);
     }
 
+
+    /**
+     * @Route("/unique-form-provider-order", name="unique_form_provider_order")
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     */
+    public function unique_form_provider_order(Request $request, ObjectManager $manager)
+    {
+        $providerCommande = new ProviderCommande();
+        $form = $this->createForm(ProviderCommandeType::class, $providerCommande);
+        $products = $manager->getRepository(Product::class)->findAll();
+        $form->handleRequest($request);
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $data = $request->request->all();
+            if(empty($data['date']))
+            {
+              $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
+              return $this->redirectToRoute('provider.order.add');
+            }
+            else {
+              $date        = new \DateTime($data['date']);
+              $reference   = $date->format('Ymd').'.'.(new \DateTime())->format('His');
+              $prices      = $data["prices"];
+              $quantities  = $data["quantities"];
+              $totalCharge = $providerCommande->getAdditionalFees() + $providerCommande->getTransport() + $providerCommande->getDedouanement() + $providerCommande->getCurrencyCost() + $providerCommande->getForwardingCost();
+              $providerCommande->setReference($reference);
+              $providerCommande->setDate($date);
+              $providerCommande->setCreatedBy($this->getUser());
+              $providerCommande->setTotalFees($totalCharge);
+              $manager->persist($providerCommande);
+
+              // On va enregistrer les détails de la commande
+              // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
+              $totalCommande = 0;
+              foreach ($data['sousTotal'] as $key => $value) {
+                $totalCommande += $value;
+              }
+              foreach ($prices as $key => $value) {
+                $product  = $manager->getRepository(Product::class)->find($key);
+                $quantity = $quantities[$key];
+                $subtotal = $value * $quantity;
+
+                if($quantity <= 0)
+                {
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                  // return new Response(var_dump("Quantité"));
+                  return $this->redirectToRoute('unique_form_provider_order');
+                }
+                
+                if($value <= 0)
+                {
+                  $this->addFlash('danger', 'Prix d\'achat de <strong>'.$product->getLabel().'</strong> incorrect.');
+                  // return new Response(var_dump("Prix"));
+                  return $this->redirectToRoute('unique_form_provider_order');
+                }
+
+                
+                // // On enregistre d'abord les détails de commande
+                // $commandeProduit = new ProviderCommandeDetails();
+                // $commandeProduit->setCommande($providerCommande);
+                // $commandeProduit->setProduct($product);
+                // $commandeProduit->setQuantity($quantity);
+                // $commandeProduit->setUnitPrice($value);
+                // $commandeProduit->setSubtotal($subtotal);
+                // $commandeGlobalCost += $subtotal;
+                // $manager->persist($commandeProduit);
+                
+                // // Ensuite, on met à jour le stock
+                // $product->setStock($stockQte);
+                // $product->setUpdatedAt(new \DateTime());
+                
+                $part = 0;
+                $product = $manager->getRepository(Product::class)->find($key);
+                // On va commencer par calculer le prix de revient de chaque marchandise
+                /* Pour se faire, on déternime d'abord le pourcentage du prix total de chaque
+                  * article (marchandise, ou encore produit) dans le prix total de la commande
+                  **/
+                $part = ($subtotal * 100) / $totalCommande;
+                // On cherche maintenant le coût total des charges pour l'article actuel
+                // (l'article dans la boucle foreach
+                $chargeProduit = ($totalCharge * $part) / 100;
+                // On divise maintenant cette somme ($chargeProduit) par le nombre de
+                // produit de la commande.
+                $chargeUnitaire = $chargeProduit / $quantity;
+
+                // On enregistre d'abord les détails de commande
+                $commandeProduit = new ProviderCommandeDetails();
+                $commandeProduit->setCommande($providerCommande);
+                $commandeProduit->setProduct($product);
+                $commandeProduit->setQuantity($quantity);
+                $commandeProduit->setUnitPrice($value);
+                $commandeProduit->setSubtotal($subtotal);
+                $commandeProduit->setMinimumSellingPrice($value + $chargeUnitaire);
+                $manager->persist($commandeProduit);
+                // Ensuite, on met à jour le stock
+                $stockQte = $product->getStock() + $quantity;
+                $product->setStock($stockQte);
+                $product->setUpdatedAt(new \DateTime());
+              }
+              $providerCommande->setGlobalTotal($totalCommande);
+              // return new Response(var_dump($chargeUnitaire));
+
+              try{
+                $manager->flush();
+                $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+              } 
+              return $this->redirectToRoute('purchase.selling.price', ['id' => $providerCommande->getId()]);
+            }
+        }
+        return $this->render('Admin/Purchase/purchase-add-unique-form.html.twig', [
+          'current'  => 'purchases',
+          'products' => $products,
+          'form'     => $form->createView()
+        ]);
+    }
+
+
     /**
      * @Route("/edit/{id}", name="provider.order.edit")
      * @IsGranted("ROLE_APPROVISIONNEMENT")
@@ -159,7 +279,7 @@ class AdminPurchaseController extends AbstractController
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param Product $product
      */
-    public function add_product_command(Request $request, ObjectManager $manager, Product $product, int $commandeId)
+    public function add_product_command(Product $product, int $commandeId)
     {
         $productId = $product->getId();
         // $commande = $manager->getRepository(Commande::class)->find($commandeId);
@@ -287,7 +407,6 @@ class AdminPurchaseController extends AbstractController
         }
 
         return $this->render('Admin/Purchase/purchase-details-save.html.twig', [
-            // 'form' => $form->createView(),
             'current'  => 'purchases',
             'products' => $products,
             'commande' => $commande

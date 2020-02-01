@@ -23,7 +23,7 @@ class ProviderCommandeType extends AbstractType
           ->add('forwarding_cost', IntegerType::class, ['label' => 'Transitaire', 'required' => true])
           ->add('dedouanement',    IntegerType::class, ['label' => 'Frais de dédouanement', 'required' => true])
           ->add('provider', EntityType::class, [
-              'required' => false,
+              'required' => true,
               'placeholder' => 'Sélectionner un forunisseur',
               'label' => 'Fournisseur',
               'choice_label' => function ($provider) {

@@ -37,7 +37,7 @@
 
 
 {% block body %}
-    <h2>Enregistrement du prix minimum de vente de la commande N°{{ commande.reference }} fournisseur du {{ commande.date|date('d-mY') }}</h2>
+    <h2>Enregistrement du prix minimum de vente de la commande N°{{ commande.reference }} fournisseur du {{ commande.date|date('d-m-Y') }}</h2>
     <section class="contact-area container">
         <form class="ui form" action="" method="post">
             {% set i = 0 %}
@@ -58,11 +58,11 @@
                   <tbody>
                     <tr>
                       <td>{{ i }}</td>
-                      <td>{{ item.product.category.name }} {{ item.product.mark.label }} - {{ item.product.description }}</td>
+                      <td>{{ item.product.label }}</td>
                       <td>{{ item.quantity }}</td>
-                      <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
-                      <td>{{ item.minimumSellingPrice|number_format(0, ',', ' ') }} F CFA</td>
-                      <td>{{ item.product.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
+                      <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
+                      <td>{{ item.minimumSellingPrice|number_format(0, ',', ' ') }} F</td>
+                      <td>{{ item.product.unitPrice|number_format(0, ',', ' ') }} F</td>
                       <td>
                         <input type="number" class="price" id="price[{{ item.id }}]" name="price[{{ item.id }}]" value="{{ item.product.unitPrice - item.minimumSellingPrice }}" required>
                       </td>
