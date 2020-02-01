@@ -63,12 +63,8 @@ class ProductRepository extends ServiceEntityRepository
         $query = $query
             ->join('p.category', 'c')
             ->addSelect('c')
-            ->join('p.mark', 'm')
-            ->addSelect('m')
             ->orderBy('c.name')
             ->addOrderBy('c.id')
-            ->addOrderBy('m.label')
-            ->addOrderBy('m.id')
         ;
 
         return $query->getQuery()->getResult();

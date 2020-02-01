@@ -2,41 +2,43 @@
 // src/Controller/LuckyController.php
 namespace App\Controller\Admin;
 
-use App\Entity\Product;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use App\Entity\Mark;
-use App\Entity\ProductSearch;
-use App\Form\ProductSearchType;
+use App\Entity\Product;
 use App\Entity\Commande;
+use App\Entity\Customer;
 use App\Entity\Settlement;
 use App\Form\CommandeType;
-use App\Entity\Customer;
 use App\Form\CustomerType;
+use App\Entity\ProductSearch;
+use App\Form\ProductSearchType;
 use App\Entity\CustomerCommande;
 use App\Form\CustomerCommandeType;
-use App\Entity\CustomerCommandeDetails;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Knp\Component\Pager\PaginatorInterface;
-use App\Entity\CustomerCommandeSearch;
-use App\Form\CustomerCommandeSearchType;
-
 use JMS\Serializer\SerializerBuilder;
+use App\Entity\CustomerCommandeSearch;
+use App\Entity\CustomerCommandeDetails;
+use App\Form\CustomerCommandeSearchType;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\Common\Persistence\ObjectManager;
+use Symfony\Component\HttpFoundation\Response;
+
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
-
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 
 /**
@@ -186,7 +188,7 @@ class AdminSellController extends AbstractController
      * @Route("/unique-form-for-selling", name="unique_form_for_selling")
      * @IsGranted("ROLE_VENTE")
      */
-    public function unique_form_for_selling(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+    public function unique_form_for_selling(Request $request, ObjectManager $manager)
     {
         $customers = $manager->getRepository(Customer::class)->findAll();
         $products = $manager->getRepository(Product::class)->findAll();
@@ -211,15 +213,11 @@ class AdminSellController extends AbstractController
                 return $this->redirectToRoute('unique_form_for_selling');
               }
               else {
-                $commande   = new Commande();
                 $date       = new \DateTime($data["date"]);
                 $prices     = $data["prices"];
                 $quantities = $data["quantities"];
-                $commande->setDate($date);
-                $commande->setCreatedBy($this->getUser());
-                $manager->persist($commande);
                 $seller = $this->getUser();
-                $reference = $date->format('Ymd').'.'.(new \DateTime())->format('hm');
+                $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
                 $customerCommande = new CustomerCommande();
                 if(isset($data['customer']))
                 {
@@ -228,8 +226,9 @@ class AdminSellController extends AbstractController
                   $customerCommande->setCustomer($customer);
                 }
                 $customerCommande->setReference($reference);
-                $customerCommande->setCommande($commande);
                 $customerCommande->setSeller($seller);
+                $customerCommande->setDate($date);
+                $customerCommande->setCreatedBy($this->getUser());
                 $manager->persist($customerCommande);
 
                 // On va enregistrer les détails de la commande
@@ -275,17 +274,19 @@ class AdminSellController extends AbstractController
                   $product->setStock($stockQte);
                   $product->setUpdatedAt(new \DateTime());
                 }
-                $commande->setTotalAmount($commandeGlobalCost);
+                $customerCommande->setTotalAmount($commandeGlobalCost);
 
                 //On va maintenant enregistrer le règlement de la commande
                 try{
                   $manager->flush();
                   $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                  // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
+                  return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
                 } 
                 catch(\Exception $e){
                   $this->addFlash('danger', $e->getMessage());
+                  return $this->redirectToRoute('unique_form_for_selling');
                 }
-                return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
               }
             }
           }
@@ -529,14 +530,14 @@ class AdminSellController extends AbstractController
     public function settlement(Request $request, CustomerCommande $commande, ObjectManager $manager)
     {
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
-      $reglements = $commande->getCommande()->getSettlements();
+      $reglements = $commande->getSettlements();
       // $total = array_sum(array_map('getValue', $reglements));
       $total = 0;
       foreach ($reglements as $key => $value) {
         $total += $value->getAmount();
       }
       // dump($total);
-      $reste = $commande->getCommande()->getTotalAmount() - $total;
+      $reste = $commande->getTotalAmount() - $total;
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
@@ -556,7 +557,7 @@ class AdminSellController extends AbstractController
             return $this->redirectToRoute('settlement', ['id' => $commandeId]);
           }
           if (empty($commande->getCustomer())) {
-            if($amount != $commande->getCommande()->getTotalAmount()) {
+            if($amount != $commande->getTotalAmount()) {
               $this->addFlash('danger', 'Montant incorrect. La valeur saisie n\'est pas égale au montant total da la commande.');
               // return new Response("Montant différent du total de la commande");
               return $this->redirectToRoute('settlement', ['id' => $commandeId]);
@@ -564,27 +565,27 @@ class AdminSellController extends AbstractController
             else {
               $this->addFlash('success', 'Règlement enregistré avec succès. Commande soldée.');
               // return new Response("Règlement Ok sans client");
-              $commande->getCommande()->setEnded(true);
+              $commande->setEnded(true);
             }
           }
           else {
             $newTotal = $amount + $total;
-            if($newTotal > $commande->getCommande()->getTotalAmount())
+            if($newTotal > $commande->getTotalAmount())
             {
               $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
               // return new Response("Somme des règlements supérieure à la commande");
               return $this->redirectToRoute('settlement', ['id' => $commandeId]);
             }
-            elseif($newTotal < $commande->getCommande()->getTotalAmount())
+            elseif($newTotal < $commande->getTotalAmount())
             {
               $this->addFlash('success', 'Règlement bien enregistré. Cependant la commande n\'est pas soldée.');
               // return new Response("Règlement Ok, avec dette");
               // return $this->redirectToRoute('sell');
             }
-            elseif ($newTotal == $commande->getCommande()->getTotalAmount()) {
+            elseif ($newTotal == $commande->getTotalAmount()) {
               $this->addFlash('success', 'Règlement enregistré avec succès. Commande soldée.');
               // return new Response("Règlement Ok, commande soldée");
-              $commande->getCommande()->setEnded(true);
+              $commande->setEnded(true);
             }
           }
           $user = $this->getUser();
@@ -593,7 +594,7 @@ class AdminSellController extends AbstractController
           $settlement->setAmount($amount);
           $settlement->setReceiver($user);
           $settlement->setCreatedBy($this->getUser());
-          $settlement->setCommande($commande->getCommande());
+          $settlement->setCommande($commande);
           $manager->persist($settlement);
           try{
             $manager->flush();
@@ -620,11 +621,51 @@ class AdminSellController extends AbstractController
      * @param CustomerCommande $commande
      * @IsGranted("ROLE_VENTE")
      */
-     public function customer_order_details(int $id, ObjectManager $manager, CustomerCommande $commande)
-     {
+    public function customer_order_details(int $id, ObjectManager $manager, CustomerCommande $commande)
+    {
         return $this->render('Admin/Sell/sell-details.html.twig', [
           'current'  => 'sells',
           'commande' => $commande
         ]);
-     }
+    }
+
+    /**
+     * @Route("/facture-de-vente/{id}", name="facture_client")
+     * @param CustomerCommande $commande
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function facture_client(CustomerCommande $commande)
+    {
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('Admin/Sell/facture.html.twig', [
+            'commande'  => $commande
+        ]);
+        
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+        //"dompdf/dompdf": "^0.8.3",
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("mypdf.pdf", [
+            "Attachment" => false
+        ]);
+        return $this->render('Admin/Sell/sell-details.html.twig', [
+          'current'  => 'sells',
+          'commande' => $commande
+        ]);
+    }
 }

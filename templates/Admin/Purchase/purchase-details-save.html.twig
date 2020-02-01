@@ -6,12 +6,12 @@
 
 
 {% block title %}
-  Enregistrement des détails de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}
+  Enregistrement des détails de la commande fournisseur du {{ commande.date|date('d-mY') }}
 {% endblock %}
 
 
 {% block body %}
-    <h2>Enregistrement des détails de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}</h2>
+    <h2>Enregistrement des détails de la commande fournisseur du {{ commande.date|date('d-mY') }}</h2>
     {{ include('Admin/Purchase/_purchase-details.html.twig') }}
 {% endblock %}
 

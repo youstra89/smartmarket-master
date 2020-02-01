@@ -65,20 +65,17 @@ class AdminPurchaseController extends AbstractController
               return $this->redirectToRoute('provider.order.add');
             }
             else {
-              $commande = new Commande();
               $date = new \DateTime($data['date']);
-              $commande->setDate($date);
-              $commande->setCreatedBy($this->getUser());
-              $manager->persist($commande);
-              $reference = $date->format('Ymd').'.'.(new \DateTime())->format('hm');
+              $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
               $totalCharge = $providerCommande->getAdditionalFees() + $providerCommande->getTransport() + $providerCommande->getDedouanement() + $providerCommande->getCurrencyCost() + $providerCommande->getForwardingCost();
               $providerCommande->setReference($reference);
-              $providerCommande->setCommande($commande);
+              $providerCommande->setDate($date);
+              $providerCommande->setCreatedBy($this->getUser());
               $providerCommande->setTotalFees($totalCharge);
               $manager->persist($providerCommande);
               try{
                 $manager->flush();
-                $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
+                $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               } 
               catch(\Exception $e){
                 $this->addFlash('danger', $e->getMessage());
@@ -106,7 +103,7 @@ class AdminPurchaseController extends AbstractController
           $product->setUpdatedAt(new \DateTime());
           try{
             $manager->flush();
-            $this->addFlash('success', 'Mise à jour de la commande du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> réussie.');
+            $this->addFlash('success', 'Mise à jour de la commande du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -273,14 +270,14 @@ class AdminPurchaseController extends AbstractController
             // return new Response(var_dump($t));
             $coutGlobal = $commande->getTotalFees() + $totalGeneral;
             $commande->setGlobalTotal($coutGlobal);
-            $commande->getCommande()->setTotalAmount($totalGeneral);
-            $commande->getCommande()->setUpdatedAt(new \DateTime());
-            $commande->getCommande()->setUpdatedBy($this->getUser());
+            $commande->setTotalAmount($totalGeneral);
+            $commande->setUpdatedAt(new \DateTime());
+            $commande->setUpdatedBy($this->getUser());
 
             $this->get('session')->remove('idProductsProviderOrder');
             try{
               $manager->flush();
-              $this->addFlash('success', 'Enregistrement des détails de la commande fournisseur du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+              $this->addFlash('success', 'Enregistrement des détails de la commande fournisseur du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> résussi.');
             } 
             catch(\Exception $e){
               $this->addFlash('danger', $e->getMessage());
@@ -326,7 +323,7 @@ class AdminPurchaseController extends AbstractController
             }
             try{
               $manager->flush();
-              $this->addFlash('success', 'Enregistrement des prix de vente de la commande fournisseur du <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> résussi.');
+              $this->addFlash('success', 'Enregistrement des prix de vente de la commande fournisseur du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> résussi.');
             } 
             catch(\Exception $e){
               $this->addFlash('danger', $e->getMessage());

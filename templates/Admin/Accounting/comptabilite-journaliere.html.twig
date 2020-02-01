@@ -41,6 +41,7 @@
           <th>#</th>
           <th>Date</th>
           <th>Total des ventes</th>
+          <th>Marge bénéficiare probable</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -52,6 +53,11 @@
             <td>{{ i }}</td>
             <td>{{ vente.date|date('d-m-Y') }}</td>
             <td>{{ vente.1|number_format(0, ',', ' ') }} F CFA</td>
+            <td>
+              {% for item in benefices if item.date == vente.date|date('Y-m-d') %}
+                {{ item.benefice|number_format(0, ',', ' ') }} F CFA
+              {% endfor %}
+            </td>
             <td>
               <a href="{{ path('vente.du.jour', {date: vente.date|date('Y-m-d')}) }}" class="circle arrow small">Plus de détails</a>
             </td>

@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Commande;
 use App\Entity\Settlement;
 use App\Entity\CustomerCommande;
+use App\Entity\CustomerCommandeDetails;
 use App\Service\CheckConnectedUser;
 use App\Repository\ProductRepository;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -69,13 +70,16 @@ class AdminAccountingController extends AbstractController
         if(empty($mois))
           $mois = (new \DateTime())->format('Y-m');
         $ventes = $manager->getRepository(CustomerCommande::class)->monthlySelling($mois);
+        $benefices = $manager->getRepository(CustomerCommandeDetails::class)->benefice_journalier($mois);
+        // dd($benefices);
         if(empty($ventes)){
           $this->addFlash('error', 'La date sélectionnée n\'est pas correcte.');
           // return $this->redirectToRoute('dayly.accounting');
         }
         return $this->render('Admin/Accounting/comptabilite-journaliere.html.twig', [
-          'ventes'  => $ventes,
-          'current' => 'accounting',
+          'ventes'    => $ventes,
+          'benefices' => $benefices,
+          'current'   => 'accounting',
         ]);
     }
 
@@ -113,7 +117,6 @@ class AdminAccountingController extends AbstractController
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
 
-        $repoCommande  = $manager->getRepository(Commande  ::class);
         $repoCustomerCommande  = $manager->getRepository(CustomerCommande  ::class);
         $repoSettlement = $manager->getRepository(Settlement::class);
         $commandes     = $repoCustomerCommande->lesDebiteurs();

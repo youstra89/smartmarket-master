@@ -45,6 +45,21 @@ class TypeDepense
     private $updated_by;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_deleted;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $deleted_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $deleted_by;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Entity\Depense", mappedBy="type")
      */
     private $depenses;
@@ -56,7 +71,9 @@ class TypeDepense
 
     public function __construct()
     {
-        $this->depenses = new ArrayCollection();
+        $this->is_deleted = false;
+        $this->created_at = new \DateTime();
+        $this->depenses   = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -163,6 +180,42 @@ class TypeDepense
     public function setTypeSysteme(bool $type_systeme): self
     {
         $this->type_systeme = $type_systeme;
+
+        return $this;
+    }
+
+    public function getIsDeleted(): ?bool
+    {
+        return $this->is_deleted;
+    }
+
+    public function setIsDeleted(bool $is_deleted): self
+    {
+        $this->is_deleted = $is_deleted;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
+    {
+        $this->deleted_at = $deleted_at;
+
+        return $this;
+    }
+
+    public function getDeletedBy(): ?User
+    {
+        return $this->deleted_by;
+    }
+
+    public function setDeletedBy(?User $deleted_by): self
+    {
+        $this->deleted_by = $deleted_by;
 
         return $this;
     }

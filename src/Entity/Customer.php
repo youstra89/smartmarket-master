@@ -59,6 +59,21 @@ class Customer
     private $updated_by;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_deleted;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $deleted_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $deleted_by;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $address;
@@ -88,8 +103,9 @@ class Customer
 
     public function __construct()
     {
-      $this->created_at = new \DateTime();
-      $this->customerCommandes = new ArrayCollection();
+        $this->created_at        = new \DateTime();
+        $this->is_deleted        = false;
+        $this->customerCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -113,12 +129,17 @@ class Customer
     {
         return $this->lastname;
     }
-
+    
     public function setLastname(string $lastname): self
     {
         $this->lastname = $lastname;
-
+        
         return $this;
+    }
+    
+    public function getName()
+    {
+        return $this->lastname.' '.$this->firstname;
     }
 
     public function getPhoneNumber(): ?string
@@ -268,6 +289,42 @@ class Customer
     public function setUpdatedBy(?User $updated_by): self
     {
         $this->updated_by = $updated_by;
+
+        return $this;
+    }
+
+    public function getIsDeleted(): ?bool
+    {
+        return $this->is_deleted;
+    }
+
+    public function setIsDeleted(bool $is_deleted): self
+    {
+        $this->is_deleted = $is_deleted;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
+    {
+        $this->deleted_at = $deleted_at;
+
+        return $this;
+    }
+
+    public function getDeletedBy(): ?User
+    {
+        return $this->deleted_by;
+    }
+
+    public function setDeletedBy(?User $deleted_by): self
+    {
+        $this->deleted_by = $deleted_by;
 
         return $this;
     }

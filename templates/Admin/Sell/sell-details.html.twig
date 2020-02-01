@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Détails de la vente du {{ commande.commande.date|date('d-mY') }}
+  Détails de la vente du {{ commande.date|date('d-mY') }}
 {% endblock %}
 
 
@@ -47,26 +47,37 @@
           <span>{{ commande.customer.firstname }} {{ commande.customer.lastname }}</span><br>
           <strong>Numéro de téléphone client:</strong>
           <span>{{ commande.customer.phoneNumber }}</span><br>
+          <strong>Type du client:</strong>
+          <span>{{ commande.customer.type.type }}</span><br>
         {% else %}
           Vente anomyne
         {% endif %}
       </div>
       <div class="col-md-4">
         <h3>Commande</h3>
-        <strong>Montant total de la vente</strong><br>
-        <span>{{ commande.commande.totalAmount|number_format(0, ',', ' ') }} F CFA</span><br>
+        <strong>Date de la commande:</strong>
+        <span>{{ commande.date|date('d-m-Y') }}</span><br>
+        <strong>Référence:</strong>
+        <span>{{ commande.reference }}</span><br>
+        <strong>Montant total de la vente:</strong>
+        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
       </div>
-      {% if is_granted("ROLE_ADMIN") and commande.returnedProducts is empty %}
-        <div class="col-md-4">
-          <h3>Retour de marchandises</h3>
-          <a class="btn-lg btn-danger" href="{{ path('reset_sell', {id: commande.id}) }}">Retour de marchandises</a><br>
-        </div>
-      {% endif %}
+      <div class="col-md-4">
+        <h3>Opérations</h3>
+        {% if is_granted("ROLE_ADMIN") and commande.returnedProducts is empty %}
+          <a class="btn-sm btn-danger" href="{{ path('reset_sell', {id: commande.id}) }}">Retour de marchandises</a><br><br>
+        {% endif %}
+      <a class="btn-sm btn-info" href="{{ path('facture_client', {id: commande.id}) }}">Imprimer une facture</a><br>
+      </div>
+      {% set totalRetour = 0 %}
       {% if commande.returnedProducts is not empty %}
         <div class="col-md-4">
           <h3>Retour de marchandises</h3>
           {% for item in commande.returnedProducts %}
-            <li>{{ item.quantity }} {{ item.product.category.name }} {{ item.product.mark.label }} - {{ item.product.description }}</li>
+            {# {% for prod in commande.product if item.product.id == prod.id %} #}
+              {# {% set totalRetour = totalRetour + (item.quantity * prod.unitPrice) %} #}
+              <li>{{ item.quantity }} {{ item.product.label }}</li>
+            {# {% endfor %} #}
           {% endfor %}
         </div>
       {% endif %}
@@ -90,10 +101,10 @@
                 <tbody>
                   <tr>
                     <td>{{ i }}</td>
-                    <td>{{ item.product.category.name }} {{ item.product.mark.label }} - {{ item.product.description }}</td>
+                    <td>{{ item.product.label }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
-                    <td>{{ item.subtotal|number_format(0, ',', ' ') }} F CFA</td>
+                    <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
+                    <td>{{ item.subtotal|number_format(0, ',', ' ') }} F</td>
                   </tr>
                 </tbody>
             {% endfor %}
@@ -102,16 +113,16 @@
         <div class="row">
           <div class="col-lg-3 col-md-4 col-sm-12">
             <h3>Règlements</h3>
-            {% if commande.commande.settlements is not empty %}
+            {% if commande.settlements is not empty %}
               {% set total = 0 %}
               <ul>
-                {% for item in commande.commande.settlements %}
+                {% for item in commande.settlements %}
                   {% set total = total + item.amount %}
                   <li>{{ item.commande.date|date('d-m-Y') }}: {{ item.amount|number_format(0, ',', ' ') }} F CFA</li>
                 {% endfor %}
               </ul>
               <br>
-              {% set rest = commande.commande.totalAmount - total %}
+              {% set rest = commande.totalAmount - total - totalRetour %}
               <p>Reste à Payer : {{ rest|number_format(0, ',', ' ') }} F CFA</p>
             {% endif %}
           </div>

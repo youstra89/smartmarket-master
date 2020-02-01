@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 
-{% block title %}Ajout de marchandises pour l'achat du {{ commande.commande.date|date('d-m-Y') }}{% endblock %}
+{% block title %}Ajout de marchandises pour l'achat du {{ commande.date|date('d-m-Y') }}{% endblock %}
 
 
 {% block notifications %}
@@ -31,7 +31,7 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour l'achat du {{ commande.commande.date|date('d-m-Y') }}</h2>
+    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour l'achat du {{ commande.date|date('d-m-Y') }}</h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     {% if products|length != 0 %}
       <form action="" method="post">
@@ -42,7 +42,7 @@
               <div class="col-md-4">
                 <label for="product[{{item.id}}]">
                   <input type="checkbox" name="products[{{item.id}}]" id="product[{{item.id}}]" value="{{item.id}}">
-                  {{ item.category.name }} {{ item.mark.label }} - {{ item.description }}
+                  {{ item.label }}
                 </label>
               </div>
             {% endfor %}

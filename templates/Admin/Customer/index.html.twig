@@ -4,6 +4,11 @@
 {% block title %}Les clients{% endblock %}
 
 
+{% block stylesheets %}
+    <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+
 {% block notifications %}
   {% for message in app.flashes('success') %}
     <div class="alert alert-success fade in">
@@ -34,20 +39,60 @@
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Clients</h2>
     <a href="{{ path('customer.add') }}" class="btn btn-primary">Ajouter un client</a>
-    <div class="row row-bottom-padded-md">
-      {% for customer in customers %}
-          <div class="col-md-3 col-sm-6 col-padding animate-box" data-animate-effect="fadeInLeft">
-            <div class="blog-entry">
-              <a href="#" class="blog-img"><img src="{{ asset('images/img-1.jpg') }}" class="img-responsive" alt="Free HTML5 Bootstrap Template by FreeHTML5.co"></a>
-              <div class="desc">
-                <h3><a href="#">{{ customer.firstname }} {{ customer.lastname }}</a></h3>
-                <span>{{ customer.type.type }}</span>
-                <p>Clients</p>
-                <a href="{{ path('customer.edit', {id: customer.id}) }}" class="lead">Modifier<i class="icon-arrow-right3"></i></a>
-              </div>
-            </div>
-          </div>
-      {% endfor %}
+    <div class="table-responsive">
+      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Référence</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>N°</th>
+            <th>Référence</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Type</th>
+            <th>Actions</th>
+          </tr>
+        </tfoot>
+        <tbody>
+          {% set i = 0 %}
+          {% for customer in customers %}
+            {% set i = i + 1 %}
+            <tr>
+              <td>{{ i }}</td>
+              <td>{{ customer.reference }}</td>
+              <td>{{ customer.lastname }}</td>
+              <td>{{ customer.firstname }}</td>
+              <td>{{ customer.phoneNumber }}</td>
+              <td>{{ customer.email }}</td>
+              <td>{{ customer.type.type }}</td>
+              <td>
+                <a href="{{ path('customer.edit', {id: customer.id}) }}" title="Modifier info client"><i class="icon-edit"></i></a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/datatables-demo.js') }}"></script>
 {% endblock %}

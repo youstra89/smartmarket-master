@@ -54,6 +54,21 @@ class Echeance
     private $updated_by;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_deleted;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $deleted_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $deleted_by;
+
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $date_settlement;
@@ -67,6 +82,12 @@ class Echeance
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $echeance_respectee;
+
+    public function __construct()
+    {
+        $this->is_deleted = false;
+        $this->created_at = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -189,6 +210,42 @@ class Echeance
     public function setEcheanceRespectee(?bool $echeance_respectee): self
     {
         $this->echeance_respectee = $echeance_respectee;
+
+        return $this;
+    }
+
+    public function getIsDeleted(): ?bool
+    {
+        return $this->is_deleted;
+    }
+
+    public function setIsDeleted(bool $is_deleted): self
+    {
+        $this->is_deleted = $is_deleted;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
+    {
+        $this->deleted_at = $deleted_at;
+
+        return $this;
+    }
+
+    public function getDeletedBy(): ?User
+    {
+        return $this->deleted_by;
+    }
+
+    public function setDeletedBy(?User $deleted_by): self
+    {
+        $this->deleted_by = $deleted_by;
 
         return $this;
     }

@@ -11,6 +11,24 @@
   <div class="fh5co-narrow-content">
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Enregistrement d'échéances de paiement</h2>
+    <div class="row">
+      <div class="col-md-4">
+        <h3>Client</h3>
+        {% if commande.customer is not empty %}
+          <strong>Nom Client:</strong>
+          <span>{{ commande.customer.firstname }} {{ commande.customer.lastname }}</span><br>
+          <strong>Numéro de téléphone client:</strong>
+          <span>{{ commande.customer.phoneNumber }}</span><br>
+        {% else %}
+          Vente anomyne
+        {% endif %}
+      </div>
+      <div class="col-md-4">
+        <h3>Commande</h3>
+        <strong>Montant total de la vente</strong><br>
+        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F CFA</span><br>
+      </div>
+    </div><br><br>
     <form action="" method="post">
       <div class="row">
         <div class="col-md-4">

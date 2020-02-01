@@ -22,9 +22,7 @@ class CustomerCommandeRepository extends ServiceEntityRepository
 
     public function commandesClients(CustomerCommandeSearch $search)
     {
-      $query = $this->createQueryBuilder('clt')
-                    ->join('clt.commande', 'c')
-                    ->addSelect('c')
+      $query = $this->createQueryBuilder('c')
                     ->orderBy('c.date', 'DESC')
                     ;
 
@@ -48,9 +46,7 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function dayCommande($date)
     {
       return $this->createQueryBuilder('c')
-          ->join('c.commande', 'cmd')
-          ->addSelect('cmd')
-          ->where('cmd.date LIKE :date')
+          ->where('c.date LIKE :date')
           ->setParameter('date', '%'.$date.'%')
           ->orderBy('c.id', 'DESC')
           ->getQuery()
@@ -61,7 +57,7 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function differentDates()
     {
         $manager = $this->getEntityManager()->getConnection();
-        $query = 'SELECT DISTINCT(SUBSTRING(c.created_at, 1, 7)) AS `date` FROM customer_commande cc JOIN commande c ON cc.commande_id = c.id ORDER BY `date` ASC;';
+        $query = 'SELECT DISTINCT(SUBSTRING(cc.created_at, 1, 7)) AS `date` FROM customer_commande cc ORDER BY `date` ASC;';
         $statement = $manager->prepare($query);
         $statement->execute();
         return $statement->fetchAll();
@@ -71,10 +67,9 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function monthlySelling($dateActuelle)
     {
         return $this->createQueryBuilder('c')
-            ->join('c.commande', 'cmd')
-            ->select('SUM(cmd.total_amount), cmd.date')
-            ->where('cmd.date LIKE :dateActuelle')
-            ->groupBy('cmd.date')
+            ->select('SUM(c.total_amount), c.date')
+            ->where('c.date LIKE :dateActuelle')
+            ->groupBy('c.date')
             ->setParameter('dateActuelle', $dateActuelle.'%')
             ->getQuery()
             ->getResult()
@@ -84,31 +79,17 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function monthSells($date)
     {
         $manager = $this->getEntityManager()->getConnection();
-        $requete_eentrees = 'SELECT SUM(c.total_amount) AS somme FROM customer_commande cc JOIN commande c ON cc.commande_id = c.id WHERE c.date LIKE :date ORDER BY c.date ASC, c.id ASC;';
+        $requete_eentrees = 'SELECT SUM(cc.total_amount) AS somme FROM customer_commande cc WHERE cc.date LIKE :date ORDER BY cc.date ASC;';
         $statement = $manager->prepare($requete_eentrees);
         $statement->bindValue('date', $date.'%');
         $statement->execute();
         return $statement->fetchAll();
-        return $this->createQueryBuilder('c')
-            ->join('c.commande', 'cmd')
-            ->addSelect('cmd')
-            ->select('SUM(cmd.total_amount), cmd.date')
-            ->where('cmd.date LIKE :date')
-            ->groupBy('cmd.date')
-            ->setParameter('date', $date.'%')
-            ->orderBy('cmd.date', 'ASC')
-            ->orderBy('cmd.id', 'ASC')
-            ->getQuery()
-            ->getResult()
-        ;
     }
 
     public function lesDebiteurs()
     {
         return $this->createQueryBuilder('c')
-            ->join('c.commande', 'cmd')
-            ->addSelect('cmd')
-            ->where('cmd.ended = false')
+            ->where('c.ended = false')
             ->getQuery()
             ->getResult()
         ;

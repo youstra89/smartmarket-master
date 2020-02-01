@@ -4,6 +4,11 @@
 {% block title %}Les fournisseurs{% endblock %}
 
 
+{% block stylesheets %}
+    <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+
 {% block notifications %}
   {% for message in app.flashes('success') %}
     <div class="alert alert-success fade in">
@@ -34,20 +39,60 @@
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Fournisseurs</h2>
     <a href="{{ path('provider.add') }}" class="btn btn-primary">Ajouter un fournisseur</a>
-    <div class="row row-bottom-padded-md">
-      {% for provider in providers %}
-          <div class="col-md-3 col-sm-6 col-padding animate-box" data-animate-effect="fadeInLeft">
-            <div class="blog-entry">
-              <a href="#" class="blog-img"><img src="{{ asset('images/img-1.jpg') }}" class="img-responsive" alt="Free HTML5 Bootstrap Template by FreeHTML5.co"></a>
-              <div class="desc">
-                <h3><a href="#">{{ provider.firstname }} {{ provider.lastname }}</a></h3>
-                <span>{{ provider.country.name }}</span>
-                <p>Forunisseur</p>
-                <a href="{{ path('provider.edit', {id: provider.id}) }}" class="lead">Modifier<i class="icon-arrow-right3"></i></a>
-              </div>
-            </div>
-          </div>
-      {% endfor %}
+    <div class="table-responsive">
+      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Référence</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Pays</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>N°</th>
+            <th>Référence</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Pays</th>
+            <th>Actions</th>
+          </tr>
+        </tfoot>
+        <tbody>
+          {% set i = 0 %}
+          {% for provider in providers %}
+            {% set i = i + 1 %}
+            <tr>
+              <td>{{ i }}</td>
+              <td>{{ provider.reference }}</td>
+              <td>{{ provider.lastname }}</td>
+              <td>{{ provider.firstname }}</td>
+              <td>{{ provider.phoneNumber }}</td>
+              <td>{{ provider.email }}</td>
+              <td>{{ provider.country.name }}</td>
+              <td>
+                <a href="{{ path('provider.edit', {id: provider.id}) }}" title="Modifier info fournisseur"><i class="icon-edit"></i></a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/datatables-demo.js') }}"></script>
 {% endblock %}

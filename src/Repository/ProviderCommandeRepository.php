@@ -23,9 +23,7 @@ class ProviderCommandeRepository extends ServiceEntityRepository
     public function commandesFournisseurs(ProviderCommandeSearch $search)
     {
       $query = $this->createQueryBuilder('p')
-                    ->join('p.commande', 'c')
-                    ->addSelect('c')
-                    ->orderBy('c.date', 'DESC')
+                    ->orderBy('p.date', 'DESC')
                     ;
 
       if($search->getProvider()){

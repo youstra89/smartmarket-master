@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Enregistrement du prix minimum de vente de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}
+  Enregistrement du prix minimum de vente de la commande fournisseur du {{ commande.date|date('d-mY') }}
 {% endblock %}
 
 
@@ -37,7 +37,7 @@
 
 
 {% block body %}
-    <h2>Enregistrement du prix minimum de vente de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}</h2>
+    <h2>Enregistrement du prix minimum de vente de la commande N°{{ commande.reference }} fournisseur du {{ commande.date|date('d-mY') }}</h2>
     <section class="contact-area container">
         <form class="ui form" action="" method="post">
             {% set i = 0 %}

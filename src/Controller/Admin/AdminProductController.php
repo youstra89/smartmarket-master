@@ -17,6 +17,10 @@ use App\Form\ProductSearchType;
 
 use App\Controller\FonctionsController;
 
+// Include Dompdf required namespaces
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
 /**
  * @Route("/products")
  */
@@ -62,6 +66,11 @@ class AdminProductController extends AbstractController
         if($form->isSubmitted() && $form->isValid())
         {
           // $product->setReference($reference);
+          if($product->getPurchasingPrice() > $product->getUnitPrice())
+          {
+            $this->addFlash('error', 'Impossible de continuer. Prix d\'achat supérieur au prix de vente.');
+            return $this->redirectToRoute('product');
+          }
           $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
           $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
           $product->setCreatedBy($this->getUser());
@@ -93,6 +102,11 @@ class AdminProductController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
+          if($product->getPurchasingPrice() > $product->getUnitPrice())
+          {
+            $this->addFlash('danger', 'Impossible de continuer. Prix d\'achat supérieur au prix de vente.');
+            return $this->redirectToRoute('product');
+          }
           $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
           $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
           $product->setUpdatedAt(new \DateTime());
@@ -174,5 +188,45 @@ class AdminProductController extends AbstractController
         'current'  => 'products',
         'products' => $products
       ]);
+    }
+
+    /**
+     * @Route("/impression-de-inventaire-de-stock-de-produits", name="impression_inventaire")
+     */
+    public function inventaire_de_stock_de_produits(ObjectManager $manager)
+    {
+        $products = $manager->getRepository(Product::class)->findAll();
+        if(empty($products)){
+            $this->addFlash('warning', "Aucun produit enregistré pour le moment.");
+            return $this->redirectToRoute('product');
+        }
+
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('Admin/Product/inventaire-stock-de-produits.html.twig', [
+            'products'  => $products
+        ]);
+        
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+        //"dompdf/dompdf": "^0.8.3",
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("stock-".(new \DateTime())->format('d-m-Y H:i:s').".pdf", [
+            "Attachment" => false
+        ]);
     }
 }
