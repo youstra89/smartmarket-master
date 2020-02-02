@@ -2,24 +2,25 @@
 // src/Controller/LuckyController.php
 namespace App\Controller\Admin;
 
-use App\Entity\Product;
-use App\Form\ProductType;
-use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Knp\Component\Pager\PaginatorInterface;
-use App\Entity\ProductSearch;
-use App\Form\ProductSearchType;
-
-use App\Controller\FonctionsController;
-
-// Include Dompdf required namespaces
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\Product;
+use App\Form\ProductType;
+use App\Entity\ProductSearch;
+use App\Form\ProductSearchType;
+use App\Controller\FonctionsController;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\Common\Persistence\ObjectManager;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
+
+// Include Dompdf required namespaces
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
  * @Route("/products")
@@ -74,6 +75,33 @@ class AdminProductController extends AbstractController
           $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
           $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
           $product->setCreatedBy($this->getUser());
+          
+          /** @var UploadedFile $imageFile */
+          $imageFile = $form->get('image')->getData();
+
+          // this condition is needed because the 'brochure' field is not required
+          // so the PDF file must be processed only when a file is uploaded
+          if ($imageFile) {
+              $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+              // this is needed to safely include the file name as part of the URL
+              $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+              $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+              // Move the file to the directory where brochures are stored
+              try {
+                  $imageFile->move(
+                      $this->getParameter('images_directory'),
+                      $newFilename
+                  );
+              } catch (FileException $e) {
+                  // ... handle exception if something happens during file upload
+              }
+
+              // updates the 'brochureFilename' property to store the PDF file name
+              // instead of its contents
+              $product->setImage($newFilename);
+          }
+
           $manager->persist($product);
           try{
             $manager->flush();

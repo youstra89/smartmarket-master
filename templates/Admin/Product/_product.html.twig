@@ -48,6 +48,12 @@
                 {{ form_widget(form.security_stock, {'attr': {'class': 'form-control', 'value': '20'}}) }}
             </div>
         </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.image) }}</label>
+                {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
     </div>
     <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
 {{ form_end(form) }}

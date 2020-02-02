@@ -102,6 +102,11 @@ class Product
      */
     private $security_stock;
 
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private $image;
+
 
     public function __construct()
     {
@@ -298,6 +303,18 @@ class Product
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
