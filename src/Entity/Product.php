@@ -107,6 +107,11 @@ class Product
      */
     private $image;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $last_seller;
+
 
     public function __construct()
     {
@@ -315,6 +320,18 @@ class Product
     public function setImage(?string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getLastSeller(): ?User
+    {
+        return $this->last_seller;
+    }
+
+    public function setLastSeller(?User $last_seller): self
+    {
+        $this->last_seller = $last_seller;
 
         return $this;
     }

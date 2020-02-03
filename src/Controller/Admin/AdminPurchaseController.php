@@ -59,7 +59,7 @@ class AdminPurchaseController extends AbstractController
             if(empty($data['date']))
             {
               $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
-              return $this->redirectToRoute('provider.order.add');
+              return $this->redirectToRoute('unique_form_provider_order');
             }
             else {
               $date        = new \DateTime($data['date']);

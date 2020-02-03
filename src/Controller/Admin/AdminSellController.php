@@ -180,6 +180,7 @@ class AdminSellController extends AbstractController
 
                   // Ensuite, on met à jour le stock
                   $product->setStock($stockQte);
+                  $product->setLastSeller($seller);
                   $product->setUpdatedAt(new \DateTime());
                 }
                 $customerCommande->setTotalAmount($commandeGlobalCost);
