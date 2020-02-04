@@ -67,10 +67,10 @@ class ProductType extends AbstractType
                     'constraints' => [
                         new File([
                             'maxSize' => '1024k',
-                            'maxWidth' => '500',
-                            'maxWidthMessage' => 'La largeur de l\'image ne doit pas dépasser 500px',
-                            'maxHeight' => '500',
-                            'maxHeightMessage' => 'La hauteur de l\'image ne doit pas dépasser 500px',
+                            // 'maxWidth' => '500',
+                            // 'maxWidthMessage' => 'La largeur de l\'image ne doit pas dépasser 500px',
+                            // 'maxHeight' => '500',
+                            // 'maxHeightMessage' => 'La hauteur de l\'image ne doit pas dépasser 500px',
 
                             'mimeTypes' => [
                                 'image/*'

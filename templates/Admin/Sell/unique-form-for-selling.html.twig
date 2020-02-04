@@ -159,6 +159,7 @@
               $("#productStock").val(result.stock);
               $("#quantity").val(1);
               $("#quantity").focus();
+              $("#quantity").select();
               $("#notif p").text('');
           },
           error: function (xhr, status, error) {
@@ -184,6 +185,7 @@
                 $("#productStock").val(result.stock);
                 $("#quantity").val(1);
                 $("#quantity").focus();
+                $("#quantity").select();
                 $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
                 $("#notif p").text('');
               } 
