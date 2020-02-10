@@ -41,13 +41,13 @@
                     {{ vente.customer.firstname }} {{ vente.customer.lastname }} ({{ vente.customer.phoneNumber }})
                   {% endif %}
                 </td>
-                <td>{{ vente.totalAmount|number_format(0, ',', ' ') }} F CFA</td>
+                <td>{{ vente.totalAmount|number_format(0, ',', ' ') }} F</td>
                 <td>
                   {% set total = 0 %}
                   {% for item in vente.settlements %}
                     {% set total = total + item.amount %}
                   {% endfor %}
-                  {{ (vente.totalAmount - total)|number_format(0, ',', ' ') }} F CFA</td>
+                  {{ (vente.totalAmount - total)|number_format(0, ',', ' ') }} F</td>
                 <td>
                   <a href="{{ path('customer.order.details', {'id': vente.id}) }}" class=" circle arrow small">Plus de détails</a>
                   {% if vente.ended == false %}

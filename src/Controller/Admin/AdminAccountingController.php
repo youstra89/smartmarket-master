@@ -90,18 +90,22 @@ class AdminAccountingController extends AbstractController
         $repoCommande = $manager->getRepository(CustomerCommande::class);
         $mois  = $repoCommande->differentDates();
         $gains = [];
+        $benefices = [];
         foreach ($mois as $key => $value) {
           $ventes = $repoCommande->monthSells($value['date']);
           $somme = 0;
           foreach ($ventes as $keyV => $valueV) {
             $somme += $valueV['somme'];
           }
+          $benefices[$value['date']] = $manager->getRepository(CustomerCommandeDetails::class)->benefice_mensuel($value['date']);
           $gains[$value['date']] = $somme;
         }
+        // dump($mois[1]['date'], $benefices, $gains);
         return $this->render('Admin/Accounting/comptabilite-mensuelle.html.twig', [
-          'mois'    => $mois,
-          'gains'   => $gains,
-          'current' => 'accounting',
+          'mois'      => $mois,
+          'gains'     => $gains,
+          'benefices' => $benefices,
+          'current'   => 'accounting',
         ]);
     }
 

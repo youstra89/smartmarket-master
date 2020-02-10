@@ -52,10 +52,10 @@
           <tr>
             <td>{{ i }}</td>
             <td>{{ vente.date|date('d-m-Y') }}</td>
-            <td>{{ vente.1|number_format(0, ',', ' ') }} F CFA</td>
+            <td>{{ vente.1|number_format(0, ',', ' ') }} F</td>
             <td>
               {% for item in benefices if item.date == vente.date|date('Y-m-d') %}
-                {{ item.benefice|number_format(0, ',', ' ') }} F CFA
+                {{ item.benefice|number_format(0, ',', ' ') }} F
               {% endfor %}
             </td>
             <td>

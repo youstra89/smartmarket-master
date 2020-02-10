@@ -44,6 +44,17 @@ class CustomerCommandeDetailsRepository extends ServiceEntityRepository
         return $statement->fetchAll();
     }
 
+
+    public function benefice_mensuel($date)
+    {
+        $manager = $this->getEntityManager()->getConnection();
+        $requete_eentrees = 'SELECT SUM((p.unit_price - p.purchasing_price) * ccd.quantity) AS benefice, CONCAT(YEAR(cc.date), "-", MONTH(cc.date)) AS dateCC FROM customer_commande_details ccd JOIN customer_commande cc ON ccd.commande_id = cc.id JOIN product p ON ccd.product_id = p.id WHERE cc.date LIKE :date GROUP BY dateCC;';
+        $statement = $manager->prepare($requete_eentrees);
+        $statement->bindValue('date', $date.'%');
+        $statement->execute();
+        return $statement->fetchAll();
+    }
+
     // /**
     //  * @return CustomerCommandeDetails[] Returns an array of CustomerCommandeDetails objects
     //  */
