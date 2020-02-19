@@ -259,9 +259,26 @@ class AdminProductController extends AbstractController
     }
 
     /**
-     * @Route("/impression-du-cout-total-des-produits-en-stock", name="impression_cout_total")
+     * @Route("/cout-total-des-produits-en-stock", name="cout_total_en_stock")
      */
     public function cout_total_des_produits_en_stock(ObjectManager $manager)
+    {
+        $products = $manager->getRepository(Product::class)->findAll();
+        if(empty($products)){
+            $this->addFlash('warning', "Aucun produit enregistré pour le moment.");
+            return $this->redirectToRoute('product');
+        }
+
+        return $this->render('Admin/Product/cout-total-produits.html.twig', [
+          'current'  => 'products',
+          'products' => $products
+        ]);
+    }
+
+    /**
+     * @Route("/impression-du-cout-total-des-produits-en-stock", name="impression_cout_total_en_stock")
+     */
+    public function impression_cout_total_des_produits_en_stock(ObjectManager $manager)
     {
         $products = $manager->getRepository(Product::class)->findAll();
         if(empty($products)){
@@ -277,7 +294,7 @@ class AdminProductController extends AbstractController
         $dompdf = new Dompdf($pdfOptions);
         
         // Retrieve the HTML generated in our twig file
-        $html = $this->renderView('Admin/Product/cout-total-produits.html.twig', [
+        $html = $this->renderView('Admin/Product/impression-cout-total-produits.html.twig', [
             'products'  => $products
         ]);
         

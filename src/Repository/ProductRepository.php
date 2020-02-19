@@ -65,6 +65,10 @@ class ProductRepository extends ServiceEntityRepository
             ->addSelect('c')
             ->orderBy('c.name')
             ->addOrderBy('c.id')
+            ->where('p.is_deleted = :status')
+            ->andWhere('c.is_deleted = :status')
+            ->setParameter('status', false)
+
         ;
 
         return $query->getQuery()->getResult();

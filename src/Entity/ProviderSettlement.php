@@ -6,12 +6,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\SettlementRepository")
- * @ORM\Table(name="settlement", uniqueConstraints={
+ * @ORM\Entity(repositoryClass="App\Repository\ProviderSettlementRepository")
+ * @ORM\Table(name="provider_settlement", uniqueConstraints={
  *      @UniqueConstraint(name="paiement_unique_par_jour", columns={"date", "commande_id"})
  * })
  */
-class Settlement
+class ProviderSettlement
 {
     /**
      * @ORM\Id()
@@ -26,16 +26,10 @@ class Settlement
     private $date;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\CustomerCommande", inversedBy="settlements")
+     * @ORM\ManyToOne(targetEntity="App\Entity\ProviderCommande", inversedBy="settlements")
      * @ORM\JoinColumn(nullable=false)
      */
     private $commande;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="settlements")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $receiver;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
@@ -78,11 +72,6 @@ class Settlement
     private $amount;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $reference;
-
-    /**
      * @ORM\Column(type="integer")
      */
     private $number;
@@ -110,12 +99,12 @@ class Settlement
         return $this;
     }
 
-    public function getCommande(): ?CustomerCommande
+    public function getCommande(): ?ProviderCommande
     {
         return $this->commande;
     }
 
-    public function setCommande(?CustomerCommande $commande): self
+    public function setCommande(?ProviderCommande $commande): self
     {
         $this->commande = $commande;
 

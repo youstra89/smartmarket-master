@@ -59,15 +59,18 @@
         <span>{{ commande.date|date('d-m-Y') }}</span><br>
         <strong>Référence:</strong>
         <span>{{ commande.reference }}</span><br>
-        <strong>Montant total de la vente:</strong>
+        <strong>Montant total:</strong>
         <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
+        <strong>Vendu par:</strong>
+        <span>{{ commande.createdBy.username }}</span><br>
+        <strong>Vendu le:</strong>
+        <span>{{ commande.createdAt|date('d-m-Y') }}</span><br>
       </div>
       <div class="col-md-4">
         <h3>Opérations</h3>
         {% if is_granted("ROLE_ADMIN") and commande.returnedProducts is empty %}
           <a class="btn-sm btn-danger" href="{{ path('reset_sell', {id: commande.id}) }}">Retour de marchandises</a><br><br>
         {% endif %}
-      <a class="btn-sm btn-info" href="{{ path('facture_client', {id: commande.id}) }}">Imprimer une facture</a><br>
       </div>
       {% set totalRetour = 0 %}
       {% if commande.returnedProducts is not empty %}
@@ -111,19 +114,45 @@
           </table>
         </div><br><br>
         <div class="row">
-          <div class="col-lg-3 col-md-4 col-sm-12">
+          <div class="col-lg-6 col-md-8 col-sm-12">
             <h3>Règlements</h3>
             {% if commande.settlements is not empty %}
               {% set total = 0 %}
-              <ul>
-                {% for item in commande.settlements %}
-                  {% set total = total + item.amount %}
-                  <li>{{ item.commande.date|date('d-m-Y') }}: {{ item.amount|number_format(0, ',', ' ') }} F CFA</li>
-                {% endfor %}
-              </ul>
+              <table width="100%">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>Enregistré par</th>
+                    <th>Enregistré le</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in commande.settlements %}
+                    <tr>
+                      {% set total = total + item.amount %}
+                      <td>{{ item.date|date('d-m-Y') }}</td>
+                      <td>{{ item.amount|number_format(0, ',', ' ') }} F</td>
+                      <td>{{ item.createdBy.username }}</td>
+                      <td>{{ item.createdAt|date('d-m-Y') }}</td>
+                      <td>
+                        <a href="{{ path('facture_client', {id: commande.id, settlementId: item.id}) }}" title="Imprimer une facture" style="font-size: 1.5em;"><i class="icon-file"></i></a>
+                        {% if is_granted('ROLE_ADMIN') and commande.settlements|last == item %}
+                          <a href="{{ path('edit_settlement', {id: item.id}) }}" title="Modifier le montant" style="font-size: 1.5em;"><i class="icon-edit"></i></a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
               <br>
-              {% set rest = commande.totalAmount - total - totalRetour %}
-              <p>Reste à Payer : {{ rest|number_format(0, ',', ' ') }} F CFA</p>
+              {% if commande.ended == true %}
+                <p>Soldée</p>
+              {% else %}
+                {% set rest = commande.totalAmount - total - totalRetour %}
+                <p>Reste à Payer : {{ rest|number_format(0, ',', ' ') }} F</p>
+              {% endif %}
             {% endif %}
           </div>
         </div><br><br>

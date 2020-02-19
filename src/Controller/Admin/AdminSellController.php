@@ -260,7 +260,7 @@ class AdminSellController extends AbstractController
      * @IsGranted("ROLE_VENTE")
      * @param CustomerCommande $commande
      */
-    public function settlement(Request $request, CustomerCommande $commande, ObjectManager $manager)
+    public function settlement(Request $request, int $id, CustomerCommande $commande, ObjectManager $manager)
     {
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       $reglements = $commande->getSettlements();
@@ -278,6 +278,7 @@ class AdminSellController extends AbstractController
         $date   = new \DateTime($data['date']);
         $amount = $data['amount'];
         $commandeId = $commande->getId();
+        $soldee = false;
         // return new Response(var_dump($data));
         if($this->isCsrfTokenValid('token_reglement', $token)){
           if(empty($date)){
@@ -303,33 +304,50 @@ class AdminSellController extends AbstractController
           }
           else {
             $newTotal = $amount + $total;
-            if($newTotal > $commande->getTotalAmount())
+            $reglementMemeDate = $manager->getRepository(Settlement::class)->reglementMemeDate($id, $date->format('Y-m-d'));
+            $dernierVersement = $manager->getRepository(Settlement::class)->lastSettlement($id);
+            if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
+            {
+              $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
+              return $this->redirectToRoute('settlement', ['id' => $commandeId]);
+            }
+            elseif(!empty($reglementMemeDate))
+            {
+              $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
+              return $this->redirectToRoute('settlement', ['id' => $commandeId]);
+            }
+            elseif($newTotal > $commande->getTotalAmount())
             {
               $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
-              // return new Response("Somme des règlements supérieure à la commande");
               return $this->redirectToRoute('settlement', ['id' => $commandeId]);
             }
             elseif($newTotal < $commande->getTotalAmount())
             {
-              $this->addFlash('success', 'Règlement bien enregistré. Cependant la commande n\'est pas soldée.');
-              // return new Response("Règlement Ok, avec dette");
-              // return $this->redirectToRoute('sell');
+              $soldee = false;
             }
             elseif ($newTotal == $commande->getTotalAmount()) {
-              $this->addFlash('success', 'Règlement enregistré avec succès. Commande soldée.');
-              // return new Response("Règlement Ok, commande soldée");
+              $soldee = true;
               $commande->setEnded(true);
             }
           }
           $user = $this->getUser();
+          $reference = $this->generateInvoiceReference($manager);
+          $settlementNumber = $this->generateSettlementNumber(empty($dernierVersement) ? null : $dernierVersement);
           $settlement = new Settlement();
           $settlement->setDate($date);
+          $settlement->setReference($reference);
           $settlement->setAmount($amount);
+          $settlement->setNumber($settlementNumber);
           $settlement->setReceiver($user);
           $settlement->setCreatedBy($this->getUser());
           $settlement->setCommande($commande);
           $manager->persist($settlement);
           try{
+            if ($soldee == true)
+              $this->addFlash('success', 'Règlement enregistré avec succès. Commande soldée.');
+            else
+              $this->addFlash('success', 'Règlement bien enregistré. Cependant la commande n\'est pas soldée.');
+            
             $manager->flush();
           } 
           catch(\Exception $e){
@@ -345,8 +363,122 @@ class AdminSellController extends AbstractController
       ]);
     }
 
+
+    /**
+     * @Route("/edition-d-un-reglement-de-vente/{id}", name="edit_settlement", requirements={"id"="\d+"})
+     * @IsGranted("ROLE_VENTE")
+     * @param Settlement $settlement
+     */
+    public function edit_settlement(Request $request, int $id, Settlement $settlement, ObjectManager $manager)
+    {
+      $commande   = $settlement->getCommande();
+      $commandeId = $commande->getId();
+      $dernierVersement = $manager->getRepository(Settlement::class)->lastSettlement($commandeId);
+      if ($dernierVersement !== $settlement) {
+        $this->addFlash('danger', 'Vous ne pouvez modifier que le dernier versement.');
+        return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+      }
+      // elseif ($commande->getEnded() === true) {
+      //   $this->addFlash('danger', 'Impossible de continuer, car cette commande est déjà soldée.');
+      //   return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+      // }
+      if($request->isMethod('post'))
+      {
+        $reglements = $commande->getSettlements();
+        // $total = array_sum(array_map('getValue', $reglements));
+        $total = 0;
+        foreach ($reglements as $key => $value) {
+          if ($id !== $value->getId()) {
+            $total += $value->getAmount();
+          }
+        }
+        $data   = $request->request->all();
+        $token  = $data['token'];
+        $date   = new \DateTime($data['date']);
+        $amount = $data['amount'];
+        // return new Response(var_dump($data));
+        if($this->isCsrfTokenValid('token_edit_reglement', $token)){
+          $soldee = false;
+          if(empty($date)){
+            $this->addFlash('danger', 'Saisir une valuer pour la date.');
+            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+          }
+          if(empty($amount) or $amount < 0){
+            $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
+            // return new Response("Montant nul ou négatif");
+            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+          }
+
+          $newTotal = $amount + $total;
+          $reglementMemeDate = $manager->getRepository(Settlement::class)->reglementMemeDate($id, $date->format('Y-m-d'));
+          if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
+          {
+            $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
+            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+          }
+          elseif(!empty($reglementMemeDate))
+          {
+            $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
+            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+          }
+          elseif($newTotal > $commande->getTotalAmount())
+          {
+            $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
+            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+          }
+          elseif($newTotal < $commande->getTotalAmount())
+          {
+            $commande->setEnded(false);
+          }
+          elseif ($newTotal == $commande->getTotalAmount()) {
+            $soldee = true;
+            $commande->setEnded(true);
+          }
+          $settlement->setDate($date);
+          $settlement->setAmount($amount);
+          $settlement->setUpdatedAt(new \DateTime());
+          $settlement->setUpdatedBy($this->getUser());
+          try{
+            if ($soldee == true)
+              $this->addFlash('success', 'Règlement mise à jour avec succès. Commande soldée.');
+            else
+              $this->addFlash('success', 'Règlement bien mise à jour. Cependant la commande n\'est pas soldée.');
+            $manager->flush();
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          }
+          return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+        }
+      }
+      return $this->render('Admin/Sell/edit-settlement.html.twig', [
+        'current'  => 'sells',
+        'settlement' => $settlement,
+      ]);
+    }
+
+
     function getValue($obj) {
       return $obj -> getAmount();
+    }
+
+    public function generateInvoiceReference(ObjectManager $manager)
+    {
+      $lastNumber = $manager->getRepository(Settlement::class)->lastNumber();
+      $reference = $lastNumber.'-'.(new \DateTime())->format("His-dmY");
+      return $reference;
+    }
+
+    public function generateSettlementNumber($settlement)
+    {
+      if (empty($settlement)) {
+        $number = 1;
+      } 
+      else {
+        $number = $settlement->getNumber() + 1;
+      }
+      
+      return $number;
     }
 
     /**
@@ -363,12 +495,16 @@ class AdminSellController extends AbstractController
     }
 
     /**
-     * @Route("/facture-de-vente/{id}", name="facture_client")
+     * @Route("/facture-de-vente/{id}/{settlementId}", name="facture_client", requirements={"id"="\d+", "settlementId"="\d+"})
      * @param CustomerCommande $commande
      * @IsGranted("ROLE_VENTE")
      */
-    public function facture_client(CustomerCommande $commande)
+    public function facture_client(int $id, int $settlementId, ObjectManager $manager, CustomerCommande $commande)
     {
+        // Sélection des versements 
+        $settlement = $manager->getRepository(Settlement::class)->find($settlementId);
+        $settlements = $manager->getRepository(Settlement::class)->versementsAnterieurs($id, $settlement);
+        // dd($settlements);
         // Configure Dompdf according to your needs
         $pdfOptions = new Options();
         $pdfOptions->set('defaultFont', 'Arial');
@@ -378,7 +514,8 @@ class AdminSellController extends AbstractController
         
         // Retrieve the HTML generated in our twig file
         $html = $this->renderView('Admin/Sell/facture.html.twig', [
-            'commande'  => $commande
+            'commande'    => $commande,
+            'settlements' => $settlements
         ]);
         
         // Load HTML to Dompdf
@@ -397,8 +534,9 @@ class AdminSellController extends AbstractController
             "Attachment" => false
         ]);
         return $this->render('Admin/Sell/sell-details.html.twig', [
-          'current'  => 'sells',
-          'commande' => $commande
+          'current'     => 'sells',
+          'commande'    => $commande,
+          'settlements' => $settlements
         ]);
     }
 }

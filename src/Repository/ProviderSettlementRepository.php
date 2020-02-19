@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Settlement;
+use App\Entity\ProviderSettlement;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -12,20 +12,20 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @method Settlement[]    findAll()
  * @method Settlement[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class SettlementRepository extends ServiceEntityRepository
+class ProviderSettlementRepository extends ServiceEntityRepository
 {
     public function __construct(RegistryInterface $registry)
     {
-        parent::__construct($registry, Settlement::class);
+        parent::__construct($registry, ProviderSettlement::class);
     }
 
     public function reglementsIncomplets()
     {
-        return $this->createQueryBuilder('s')
+        return $this->createQueryBuilder('p')
             ->select('c.id, SUM(s.amount) AS montant')
-            ->join('s.commande', 'c')
+            ->join('p.commande', 'c')
             ->where('c.ended = FALSE')
-            ->andWhere('s.is_deleted = :status')
+            ->andWhere('p.is_deleted = :status')
             ->andWhere('c.is_deleted = :status')
             ->setParameter('status', false)
             ->groupBy('c.id')
@@ -39,10 +39,10 @@ class SettlementRepository extends ServiceEntityRepository
     {
         $settlementId = $settlement->getId();
         $settlementNumber = $settlement->getNumber();
-        return $this->createQueryBuilder('s')
-            ->join('s.commande', 'c')
-            ->andWhere('s.is_deleted = :status')
-            ->andWhere('s.number <= :settlementNumber')
+        return $this->createQueryBuilder('p')
+            ->join('p.commande', 'c')
+            ->andWhere('p.is_deleted = :status')
+            ->andWhere('p.number <= :settlementNumber')
             ->andWhere('c.id = :commandeId')
             ->setParameter('status', false)
             ->setParameter('settlementNumber', $settlementNumber)
@@ -57,7 +57,7 @@ class SettlementRepository extends ServiceEntityRepository
     public function versementsAnterieurs1(int $commandeId, int $settlementId, $date)
     {
         $manager = $this->getEntityManager()->getConnection();
-        $requete_eentrees = 'SELECT s.id, s.amount, s.date, s.created_at, s.created_by_id, s.reference, u.username FROM settlement s INNER JOIN customer_commande c ON c.id = s.commande_id JOIN user u ON u.id = s.created_by_id WHERE c.ended = :status AND s.is_deleted = 0 AND DATEDIFF(s.created_at, :date) >= 0 AND c.id = :commandeId;';
+        $requete_eentrees = 'SELECT p.id, s.amount, p.date, p.created_at, p.created_by_id, p.reference, u.username FROM provider_settlement p INNER JOIN provider_commande c ON c.id = p.commande_id JOIN user u ON u.id = p.created_by_id WHERE c.ended = :status AND p.is_deleted = 0 AND DATEDIFF(p.created_at, :date) >= 0 AND c.id = :commandeId;';
         $statement = $manager->prepare($requete_eentrees);
         $statement->bindValue('date', $date.'%');
         $statement->bindValue('status', false);
@@ -69,11 +69,11 @@ class SettlementRepository extends ServiceEntityRepository
 
     public function lastSettlement(int $commandeId)
     {
-        $result = $this->createQueryBuilder('s')
-            ->join('s.commande', 'c')
-            ->andWhere('s.is_deleted = :status')
+        $result = $this->createQueryBuilder('p')
+            ->join('p.commande', 'c')
+            ->andWhere('p.is_deleted = :status')
             ->andWhere('c.id = :commandeId')
-            ->orderBy('s.date', 'DESC')
+            ->orderBy('p.date', 'DESC')
             ->setFirstResult(0)
             ->setMaxResults(1)
             ->setParameter('status', false)
@@ -88,11 +88,11 @@ class SettlementRepository extends ServiceEntityRepository
 
     public function reglementMemeDate(int $commandeId, $date)
     {
-        return $this->createQueryBuilder('s')
-            ->join('s.commande', 'c')
-            ->where('s.is_deleted = :status')
+        return $this->createQueryBuilder('p')
+            ->join('p.commande', 'c')
+            ->where('p.is_deleted = :status')
             ->andWhere('c.id = :commandeId')
-            ->andWhere('s.created_at LIKE :date')
+            ->andWhere('p.created_at LIKE :date')
             ->setParameter('status', false)
             ->setParameter('date', $date.'%')
             ->setParameter('commandeId', $commandeId)
@@ -105,10 +105,10 @@ class SettlementRepository extends ServiceEntityRepository
     public function lastNumber()
     {
         $today = (new \DateTime())->format('Y-m-d');
-        $result = $this->createQueryBuilder('s')
-            ->select('SUBSTRING(s.reference, 1, LENGTH(s.reference) - 16) AS reference')
-            ->where('s.created_at LIKE :today')
-            ->orderBy('s.id', 'DESC')
+        $result = $this->createQueryBuilder('p')
+            ->select('SUBSTRING(p.reference, 1, LENGTH(p.reference) - 16) AS reference')
+            ->where('p.created_at LIKE :today')
+            ->orderBy('p.id', 'DESC')
             ->setFirstResult(0)
             ->setMaxResults(1)
             ->setParameter('today', $today.'%')

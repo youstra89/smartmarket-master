@@ -24,11 +24,15 @@ class ProviderCommandeRepository extends ServiceEntityRepository
     {
       $query = $this->createQueryBuilder('p')
                     ->orderBy('p.date', 'DESC')
+                    ->andWhere('p.is_deleted = :status')
+                    ->setParameter('status', false)
                     ;
 
       if($search->getProvider()){
         $query = $query
           ->andWhere('p.provider = :provider')
+          ->andWhere('p.is_deleted = :status')
+          ->setParameter('status', false)
           ->setParameter('provider', $search->getProvider()->getId());
       }
 

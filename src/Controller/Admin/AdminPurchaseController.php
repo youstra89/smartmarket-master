@@ -4,16 +4,17 @@ namespace App\Controller\Admin;
 
 use App\Entity\Product;
 use App\Entity\ProviderCommande;
+use App\Entity\ProviderSettlement;
 use App\Form\ProviderCommandeType;
+use App\Entity\ProviderCommandeSearch;
 use App\Entity\ProviderCommandeDetails;
+use App\Form\ProviderCommandeSearchType;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Knp\Component\Pager\PaginatorInterface;
-use App\Entity\ProviderCommandeSearch;
-use App\Form\ProviderCommandeSearchType;
 
 /**
  * @Route("/commandes")
@@ -300,11 +301,109 @@ class AdminPurchaseController extends AbstractController
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
-     public function provider_order_details(ProviderCommande $commande)
-     {
-       return $this->render('Admin/Purchase/purchase-details.html.twig', [
-         'current'  => 'purchases',
-         'commande' => $commande
-       ]);
-     }
+    public function provider_order_details(ProviderCommande $commande)
+    {
+      return $this->render('Admin/Purchase/purchase-details.html.twig', [
+        'current'  => 'purchases',
+        'commande' => $commande
+      ]);
+    }
+
+
+    /**
+     * @Route("/reglement-de-vente/{id}", name="provider_settlement", requirements={"id"="\d+"})
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     * @param ProvidererCommande $commande
+     */
+    public function provider_settlements(Request $request, int $id, ProviderCommande $commande, ObjectManager $manager)
+    {
+      // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
+      $reglements = $commande->getSettlements();
+      // $total = array_sum(array_map('getValue', $reglements));
+      $total = 0;
+      foreach ($reglements as $key => $value) {
+        $total += $value->getAmount();
+      }
+      // dump($total);
+      $reste = $commande->getTotalAmount() - $total;
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        $token  = $data['token'];
+        $date   = new \DateTime($data['date']);
+        $amount = $data['amount'];
+        $commandeId = $commande->getId();
+        // return new Response(var_dump($data));
+        if($this->isCsrfTokenValid('token_reglement_fournisseur', $token)){
+          if(empty($date)){
+            $this->addFlash('danger', 'Saisir une valuer pour la date.');
+            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+          }
+          if(empty($amount) or $amount < 0){
+            $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
+            // return new Response("Montant nul ou négatif");
+            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+          }
+          $newTotal = $amount + $total;
+          $reglementMemeDate = $manager->getRepository(ProviderSettlement::class)->reglementMemeDate($id, $date->format('Y-m-d'));
+          $dernierVersement = $manager->getRepository(ProviderSettlement::class)->lastSettlement($id);
+          if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
+          {
+            $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
+            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+          }
+          elseif(!empty($reglementMemeDate))
+          {
+            $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
+            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+          }
+          elseif($newTotal > $commande->getTotalAmount())
+          {
+            $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
+            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+          }
+          elseif($newTotal < $commande->getTotalAmount())
+          {
+            $this->addFlash('success', 'Règlement fournisseur bien enregistré. Cependant la commande n\'est pas soldée.');
+          }
+          elseif ($newTotal == $commande->getTotalAmount()) {
+            $this->addFlash('success', 'Règlement fournisseur enregistré avec succès. Commande soldée.');
+            $commande->setEnded(true);
+          }
+          $settlementNumber = $this->generateSettlementNumber(empty($dernierVersement) ? null : $dernierVersement);
+          $settlement = new ProviderSettlement();
+          $settlement->setDate($date);
+          $settlement->setAmount($amount);
+          $settlement->setNumber($settlementNumber);
+          $settlement->setCreatedBy($this->getUser());
+          $settlement->setCommande($commande);
+          $manager->persist($settlement);
+          try{
+            $manager->flush();
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          }
+          return $this->redirectToRoute('purchase');
+        }
+      }
+      return $this->render('Admin/Purchase/settlement.html.twig', [
+        'current'  => 'sells',
+        'reste'    => $reste,
+        'commande' => $commande,
+      ]);
+    }
+
+
+    public function generateSettlementNumber($settlement)
+    {
+      if (empty($settlement)) {
+        $number = 1;
+      } 
+      else {
+        $number = $settlement->getNumber() + 1;
+      }
+      
+      return $number;
+    }
 }

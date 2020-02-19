@@ -29,6 +29,7 @@
           </thead>
           <tbody>
             {% set i = 0 %}
+            {% set totalGeneral = 0 %}
             {% for vente in ventes %}
               {% set i = i + 1 %}
               <tr>
@@ -47,7 +48,9 @@
                   {% for item in vente.settlements %}
                     {% set total = total + item.amount %}
                   {% endfor %}
-                  {{ (vente.totalAmount - total)|number_format(0, ',', ' ') }} F</td>
+                  {% set dette = vente.totalAmount - total %}
+                  {% set totalGeneral = totalGeneral + dette %}
+                  {{ dette|number_format(0, ',', ' ') }} F</td>
                 <td>
                   <a href="{{ path('customer.order.details', {'id': vente.id}) }}" class=" circle arrow small">Plus de détails</a>
                   {% if vente.ended == false %}
@@ -57,6 +60,12 @@
               </tr>
             {% endfor %}
           </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4">Total de toutes les dettes</td>
+              <td>{{ totalGeneral|number_format(0, ',', ' ') }} F</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>

@@ -122,11 +122,23 @@ class ProviderCommande
      */
     private $providerCommandeDetails;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ProviderSettlement", mappedBy="commande")
+     */
+    private $settlements;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ProviderEcheance", mappedBy="commande")
+     */
+    private $echeances;
+
     public function __construct()
     {
         $this->ended       = false;
         $this->is_deleted  = false;
         $this->created_at  = new \DateTime();
+        $this->echeances   = new ArrayCollection();
+        $this->settlements = new ArrayCollection();
         $this->providerCommandeDetails = new ArrayCollection();
     }
 
@@ -395,6 +407,69 @@ class ProviderCommande
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProviderSettlement[]
+     */
+    public function getSettlements(): Collection
+    {
+        return $this->settlements;
+    }
+
+    public function addSettlement(ProviderSettlement $settlement): self
+    {
+        if (!$this->settlements->contains($settlement)) {
+            $this->settlements[] = $settlement;
+            $settlement->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSettlement(ProviderSettlement $settlement): self
+    {
+        if ($this->settlements->contains($settlement)) {
+            $this->settlements->removeElement($settlement);
+            // set the owning side to null (unless already changed)
+            if ($settlement->getCommande() === $this) {
+                $settlement->setCommande(null);
+            }
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @return Collection|ProviderEcheance[]
+     */
+    public function getEcheances(): Collection
+    {
+        return $this->echeances;
+    }
+
+    public function addEcheance(ProviderEcheance $echeance): self
+    {
+        if (!$this->echeances->contains($echeance)) {
+            $this->echeances[] = $echeance;
+            $echeance->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcheance(ProviderEcheance $echeance): self
+    {
+        if ($this->echeances->contains($echeance)) {
+            $this->echeances->removeElement($echeance);
+            // set the owning side to null (unless already changed)
+            if ($echeance->getCommande() === $this) {
+                $echeance->setCommande(null);
+            }
+        }
 
         return $this;
     }

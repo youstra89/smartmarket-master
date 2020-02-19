@@ -22,8 +22,9 @@ class DepenseRepository extends ServiceEntityRepository
     public function differentDates()
     {
         $manager = $this->getEntityManager()->getConnection();
-        $query = 'SELECT DISTINCT(SUBSTRING(d.date_depense, 1, 7)) AS `date` FROM depense d ORDER BY `date` ASC;';
+        $query = 'SELECT DISTINCT(SUBSTRING(d.date_depense, 1, 7)) AS `date` FROM depense d WHERE d.is_deleted = :status ORDER BY `date` ASC;';
         $statement = $manager->prepare($query);
+        $statement->bindValue('status', false);
         $statement->execute();
         return $statement->fetchAll();
         ;
@@ -32,9 +33,10 @@ class DepenseRepository extends ServiceEntityRepository
     public function monthSells($date)
     {
         $manager = $this->getEntityManager()->getConnection();
-        $requete_eentrees = 'SELECT SUM(d.amount) AS somme FROM depense d WHERE d.date_depense LIKE :date ORDER BY d.date_depense ASC;';
+        $requete_eentrees = 'SELECT SUM(d.amount) AS somme FROM depense d WHERE d.date_depense LIKE :date AND d.is_deleted = :status ORDER BY d.date_depense ASC;';
         $statement = $manager->prepare($requete_eentrees);
         $statement->bindValue('date', $date.'%');
+        $statement->bindValue('status', false);
         $statement->execute();
         return $statement->fetchAll();
     }
@@ -44,7 +46,9 @@ class DepenseRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('d')
             ->where('d.date_depense LIKE :dateActuelle')
+            ->andWhere('d.is_deleted = :status')
             ->orderBy('d.date_depense', 'DESC')
+            ->setParameter('status', false)
             ->setParameter('dateActuelle', $dateActuelle.'%')
             ->getQuery()
             ->getResult()

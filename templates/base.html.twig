@@ -86,11 +86,11 @@
 						{% endif %}	
 						<li class="{% if current == 'account' %}fh5co-active{% endif %}"><a href="{{ path('profile') }}">Mon compte</a></li>
 						<li><a href="{{ path('logout') }}">Déconnexion</a></li>
+						<li>{{ app.user.username }}</li>
 					{% endif %}	
 				</ul>
 			</nav>
 		</aside>
-
 		<div id="fh5co-main">
 			<div class="container">
 				{% block notifications %}

@@ -77,7 +77,12 @@
                     <td>{{ commande.reference }}</td>
                     <td>{{ commande.date|date('d-m-Y') }}</td>
                     <td>{{ commande.provider.firstname }} {{ commande.provider.lastname }} ({{ commande.provider.country.name }})</td>
-                    <td><a href="{{ path('provider.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a></td>
+                    <td>
+                      <a href="{{ path('provider.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
+                      {% if commande.ended == false %}
+                        <a href="{{ path('provider_settlement', {id: commande.id}) }}"data-toggle="tooltip" title="Enregistrer un versement"><i class="icon-plus"></i></a>
+                      {% endif %}
+                    </td>
                   </tr>
                 {% endfor %}
               </tbody>

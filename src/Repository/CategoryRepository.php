@@ -19,25 +19,11 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    // /**
-    //  * @return Category[] Returns an array of Category objects
-    //  */
-    public function test()
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
 
     public function distinctCategories()
     {
         $categories = $this->_em->createQuery(
-        'SELECT DISTINCT(c.name) AS name, c.id FROM App\Entity\Category c JOIN App\Entity\Product p WHERE p.category = c.id');
+        'SELECT DISTINCT(c.name) AS name, c.id FROM App\Entity\Category c JOIN App\Entity\Product p WHERE p.category = c.id AND c.is_deleted = false');
 
         return $categories->getResult();
     }
