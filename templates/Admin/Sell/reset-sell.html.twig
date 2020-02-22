@@ -54,7 +54,7 @@
       <div class="col-md-4">
         <h3>Commande</h3>
         <strong>Montant total de la vente</strong><br>
-        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F CFA</span><br>
+        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
       </div>
       <div class="col-lg-3 col-md-4 col-sm-12">
         <h3>Règlements</h3>
@@ -64,7 +64,7 @@
             {% set total = total + item.amount %}
           {% endfor %}
           <strong>Somme versée</strong>
-          <span>{{ total|number_format(0, ',', ' ') }} F CFA</span>
+          <span>{{ total|number_format(0, ',', ' ') }} F</span>
         {% endif %}
       </div>
     </div><br><br>
@@ -89,10 +89,10 @@
                   <tbody>
                     <tr>
                       <td>{{ i }}</td>
-                      <td>{{ item.product.category.name }} {{ item.product.mark.label }} - {{ item.product.description }}</td>
+                      <td>{{ item.product.label }}</td>
                       <td>{{ item.quantity }}</td>
-                      <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
-                      <td>{{ item.subtotal|number_format(0, ',', ' ') }} F CFA</td>
+                      <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
+                      <td>{{ item.subtotal|number_format(0, ',', ' ') }} F</td>
                       <td><input type="number" name="products[{{item.product.id}}]" id="" min="0" max="{{ item.quantity }}" required></td>
                     </tr>
                   </tbody>

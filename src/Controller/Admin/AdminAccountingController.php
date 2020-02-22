@@ -4,10 +4,12 @@ namespace App\Controller\Admin;
 
 use App\Entity\Settlement;
 use App\Entity\CustomerCommande;
-use App\Entity\CustomerCommandeDetails;
+use App\Entity\ProviderCommande;
+use App\Entity\ProviderSettlement;
 use App\Service\CheckConnectedUser;
-use Doctrine\Common\Persistence\ObjectManager;
+use App\Entity\CustomerCommandeDetails;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,7 +34,7 @@ class AdminAccountingController extends AbstractController
     }
 
     /**
-     * @Route("/comptabilite-des-ventes-du-jour/{date}", name="vente.du.jour")
+     * @Route("/ventes-du-jour/{date}", name="vente.du.jour")
      */
     public function vente_du_jour(Request $request, ObjectManager $manager, $date, CheckConnectedUser $checker)
     {
@@ -110,21 +112,41 @@ class AdminAccountingController extends AbstractController
     }
 
     /**
-     * @Route("/comptabilite-les-débits", name="accounting.debtor")
+     * @Route("/comptabilite-clients-débiteurs", name="accounting.debtor")
      */
     public function debits(ObjectManager $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
 
-        $repoCustomerCommande  = $manager->getRepository(CustomerCommande  ::class);
-        $repoSettlement = $manager->getRepository(Settlement::class);
-        $commandes     = $repoCustomerCommande->lesDebiteurs();
-        $reglements    = $repoSettlement->reglementsIncomplets();
+        $repoCustomerCommande = $manager->getRepository(CustomerCommande::class);
+        $repoSettlement       = $manager->getRepository(Settlement      ::class);
+        $commandes            = $repoCustomerCommande->lesDebiteurs();
+        $reglements           = $repoSettlement->reglementsIncomplets();
         // dump($reglements);
         return $this->render('Admin/Accounting/comptabilite-debit.html.twig', [
           'ventes'  => $commandes,
           'reglements'  => $reglements,
+          'current'    => 'accounting',
+        ]);
+    }
+
+    /**
+     * @Route("/comptabilite-fournisseurs-creanciers", name="accounting_creance")
+     */
+    public function creances(ObjectManager $manager, CheckConnectedUser $checker)
+    {
+        if($checker->getAccess() == true)
+          return $this->redirectToRoute('login');
+
+        $repoProviderCommande = $manager->getRepository(ProviderCommande::class);
+        $repoSettlement       = $manager->getRepository(ProviderSettlement      ::class);
+        $commandes            = $repoProviderCommande->lesCreanciers();
+        $reglements           = $repoSettlement->reglementsIncomplets();
+        // dump($reglements);
+        return $this->render('Admin/Accounting/comptabilite-credit.html.twig', [
+          'ventes'     => $commandes,
+          'reglements' => $reglements,
           'current'    => 'accounting',
         ]);
     }

@@ -6,7 +6,7 @@
 {% endblock %}
 
 
-{% block title %}Les ventes{% endblock %}
+{% block title %}Commandes à préparer{% endblock %}
 
 
 {% block notifications %}
@@ -36,10 +36,8 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ventes</h2>
-    <a href="{{ path('customer') }}" class="btn-lg btn-primary">Gestion des clients</a>
-    <a href="{{ path('preparing_sells') }}" class="btn-lg btn-primary">Commandes</a>
-    <a href="{{ path('unique_form_for_selling') }}" class="btn-lg btn-primary">Ajouter une vente</a><br><br>
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Commandes à préparer</h2>
     <div class="row">
       {{ form_start(form) }}
       <div class="row">
@@ -85,17 +83,9 @@
                         ---
                       {% endif %}
                     </td>
-                    <td>{{ commande.totalAmount|number_format(0, ',', ' ') }} F CFA</td>
+                    <td>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</td>
                     <td>
-                      <a href="{{ path('customer.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
-                      {% if is_granted('ROLE_SUPER_ADMIN') %}
-                        &nbsp;&nbsp;<a  href="{{ path('delete_commande', {'id': commande.id, '_csrf_token': csrf_token('delete_commande'), 'sells':'yes'}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer la commande N° {{ commande.reference }}" onclick="return confirm('Etes-vous sûrs de supprimer la commande N°{{ commande.reference }} ? Les règlements et échéances liés seront automatiquement supprimés aussi.')">
-                          <i class="icon-trash"></i>
-                        </a>
-                      {% endif %}
-                      {% if commande.ended == false %}
-                        &nbsp;&nbsp;<a href="{{ path('settlement', {id: commande.id}) }}"data-toggle="tooltip" title="Enregistrer un règlement"><i class="icon-plus"></i></a>
-                      {% endif %}
+                      <a href="{{ path('customer_commande_details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
                     </td>
                   </tr>
                 {% endfor %}

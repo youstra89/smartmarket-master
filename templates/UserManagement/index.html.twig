@@ -69,7 +69,7 @@
         </tfoot>
         <tbody>
           {% set i = 0 %}
-          {% for user in users if user.isRoot == false %}
+          {% for user in users if user.isRoot == false and user.isDeleted == false %}
             {% set i = i + 1 %}
             <tr>
               <td>{{ i }}</td>
@@ -87,7 +87,7 @@
                 <a href="{{ path('edit_user', {'id': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Editer l'utilisateur {{ user.username }}">
                   <i class="icon-edit"></i>
                 </a>&nbsp;&nbsp;
-                <a  href="{{ path('delete_user', {'userId': user.id, '_csrf_token': csrf_token('delete_user')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer l'utilisateur {{ user.username }}" onclick="return confirm('Etes-vous sûrs de supprimer cet utilisateur ?')">
+                <a href="{{ path('delete_user', {'id': user.id, '_csrf_token': csrf_token('delete_user')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer l'utilisateur {{ user.username }}" onclick="return confirm('Etes-vous sûrs de supprimer cet utilisateur ?')">
                   <i class="icon-trash"></i>
                 </a>&nbsp;&nbsp;
                 <a href="{{ path('user_roles', {'id': user.id}) }}" data-toggle="tooltip" data-placement="top" title="Gestion des rôles de l'utilisateur {{ user.username }}">

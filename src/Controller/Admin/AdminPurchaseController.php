@@ -12,6 +12,7 @@ use App\Form\ProviderCommandeSearchType;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -80,6 +81,8 @@ class AdminPurchaseController extends AbstractController
               foreach ($data['sousTotal'] as $key => $value) {
                 $totalCommande += $value;
               }
+
+              $commandeGlobalCost = 0;
               foreach ($prices as $key => $value) {
                 $product  = $manager->getRepository(Product::class)->find($key);
                 $quantity = $quantities[$key];
@@ -121,14 +124,16 @@ class AdminPurchaseController extends AbstractController
                 $commandeProduit->setUnitPrice($value);
                 $commandeProduit->setSubtotal($subtotal);
                 $commandeProduit->setMinimumSellingPrice($value + $chargeUnitaire);
+                $commandeGlobalCost += $subtotal;
                 $manager->persist($commandeProduit);
                 // Ensuite, on met à jour le stock
                 $stockQte = $product->getStock() + $quantity;
                 $product->setStock($stockQte);
                 $product->setUpdatedAt(new \DateTime());
               }
-              $providerCommande->setGlobalTotal($totalCommande);
-              // return new Response(var_dump($chargeUnitaire));
+              $providerCommande->setTotalAmount($commandeGlobalCost);
+              $providerCommande->setGlobalTotal($commandeGlobalCost + $totalCharge);
+              // dd($providerCommande);
 
               try{
                 $manager->flush();
@@ -384,7 +389,10 @@ class AdminPurchaseController extends AbstractController
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
           }
-          return $this->redirectToRoute('purchase');
+          if(!empty($request->attributes->get('option')))
+            return $this->redirectToRoute('purchase');
+          else
+            return $this->redirectToRoute('accounting_creance');
         }
       }
       return $this->render('Admin/Purchase/settlement.html.twig', [

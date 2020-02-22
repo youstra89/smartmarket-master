@@ -31,23 +31,46 @@ class AdminSellController extends AbstractController
    * @Route("/", name="sell")
    * @IsGranted("ROLE_VENTE")
    */
-   public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
-   {
-       $search = new CustomerCommandeSearch();
-       $form = $this->createForm(CustomerCommandeSearchType::class, $search);
-       $form->handleRequest($request);
+  public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+  {
+      // dd($_SERVER['HTTP_USER_AGENT']);
+      $search = new CustomerCommandeSearch();
+      $form = $this->createForm(CustomerCommandeSearchType::class, $search);
+      $form->handleRequest($request);
+      $commandes = $paginator->paginate(
+        $manager->getRepository(CustomerCommande::class)->commandesClients($search),
+        $request->query->getInt('page', 1),
+        20
+      );
+      return $this->render('Admin/Sell/index.html.twig', [
+        'form'      => $form->createView(),
+        'current'   => 'sells',
+        'commandes' => $commandes
+      ]);
+  }
 
-       $commandes = $paginator->paginate(
-         $manager->getRepository(CustomerCommande::class)->commandesClients($search),
-         $request->query->getInt('page', 1),
-         20
-       );
-       return $this->render('Admin/Sell/index.html.twig', [
-         'form'      => $form->createView(),
-         'current'   => 'sells',
-         'commandes' => $commandes
-       ]);
-   }
+  
+  /**
+   * @Route("/preparing-sells", name="preparing_sells")
+   * @IsGranted("ROLE_VENTE")
+   */
+  public function preparing_sells(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+  {
+      $search = new CustomerCommandeSearch();
+      $form = $this->createForm(CustomerCommandeSearchType::class, $search);
+      $form->handleRequest($request);
+
+      $commandes = $paginator->paginate(
+        $manager->getRepository(CustomerCommande::class)->commandesClientsAPreparer($search),
+        $request->query->getInt('page', 1),
+        20
+      );
+      return $this->render('Admin/Sell/preparing-sells.html.twig', [
+        'form'      => $form->createView(),
+        'current'   => 'sells',
+        'commandes' => $commandes
+      ]);
+  }
 
 
   /**
@@ -136,6 +159,7 @@ class AdminSellController extends AbstractController
                 $customerCommande->setReference($reference);
                 $customerCommande->setSeller($seller);
                 $customerCommande->setDate($date);
+                $customerCommande->setStatus("LIVREE");
                 $customerCommande->setCreatedBy($this->getUser());
                 $manager->persist($customerCommande);
 
@@ -210,37 +234,98 @@ class AdminSellController extends AbstractController
 
 
     /**
-     * @Route("/ajouter-ce-produit-a-la-commande-{id}", name="add.commande.product")
+     * @Route("/prepare-sell-for-customer/{id}", name="prepare_sell_for_customer", requirements={"id"="\d+"})
      * @IsGranted("ROLE_VENTE")
-     * @param Product $product
+     * @param Customer $customer
      */
-    public function add_product_command(Request $request, ObjectManager $manager, Product $product)
+    public function prepare_sell_for_customer(Request $request, ObjectManager $manager, Customer $customer, int $id)
     {
-        $productId = $product->getId();
-        // $commande = $manager->getRepository(Commande::class)->find($commandeId);
-        $ids = $this->get('session')->get('idProductsForSelling');
-        if($product->getStock() == 0)
-        {
-          $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est fini en stock.');
-          return $this->redirectToRoute('customer.order.add');
-        }
-        // On va vérifier la session pour voir si le produit n'est pas déjà sélectionné
-        if(!empty($ids)){
+        $products = $manager->getRepository(Product::class)->findAll();
 
-          foreach ($ids as $key => $value) {
-            if($value === $productId){
-              $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est déjà sélectioné(e).');
-              return $this->redirectToRoute('customer.order.add');
+        if($request->isMethod('post'))
+        {
+          $data = $request->request->all();
+          // return new Response(var_dump($data));
+          if(!empty($data['token']))
+          {
+            $token = $data['token'];
+            if($this->isCsrfTokenValid('vente', $token)){
+              $data = $request->request->all();
+              if(empty($data["products"]))
+              {
+                $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
+                return $this->redirectToRoute('prepare_sell_for_customer');
+              }
+              else {
+                $date       = new \DateTime();
+                $prices     = $data["prices"];
+                $quantities = $data["quantities"];
+                $seller = $this->getUser();
+                $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
+                $customerCommande = new CustomerCommande();
+                $customerCommande->setCustomer($customer);
+                $customerCommande->setReference($reference);
+                $customerCommande->setSeller($seller);
+                $customerCommande->setDate($date);
+                $customerCommande->setCreatedBy($this->getUser());
+                $customerCommande->setStatus("ENREGISTREE");
+                $manager->persist($customerCommande);
+
+                // On va enregistrer les détails de la commande
+                // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
+                $commandeGlobalCost = 0;
+                foreach ($prices as $key => $value) {
+                  $product   = $manager->getRepository(Product::class)->find($key);
+                  $quantity = $quantities[$key];
+                  $subtotal = $value * $quantity;
+
+                  if($quantity <= 0)
+                  {
+                    $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                    // return new Response(var_dump("Quantité"));
+                    return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
+                  }
+                  
+                  if($value <= 0)
+                  {
+                    $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
+                    // return new Response(var_dump("Prix"));
+                    return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
+                  }
+                  
+                  // On enregistre d'abord les détails de commande
+                  $commandeProduit = new CustomerCommandeDetails();
+                  $commandeProduit->setCommande($customerCommande);
+                  $commandeProduit->setProduct($product);
+                  $commandeProduit->setQuantity($quantity);
+                  $commandeProduit->setUnitPrice($value);
+                  $commandeProduit->setSubtotal($subtotal);
+                  $commandeGlobalCost += $subtotal;
+                  $manager->persist($commandeProduit);
+                }
+                $customerCommande->setTotalAmount($commandeGlobalCost);
+
+                //On va maintenant enregistrer le règlement de la commande
+                try{
+                  $manager->flush();
+                  $this->addFlash('success', '<li>Enregistrement de la commande client N° <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                  // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
+                  return $this->redirectToRoute('preparing_sells');
+                } 
+                catch(\Exception $e){
+                  $this->addFlash('danger', $e->getMessage());
+                  return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
+                }
+              }
             }
           }
         }
-        // Append value to retrieved array.
-        $ids[] = $productId;
-        // Set value back to session
-        $this->get('session')->set('idProductsForSelling', $ids);
-
-        $this->addFlash('success', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> ajouté(e) à la vente.');
-        return $this->redirectToRoute('customer.order.add');
+        
+        return $this->render('Admin/Sell/prepare-sell-for-customer.html.twig', [
+          'current'  => 'sells',
+          'products' => $products,
+          'customer' => $customer,
+        ]);
     }
 
     /**
@@ -279,7 +364,6 @@ class AdminSellController extends AbstractController
         $amount = $data['amount'];
         $commandeId = $commande->getId();
         $soldee = false;
-        // return new Response(var_dump($data));
         if($this->isCsrfTokenValid('token_reglement', $token)){
           if(empty($date)){
             $this->addFlash('danger', 'Saisir une valuer pour la date.');
@@ -287,33 +371,24 @@ class AdminSellController extends AbstractController
           }
           if(empty($amount) or $amount < 0){
             $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
-            // return new Response("Montant nul ou négatif");
             return $this->redirectToRoute('settlement', ['id' => $commandeId]);
           }
           if (empty($commande->getCustomer())) {
             if($amount != $commande->getTotalAmount()) {
               $this->addFlash('danger', 'Montant incorrect. La valeur saisie n\'est pas égale au montant total da la commande.');
-              // return new Response("Montant différent du total de la commande");
               return $this->redirectToRoute('settlement', ['id' => $commandeId]);
             }
             else {
               $this->addFlash('success', 'Règlement enregistré avec succès. Commande soldée.');
-              // return new Response("Règlement Ok sans client");
               $commande->setEnded(true);
             }
           }
           else {
             $newTotal = $amount + $total;
-            $reglementMemeDate = $manager->getRepository(Settlement::class)->reglementMemeDate($id, $date->format('Y-m-d'));
             $dernierVersement = $manager->getRepository(Settlement::class)->lastSettlement($id);
             if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
             {
               $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
-              return $this->redirectToRoute('settlement', ['id' => $commandeId]);
-            }
-            elseif(!empty($reglementMemeDate))
-            {
-              $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
               return $this->redirectToRoute('settlement', ['id' => $commandeId]);
             }
             elseif($newTotal > $commande->getTotalAmount())
@@ -410,15 +485,9 @@ class AdminSellController extends AbstractController
           }
 
           $newTotal = $amount + $total;
-          $reglementMemeDate = $manager->getRepository(Settlement::class)->reglementMemeDate($id, $date->format('Y-m-d'));
           if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
           {
             $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
-            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
-          }
-          elseif(!empty($reglementMemeDate))
-          {
-            $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
             return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
           }
           elseif($newTotal > $commande->getTotalAmount())
@@ -486,13 +555,83 @@ class AdminSellController extends AbstractController
      * @param CustomerCommande $commande
      * @IsGranted("ROLE_VENTE")
      */
-    public function customer_order_details(int $id, ObjectManager $manager, CustomerCommande $commande)
+    public function customer_order_details(CustomerCommande $commande)
     {
-        return $this->render('Admin/Sell/sell-details.html.twig', [
-          'current'  => 'sells',
-          'commande' => $commande
-        ]);
+      if ($commande->getIsDeleted() === true) {
+        # code...
+        $this->addFlash('error', 'Commande client inexistante.');
+        return $this->redirectToRoute('sell');
+      }
+
+      return $this->render('Admin/Sell/sell-details.html.twig', [
+        'current'  => 'sells',
+        'commande' => $commande
+      ]);
     }
+
+    /**
+     * @Route("/details-commande-client/{id}", name="customer_commande_details")
+     * @param CustomerCommande $commande
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function customer_commande_details(CustomerCommande $commande)
+    {
+      if ($commande->getIsDeleted() === true) {
+        # code...
+        $this->addFlash('error', 'Commande client inexistante.');
+        return $this->redirectToRoute('preparing_sells');
+      }
+
+      return $this->render('Admin/Sell/commande-details.html.twig', [
+        'current'  => 'sells',
+        'commande' => $commande
+      ]);
+    }
+
+    /**
+   * @Route("/delete-commande/{id}", name="delete_commande", methods="GET|POST", requirements={"id"="\d+"})
+   * @param CustomerCommande $commande
+   */
+  public function delete_commande(Request $request, ObjectManager $manager, CustomerCommande $commande, int $id)
+  {
+    $token = $request->get('_csrf_token');
+    if($this->isCsrfTokenValid('delete_commande', $token))
+    {
+      $commande->setIsDeleted(true);
+      $commande->setDeletedBy($this->getUser());
+      $commande->setDeletedAt(new \DateTime());
+
+      // On va supprimer les règlements liés à la commande
+      if (!empty($commande->getSettlements())) {
+        foreach ($commande->getSettlements() as $key => $value) {
+          $value->setIsDeleted(true);
+          $value->setDeletedBy($this->getUser());
+          $value->setDeletedAt(new \DateTime());
+        }
+      }
+
+      // On en fait de même pour les échéances
+      if (!empty($commande->getEcheances())) {
+        foreach ($commande->getEcheances() as $key => $value) {
+          $value->setIsDeleted(true);
+          $value->setDeletedBy($this->getUser());
+          $value->setDeletedAt(new \DateTime());
+        }
+      }
+
+      try{
+        $manager->flush();
+        $this->addFlash('success', 'Commande client N° <strong>'.$commande->getReference().'</strong> supprimée avec succès.');
+      }  
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+      }
+      if(!empty($request->attributes->get('sells')))
+        return $this->redirectToRoute('sells');
+      else
+        return $this->redirectToRoute('preparing_sells');
+    }
+  }
 
     /**
      * @Route("/facture-de-vente/{id}/{settlementId}", name="facture_client", requirements={"id"="\d+", "settlementId"="\d+"})

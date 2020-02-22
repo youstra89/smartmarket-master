@@ -21,6 +21,9 @@ class CheckConnectedUser
     public function getAccess()
     {
       $user = $this->security->getUser();
+      if (isset($user) and $user->getIsDeleted() == true) {
+        return false;
+      }
       return empty($user);
       // if (empty($user)) {
       //   return $this->abs->redirectToRoute('login');

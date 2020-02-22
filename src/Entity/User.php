@@ -93,6 +93,26 @@ class User implements UserInterface, \Serializable
     private $updated_at;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $updated_by;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_deleted;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $deleted_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     */
+    private $deleted_by;
+
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $pwd_changed_at;
@@ -131,14 +151,27 @@ class User implements UserInterface, \Serializable
     /**
      * @ORM\Column(type="boolean")
      */
-    private $is_root = false;
+    private $is_root;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $last_login;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Connexion", mappedBy="user")
+     */
+    private $connexions;
 
 
     public function __construct()
     {
-      $this->created_at = new \DateTime();
-      $this->customerCommandes = new ArrayCollection();
-      $this->settlements = new ArrayCollection();
+        $this->is_root           = false;
+        $this->is_deleted        = false;
+        $this->created_at        = new \DateTime();
+        $this->customerCommandes = new ArrayCollection();
+        $this->settlements       = new ArrayCollection();
+        $this->connexions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -469,6 +502,97 @@ class User implements UserInterface, \Serializable
     public function setIsRoot(bool $is_root): self
     {
         $this->is_root = $is_root;
+
+        return $this;
+    }
+
+    public function getIsDeleted(): ?bool
+    {
+        return $this->is_deleted;
+    }
+
+    public function setIsDeleted(bool $is_deleted): self
+    {
+        $this->is_deleted = $is_deleted;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
+    {
+        $this->deleted_at = $deleted_at;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?self
+    {
+        return $this->updated_by;
+    }
+
+    public function setUpdatedBy(?self $updated_by): self
+    {
+        $this->updated_by = $updated_by;
+
+        return $this;
+    }
+
+    public function getDeletedBy(): ?self
+    {
+        return $this->deleted_by;
+    }
+
+    public function setDeletedBy(?self $deleted_by): self
+    {
+        $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getLastLogin(): ?\DateTimeInterface
+    {
+        return $this->last_login;
+    }
+
+    public function setLastLogin(?\DateTimeInterface $last_login): self
+    {
+        $this->last_login = $last_login;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Connexion[]
+     */
+    public function getConnexions(): Collection
+    {
+        return $this->connexions;
+    }
+
+    public function addConnexion(Connexion $connexion): self
+    {
+        if (!$this->connexions->contains($connexion)) {
+            $this->connexions[] = $connexion;
+            $connexion->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConnexion(Connexion $connexion): self
+    {
+        if ($this->connexions->contains($connexion)) {
+            $this->connexions->removeElement($connexion);
+            // set the owning side to null (unless already changed)
+            if ($connexion->getUser() === $this) {
+                $connexion->setUser(null);
+            }
+        }
 
         return $this;
     }

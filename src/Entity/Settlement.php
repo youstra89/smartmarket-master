@@ -7,9 +7,6 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\SettlementRepository")
- * @ORM\Table(name="settlement", uniqueConstraints={
- *      @UniqueConstraint(name="paiement_unique_par_jour", columns={"date", "commande_id"})
- * })
  */
 class Settlement
 {

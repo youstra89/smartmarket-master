@@ -6,21 +6,12 @@ use App\Entity\Product;
 use App\Entity\Depense;
 use App\Entity\TypeDepense;
 use App\Entity\ReturnedProduct;
-use App\Entity\Commande;
-use App\Entity\Settlement;
-use App\Entity\Customer;
 use App\Entity\CustomerCommande;
-use App\Entity\CustomerCommandeDetails;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Knp\Component\Pager\PaginatorInterface;
-use App\Entity\CustomerCommandeSearch;
-use App\Form\CustomerCommandeSearchType;
 
 /**
  * @Route("/retour-de-marchandises")
@@ -71,7 +62,7 @@ class AdminResetSellController extends AbstractController
                     if($prod->getProduct()->getId() == $key){
                       $montantDepense     = $quantity * $prod->getUnitPrice();
                       $typeDepense = $manager->getRepository(TypeDepense::class)->find(1);
-                      $descriptionDepense = "Retour de ".$quantity." ".$product->getCategory()->getName()." ".$product->getMark()->getLabel()." - ".$product->getDescription()." de la commande numéro ".$commande->getReference();
+                      $descriptionDepense = "Retour de ".$quantity." ".$product->getLabel()." de la commande numéro ".$commande->getReference();
                       $date = new \DateTime();
                       $depense = new Depense();
                       $depense->setType($typeDepense);
@@ -93,7 +84,7 @@ class AdminResetSellController extends AbstractController
               else {
                 try{
                   $manager->flush();
-                  $this->addFlash('success', 'Retour de marchandises enregistré <strong>'.$commande->getCommande()->getDate()->format('d-m-Y').'</strong> avec succès.');
+                  $this->addFlash('success', 'Retour de marchandises enregistré <strong>'.$commande->getDate()->format('d-m-Y').'</strong> avec succès.');
                 } 
                 catch(\Exception $e){
                   $this->addFlash('danger', $e->getMessage());
@@ -113,14 +104,14 @@ class AdminResetSellController extends AbstractController
      * @Route("/ajouter-ce-produit-a-la-commande-{id}", name="add.commande.product")
      * @param Product $product
      */
-    public function add_product_command(Request $request, ObjectManager $manager, Product $product)
+    public function add_product_command(Product $product)
     {
         $productId = $product->getId();
         // $commande = $manager->getRepository(Commande::class)->find($commandeId);
         $ids = $this->get('session')->get('idProductsForSelling');
         if($product->getStock() == 0)
         {
-          $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est fini en stock.');
+          $this->addFlash('warning', '<strong>'.$product->getLabel().'</strong> est fini en stock.');
           return $this->redirectToRoute('customer.order.add');
         }
         // On va vérifier la session pour voir si le produit n'est pas déjà sélectionné
@@ -128,7 +119,7 @@ class AdminResetSellController extends AbstractController
 
           foreach ($ids as $key => $value) {
             if($value === $productId){
-              $this->addFlash('warning', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> est déjà sélectioné(e).');
+              $this->addFlash('warning', '<strong>'.$product->getLabel().'</strong> est déjà sélectioné(e).');
               return $this->redirectToRoute('customer.order.add');
             }
           }
@@ -138,7 +129,7 @@ class AdminResetSellController extends AbstractController
         // Set value back to session
         $this->get('session')->set('idProductsForSelling', $ids);
 
-        $this->addFlash('success', '<strong>'.$product->getCategory()->getName().' '.$product->getMark()->getLabel().' - '.$product->getDescription().'</strong> ajouté(e) à la vente.');
+        $this->addFlash('success', '<strong>'.$product->getLabel().'</strong> ajouté(e) à la vente.');
         return $this->redirectToRoute('customer.order.add');
     }
 }

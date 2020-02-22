@@ -26,7 +26,7 @@
       <div class="col-md-4">
         <h3>Commande</h3>
         <strong>Montant total de la vente</strong><br>
-        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F CFA</span><br>
+        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
       </div>
     </div><br><br>
     <form action="" method="post">
@@ -37,7 +37,7 @@
         </div>
         <div class="col-md-4">
           <label for="montant1">Montant 1<sup>ère</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant1" step="10000" class="form-control">
+          <input type="number" name="montants[]" id="montant1" class="form-control">
         </div>
       </div><br>
       <div class="row">
@@ -47,7 +47,7 @@
         </div>
         <div class="col-md-4">
           <label for="montant2">Montant 2<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant2" step="10000" class="form-control" disabled>
+          <input type="number" name="montants[]" id="montant2" class="form-control" disabled>
         </div>
       </div><br>
       <div class="row">
@@ -57,7 +57,7 @@
         </div>
         <div class="col-md-4">
           <label for="montant3">Montant 3<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant3" step="10000" class="form-control" disabled>
+          <input type="number" name="montants[]" id="montant3" class="form-control" disabled>
         </div>
       </div><br>
       <div class="row">
@@ -67,7 +67,7 @@
         </div>
         <div class="col-md-4">
           <label for="montant4">Montant 4<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant4" step="10000" class="form-control" disabled>
+          <input type="number" name="montants[]" id="montant4" class="form-control" disabled>
         </div>
       </div><br>
       <div class="row">
@@ -77,7 +77,7 @@
         </div>
         <div class="col-md-4">
           <label for="montant5">Montant 5<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant5" step="10000" class="form-control" disabled>
+          <input type="number" name="montants[]" id="montant5" class="form-control" disabled>
         </div>
       </div><br>
       <div class="row">

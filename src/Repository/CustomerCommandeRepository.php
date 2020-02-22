@@ -23,6 +23,37 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function commandesClients(CustomerCommandeSearch $search)
     {
       $query = $this->createQueryBuilder('c')
+                    ->andWhere('c.status = :status')
+                    ->andWhere('c.is_deleted = false')
+                    ->setParameter('status', "LIVREE")
+                    ->orderBy('c.date', 'DESC')
+                    ;
+
+      if($search->getCustomer()){
+        $query = $query
+          ->andWhere('clt.customer = :customer')
+          ->andWhere('clt.is_deleted = :status')
+          ->setParameter('status', false)
+          ->setParameter('customer', $search->getCustomer()->getId());
+      }
+
+      if($search->getProducts()->count() > 0){
+        foreach($search->getProducts() as $k => $option){
+          $query = $query
+          ->andWhere(":product$k MEMBER OF clt.customerCommandeDetails")
+          ->setParameter("product$k", $option);
+        }
+      }
+
+      return $query->getQuery();
+    }
+
+    public function commandesClientsAPreparer(CustomerCommandeSearch $search)
+    {
+      $query = $this->createQueryBuilder('c')
+                    ->andWhere('c.status = :status')
+                    ->andWhere('c.is_deleted = false')
+                    ->setParameter('status', "ENREGISTREE")
                     ->orderBy('c.date', 'DESC')
                     ;
 

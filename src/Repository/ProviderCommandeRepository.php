@@ -47,6 +47,17 @@ class ProviderCommandeRepository extends ServiceEntityRepository
       return $query->getQuery();
     }
 
+    public function lesCreanciers()
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.ended = false')
+            ->andWhere('c.is_deleted = :status')
+            ->orderBy('c.date', 'DESC')  
+            ->setParameter('status', false)  
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     // /**
     //  * @return ProviderCommande[] Returns an array of ProviderCommande objects
     //  */

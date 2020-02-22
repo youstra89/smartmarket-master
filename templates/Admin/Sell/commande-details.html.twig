@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Détails de la vente du {{ commande.date|date('d-m-Y') }}
+  Détails de la commande du {{ commande.date|date('d-m-Y') }}
 {% endblock %}
 
 
@@ -68,22 +68,10 @@
       </div>
       <div class="col-md-4">
         <h3>Opérations</h3>
-        {% if is_granted("ROLE_ADMIN") and commande.returnedProducts is empty %}
-          <a class="btn-sm btn-danger" href="{{ path('reset_sell', {id: commande.id}) }}">Retour de marchandises</a><br><br>
-        {% endif %}
+        <a href="{{ path('delete_commande', {'id': commande.id, '_csrf_token': csrf_token('delete_commande')}) }}" class="btn-sm btn-danger" data-toggle="tooltip" data-placement="top" title="Supprimer la commande {{ commande.reference }}" onclick="return confirm('Etes-vous sûrs de supprimer la commande {{ commande.reference }} ?')">
+          <i class="icon-trash"></i>Annuler la commande
+        </a><br><br>
       </div>
-      {% set totalRetour = 0 %}
-      {% if commande.returnedProducts is not empty %}
-        <div class="col-md-4">
-          <h3>Retour de marchandises</h3>
-          {% for item in commande.returnedProducts %}
-            {# {% for prod in commande.product if item.product.id == prod.id %} #}
-              {# {% set totalRetour = totalRetour + (item.quantity * prod.unitPrice) %} #}
-              <li>{{ item.quantity }} {{ item.product.label }}</li>
-            {# {% endfor %} #}
-          {% endfor %}
-        </div>
-      {% endif %}
     </div><br><br>
     <div class="row">
       <div class="">
@@ -115,7 +103,7 @@
         </div><br><br>
         <div class="row">
           <div class="col-lg-6 col-md-8 col-sm-12">
-            <h3>Règlements</h3>
+            <h3>Avances</h3>
             {% if commande.settlements is not empty %}
               {% set total = 0 %}
               <table width="100%">

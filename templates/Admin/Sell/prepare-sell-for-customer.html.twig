@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Enregistrement de vente
+  Préparation de commande client
 {% endblock %}
 
 
@@ -37,7 +37,7 @@
 
 {% block body %}
   <div class="">
-    <h2>Enregistrement d'une nouvelle vente</h2>
+    <h2>Préparation de commande client</h2>
     <button type="button" class="btn-lg btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Ajouter un produit</button>
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -92,19 +92,12 @@
         <div class="row">
           <div class="form-group col-md-6">
             <label for="customer">Client</label>
-            <select name="customer" id="customer">
-              <option value="">Sélectionner un client</option>
-              {% for customer in customers %}
-                <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
-              {% endfor %}
-            </select>
+            <input type="text" name="" id="" value="{{ customer.firstname }} {{ customer.lastname }}" readonly>
           </div>
-        {# </div>
-        <div class="row"> #}
           <div class="form-group col-md-6">
-            <label for="date">Date de la commande</label>
+            {# <label for="date">Date de la commande</label>
             <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}">
-          </div>
+          </div> #}
         </div>
         {% set i = 0 %}
         <table class="table" id="myTable">

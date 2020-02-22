@@ -108,26 +108,17 @@ class UserManagementController extends AbstractController
   }
 
   /**
-   * @Route("/supprimer-utilisateur/{userId}", name="delete_user", methods="GET|POST", requirements={"userId"="\d+"})
+   * @Route("/supprimer-utilisateur/{id}", name="delete_user", methods="GET|POST", requirements={"id"="\d+"})
+   * @param User $user
    */
-  public function supprimer_utilisateur(Request $request, ObjectManager $manager, int $id, int $userId)
+  public function supprimer_utilisateur(Request $request, ObjectManager $manager, int $id, User $user)
   {
-    $repoUser = $manager->getRepository(User::class);
-    $user = $repoUser->find($userId);
     $token = $request->get('_csrf_token');
     if($this->isCsrfTokenValid('delete_user', $token))
     {
       $user->setIsDeleted(true);
       $user->setDeletedAt(new \DateTime());
       // Si le $user est un enseignant, il va falloir supprimer également
-      if($user->getIsEnseignant() == true)
-      {
-        $repoEnseignant = $manager->getRepository(Enseignant::class);
-        $enseignant = $repoEnseignant->findOneBy(["user" => $userId]);
-        $enseignant->setIsDeleted(true);
-        $enseignant->setDeletedBy($this->getUser());
-        $enseignant->setDeletedAt(new \DateTime());
-      }
       try{
         $manager->flush();
         $this->addFlash('success', 'L\'utilisateur <strong>'.$user->getUsername().'</strong> supprimée avec succès.');

@@ -107,6 +107,11 @@ class CustomerCommande
      */
     private $returnedProducts;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $status;
+
     public function __construct()
     {
         $this->product          = new ArrayCollection();
@@ -399,6 +404,18 @@ class CustomerCommande
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

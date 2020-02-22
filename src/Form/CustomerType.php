@@ -10,13 +10,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class CustomerType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('reference',    TextType::class, ['label' => 'Référence', 'required' => true])
             ->add('firstname',    TextType::class, ['label' => 'Prénom', 'required' => true])
             ->add('lastname',     TextType::class, ['label' => 'Nom', 'required' => true])
             ->add('phone_number', TextType::class, ['label' => 'Numéro de téléphone', 'required' => true])
@@ -32,6 +33,20 @@ class CustomerType extends AbstractType
                 'placeholder' => 'Sélectionner un type de client'
             ])
         ;
+
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event)
+        {
+            $customer = $event->getData();
+            $form = $event->getForm();
+
+            if (!$customer || null === $customer->getId()) {
+                $form
+                    ->add('reference',   TextType::class, ['label' => 'Référence', 'required' => true])
+                ;
+            }
+            else{
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver)

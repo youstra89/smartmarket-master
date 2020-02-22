@@ -17,7 +17,7 @@
       <a href="#" class="close" data-dismiss="alert">&times;</a>
       <strong>Attention !!!</strong><br>
       {{ message|raw }}
-    </div>
+    </div> 
   {% endfor %}
   {% for message in app.flashes('danger') %}
     <div class="alert alert-danger fade in">

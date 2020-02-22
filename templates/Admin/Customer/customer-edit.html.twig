@@ -9,8 +9,64 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Mise à jour des informations du client <strong>{{ customer.firstname }} {{ customer.lastname }}</strong> </h2>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Mise à jour des informations du client <strong>{{ customer.firstname }} {{ customer.lastname }}</strong> </h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    {{ include('Admin/Customer/_customer.html.twig', {button: 'Editer'}) }}
+    {{ form_start(form, {'attr': {'class': ''}}) }}
+        <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="">Reference</label>
+                <input type="text" name="" id="" class="form-control" value="{{ customer.reference }}" readonly>
+              </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.firstname) }}</label>
+                    {{ form_widget(form.firstname, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.lastname) }}</label>
+                    {{ form_widget(form.lastname, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.phone_number) }}</label>
+                    {{ form_widget(form.phone_number, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.email) }}</label>
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.type) }}</label>
+                    {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.address) }}</label>
+                    {{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.residence) }}</label>
+                    {{ form_widget(form.residence, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-default">{{ button|default('Editer') }}</button>
+    {{ form_end(form) }}
   </div>
 {% endblock %}

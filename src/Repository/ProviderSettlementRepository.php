@@ -22,7 +22,7 @@ class ProviderSettlementRepository extends ServiceEntityRepository
     public function reglementsIncomplets()
     {
         return $this->createQueryBuilder('p')
-            ->select('c.id, SUM(s.amount) AS montant')
+            ->select('c.id, SUM(p.amount) AS montant')
             ->join('p.commande', 'c')
             ->where('c.ended = FALSE')
             ->andWhere('p.is_deleted = :status')
