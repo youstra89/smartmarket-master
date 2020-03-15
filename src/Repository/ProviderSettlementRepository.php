@@ -35,6 +35,24 @@ class ProviderSettlementRepository extends ServiceEntityRepository
     }
 
 
+    public function restesAPayer()
+    {
+        return $this->createQueryBuilder('s')
+            ->select('p.id, (SUM(c.total_amount) - SUM(s.amount)) AS reste')
+            ->join('s.commande', 'c')
+            ->join('c.provider', 'p')
+            ->andWhere('c.ended = FALSE')
+            ->andWhere('s.is_deleted = :status')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('p.is_deleted = :status')
+            ->setParameter('status', false)
+            ->groupBy('p.id')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
     public function versementsAnterieurs(int $commandeId, object $settlement)
     {
         $settlementId = $settlement->getId();

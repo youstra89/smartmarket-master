@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Informations{% endblock %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Informations sur l'entreprise</h2>
+    {% if is_granted('ROLE_SUPER_ADMIN') and info == null %}
+      <a href="{{ path('add_informations') }}" class="btn-primary btn-sm">Enregistrer les informations</a><br><br>
+    {% elseif is_granted('ROLE_SUPER_ADMIN') and info != null %}
+      <a href="{{ path('edit_informations') }}" class="btn-info btn-sm">Modifier les informations</a><br><br>
+    {% endif %}
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">Nom</label>
+            {{ info.nom }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Slogan</label>
+                {{ info.slogan }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Situation géographique</label>
+                {{ info.adresse }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Numéro de téléphone</label>
+                {{ info.telephone }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Email </label>
+                {{ info.email }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Site web</label>
+                {{ info.siteWeb }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Capital</label>
+                {{ info.capital }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Régime d'imposition</label>
+                {{ info.regimeImposition }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Numéro registre de commerce</label>
+                {{ info.registreCommerce }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Numero de compte bancaire</label>
+                {{ info.numeroCompteBancaire }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Logo</label>
+                <img src="{{ asset('uploads/images/' ~ info.logo) }}" alt="" style="max-width: 500px; height: auto">
+            </div>
+        </div>
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

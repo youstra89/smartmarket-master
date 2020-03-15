@@ -41,6 +41,7 @@ class AdminCategoryController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
+          // dd($category);
           $category->setCreatedBy($this->getUser());
           $manager->persist($category);
           try{
@@ -50,16 +51,19 @@ class AdminCategoryController extends AbstractController
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
           } 
-            return $this->redirectToRoute('category');
-          }
+          return $this->redirectToRoute('category');
+        }
+        // else{
+        //   $this->addFlash('danger', 'Enregistrement de la catégorie réussie.');
+        // }
           
-          return $this->render('Admin/Category/category-add.html.twig', [
-            'current' => 'products',
-            'form'    => $form->createView()
-            ]);
-          }
+        return $this->render('Admin/Category/category-add.html.twig', [
+          'current' => 'products',
+          'form'    => $form->createView()
+        ]);
+    }
           
-          /**
+    /**
      * @Route("/edit/{id}", name="category.edit")
      * @IsGranted("ROLE_ADMIN")
      * @param Category $category

@@ -7,18 +7,19 @@ use Dompdf\Options;
 use App\Entity\Product;
 use App\Entity\Customer;
 use App\Entity\Settlement;
+use App\Entity\Informations;
 use App\Entity\CustomerCommande;
 use App\Entity\CustomerCommandeSearch;
 use App\Entity\CustomerCommandeDetails;
 use App\Form\CustomerCommandeSearchType;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
 
+use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
@@ -199,6 +200,7 @@ class AdminSellController extends AbstractController
                   $commandeProduit->setQuantity($quantity);
                   $commandeProduit->setUnitPrice($value);
                   $commandeProduit->setSubtotal($subtotal);
+                  $commandeProduit->setCreatedBy($this->getUser());
                   $commandeGlobalCost += $subtotal;
                   $manager->persist($commandeProduit);
 
@@ -230,6 +232,96 @@ class AdminSellController extends AbstractController
           'products'  => $products,
           'customers' => $customers,
         ]);
+    }
+
+    /**
+     * @Route("/edit-sell/{id}", name="edit_sell")
+     * @param CustomerCommande $commande
+     */
+    public function edit_sell(Request $request, ObjectManager $manager, int $id, CustomerCommande $commande)
+    {
+      if(count($commande->getSettlements()) > 1)
+        return $this->redirectToRoute('customer.order.details', ["id" => $id]);
+      elseif($commande->getDate()->format('d-m-Y') !== (new \DateTime())->format('d-m-Y'))
+        return $this->redirectToRoute('customer.order.details', ["id" => $id]);
+
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        // return new Response(var_dump($data));
+        if(!empty($data['token']))
+        {
+          $token = $data['token'];
+          if($this->isCsrfTokenValid('modifier_vente', $token)){
+            $data       = $request->request->all();
+            $quantities = $data["quantitiesH"];
+            $prices     = $data["pricesH"];
+            $total      = $data["total"];
+            $change     = false;
+            // Si la somme total des versements effectués est supérieure au montant total de la commande, il faut arrếter le script et modifier les versements
+            if($commande->getTotalSettlments() > $total)
+            {
+              $this->addFlash('danger', 'Impossible de continuer. Car la somme des versements est supérieure au total de commande.');
+              return $this->redirectToRoute('edit_sell', ["id" => $id]);
+            }
+
+            foreach ($commande->getProduct() as $key => $value) {
+              // $product   = $manager->getRepository(Product::class)->find($value->getProduct()->getId());
+              $product   = $value->getProduct();
+              $productId = $product->getId();
+              $quantity  = (int) $quantities[$productId];
+              $price     = (int) $prices[$productId];
+              if($value->getQuantity() !== $quantity or $value->getUnitPrice() !== $price)
+              {
+                // dump($product);
+                // On va voir s'il y a eu augmentation ou diminution de quantité
+                $diff     = $value->getQuantity() - $quantity;
+
+                // Si $diff est négatif, cela signifie qu'il y a eu une augmentation de quantité.
+                // Dans ce cas, on va vérifier si la différence demandée est disponible en stock. Si oui, on procède au mises à jour
+                if ($diff < 0) {
+                  $diff = abs($diff);
+                  if($product->getStock() >= $diff)
+                    $product->setStock($product->getStock() - $diff);
+                  else{
+                    $this->addFlash('danger', 'Impossible de satisfaire la demande d\'augmentation. La quantité demandée ('.$diff.') n\'est pas disponible en stock');
+                    return $this->redirectToRoute('edit_sell', ["id" => $id]);
+                  }
+                } 
+                elseif ($diff > 0) {
+                  $product->setStock($product->getStock() + $diff);
+                }
+                
+                $change   = true;
+                $subtotal = $quantity * $price;
+                $value->setQuantity($quantity);
+                $value->setUnitPrice($price);
+                $value->setSubtotal($subtotal);
+                $value->setUpdatedAt(new \DateTime());
+                $value->setUpdatedBy($this->getUser());
+  
+              }
+            }
+
+            if($change === true)
+            {
+              $commande->setTotalAmount($total);
+              $commande->setUpdatedAt(new \DateTime());
+              $commande->setUpdatedBy($this->getUser());
+              $manager->flush();
+              $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
+            }
+            return $this->redirectToRoute('sell');
+          }
+          else{
+            $this->addFlash('danger', 'Jeton de sécurité non valide.');
+          }
+        }
+      }
+      return $this->render('Admin/Sell/sell-edit.html.twig', [
+        'current'  => 'sells',
+        'commande' => $commande,
+      ]);
     }
 
 
@@ -300,6 +392,7 @@ class AdminSellController extends AbstractController
                   $commandeProduit->setQuantity($quantity);
                   $commandeProduit->setUnitPrice($value);
                   $commandeProduit->setSubtotal($subtotal);
+                  $commandeProduit->setCreatedBy($this->getUser());
                   $commandeGlobalCost += $subtotal;
                   $manager->persist($commandeProduit);
                 }
@@ -326,6 +419,18 @@ class AdminSellController extends AbstractController
           'products' => $products,
           'customer' => $customer,
         ]);
+    }
+
+    /**
+     * @Route("/deliver-customer-commande/{id}", name="deliver_customer_commande", requirements={"id"="\d+"})
+     * @param CustomerCommande $commande
+     */
+    public function deliver_customer_commande(Request $request, ObjectManager $manager, CustomerCommande $commande, int $id)
+    {
+      return $this->render('Admin/Sell/deliver-customer-commande.html.twig', [
+        'current'  => 'sells',
+        'commande' => $commande,
+      ]);
     }
 
     /**
@@ -362,21 +467,20 @@ class AdminSellController extends AbstractController
         $token  = $data['token'];
         $date   = new \DateTime($data['date']);
         $amount = $data['amount'];
-        $commandeId = $commande->getId();
         $soldee = false;
         if($this->isCsrfTokenValid('token_reglement', $token)){
           if(empty($date)){
             $this->addFlash('danger', 'Saisir une valuer pour la date.');
-            return $this->redirectToRoute('settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('settlement', ['id' => $id]);
           }
           if(empty($amount) or $amount < 0){
             $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
-            return $this->redirectToRoute('settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('settlement', ['id' => $id]);
           }
           if (empty($commande->getCustomer())) {
             if($amount != $commande->getTotalAmount()) {
               $this->addFlash('danger', 'Montant incorrect. La valeur saisie n\'est pas égale au montant total da la commande.');
-              return $this->redirectToRoute('settlement', ['id' => $commandeId]);
+              return $this->redirectToRoute('settlement', ['id' => $id]);
             }
             else {
               $this->addFlash('success', 'Règlement enregistré avec succès. Commande soldée.');
@@ -389,12 +493,12 @@ class AdminSellController extends AbstractController
             if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
             {
               $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
-              return $this->redirectToRoute('settlement', ['id' => $commandeId]);
+              return $this->redirectToRoute('settlement', ['id' => $id]);
             }
             elseif($newTotal > $commande->getTotalAmount())
             {
               $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
-              return $this->redirectToRoute('settlement', ['id' => $commandeId]);
+              return $this->redirectToRoute('settlement', ['id' => $id]);
             }
             elseif($newTotal < $commande->getTotalAmount())
             {
@@ -405,6 +509,7 @@ class AdminSellController extends AbstractController
               $commande->setEnded(true);
             }
           }
+          // dd($request->attributes->get('from'));
           $user = $this->getUser();
           $reference = $this->generateInvoiceReference($manager);
           $settlementNumber = $this->generateSettlementNumber(empty($dernierVersement) ? null : $dernierVersement);
@@ -428,7 +533,10 @@ class AdminSellController extends AbstractController
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
           }
-          return $this->redirectToRoute('sell');
+          return $this->redirectToRoute('customer.order.details', ['id' => $id]);
+          // if(empty($data['from']))
+          // else
+          //   return $this->redirectToRoute('accounting.debtor');
         }
       }
       return $this->render('Admin/Sell/settlement.html.twig', [
@@ -640,6 +748,8 @@ class AdminSellController extends AbstractController
      */
     public function facture_client(int $id, int $settlementId, ObjectManager $manager, CustomerCommande $commande)
     {
+        $info = $manager->getRepository(Informations::class)->find(1);
+        
         // Sélection des versements 
         $settlement = $manager->getRepository(Settlement::class)->find($settlementId);
         $settlements = $manager->getRepository(Settlement::class)->versementsAnterieurs($id, $settlement);
@@ -653,6 +763,7 @@ class AdminSellController extends AbstractController
         
         // Retrieve the HTML generated in our twig file
         $html = $this->renderView('Admin/Sell/facture.html.twig', [
+            'info'        => $info,
             'commande'    => $commande,
             'settlements' => $settlements
         ]);

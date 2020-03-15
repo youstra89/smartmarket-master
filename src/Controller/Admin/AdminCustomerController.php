@@ -49,7 +49,7 @@ class AdminCustomerController extends AbstractController
           $manager->persist($customer);
           try{
             $manager->flush();
-            $this->addFlash('success', 'Enregistrement du fournisseur <strong>'.$customer->getFirstname().' '.$customer->getLastname().'</strong> réussie.');
+            $this->addFlash('success', 'Enregistrement du client <strong>'.$customer->getFirstname().' '.$customer->getLastname().'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -79,7 +79,7 @@ class AdminCustomerController extends AbstractController
           $manager->persist($customer);
           try{
             $manager->flush();
-            $this->addFlash('success', 'Mise à jour de <strong>'.$customer->getFirstname().' '.$customer->getLastname().'</strong> réussie.');
+            $this->addFlash('success', 'Mise à jour du client <strong>'.$customer->getFirstname().' '.$customer->getLastname().'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -87,9 +87,9 @@ class AdminCustomerController extends AbstractController
           return $this->redirectToRoute('customer');
         }
         return $this->render('Admin/Customer/customer-edit.html.twig', [
-          'current' => 'sells',
+          'current'  => 'sells',
           'customer' => $customer,
-          'form'    => $form->createView()
+          'form'     => $form->createView()
         ]);
     }
 }

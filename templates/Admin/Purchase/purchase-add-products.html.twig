@@ -50,7 +50,7 @@
         {% endfor %}
         <input type="hidden" name="commandeId" value="{{ commande.id }}">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('provider.order') }}"/>
-        <button type="submit" name="valider" id="valider" class="btn btn-primary btn-sm">Valider</button>
+        <button type="submit" name="valider" id="valider" class="btn btn-primary btn-sm" onclick="submitForm(this);">Valider</button>
       </form>
     {% endif %}
   </div>
@@ -66,5 +66,13 @@
         //   this.prop('disabled', false)
         // })
     });
+
+
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
   </script>
 {% endblock %}

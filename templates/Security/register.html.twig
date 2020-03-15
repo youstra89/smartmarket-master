@@ -105,10 +105,22 @@
           </div>
         </div>
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('registration') }}"/>
-        <button type="submit" class="btn btn-primary btn-demo popup-vimeo">
+        <button type="submit" class="btn btn-primary btn-demo popup-vimeo" onclick="submitForm(this);">
           <i class="fa fa-sign-in" aria-hidden="true"></i> Enregistrer
         </button>
         {{ form_rest(form) }}
       {{ form_end(form)}}
     </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+      // disable the button
+      btn.disabled = true;
+      // submit the form    
+      btn.form.submit();
+    }
+  </script>
 {% endblock %}

@@ -45,6 +45,6 @@
           </tfoot>
         </table>
         <input type="hidden" name="token" value="{{ csrf_token('achat') }}"/>
-        <button class="btn btn-primary">{{ button|default('Enregistrer') }}</button><br><br>
+        <button class="btn btn-primary" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button><br><br>
     </form>
 </section>

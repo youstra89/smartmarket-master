@@ -122,12 +122,32 @@ class AdminAccountingController extends AbstractController
         $repoCustomerCommande = $manager->getRepository(CustomerCommande::class);
         $repoSettlement       = $manager->getRepository(Settlement      ::class);
         $commandes            = $repoCustomerCommande->lesDebiteurs();
+        $nbrCommandes         = $repoCustomerCommande->nombreCommandesDesDebiteurs();
         $reglements           = $repoSettlement->reglementsIncomplets();
-        // dump($reglements);
+        $restesAPayer         = $repoSettlement->restesAPayer();
+        // dd($restesAPayer);
+        
+        if (!empty($reglements)) {
+          // On va sélectionner les différents clients
+          $customers = [];
+          foreach ($commandes as $value) {
+            $customer               = $value->getCustomer();
+            $customerId             = $customer->getId();
+            $customers[$customerId] = $customer;
+          }
+          
+          foreach ($restesAPayer as $value) {
+            $restes[$value["id"]] = $value["reste"];
+          }
+        }
+        // dump($restesAPayer);
         return $this->render('Admin/Accounting/comptabilite-debit.html.twig', [
-          'ventes'  => $commandes,
-          'reglements'  => $reglements,
-          'current'    => 'accounting',
+          'current'      => 'accounting',
+          'ventes'       => $commandes,
+          'nbrCommandes' => $nbrCommandes,
+          'restesAPayer' => $restes,
+          'customers'    => $customers,
+          'reglements'   => $reglements,
         ]);
     }
 
@@ -143,11 +163,29 @@ class AdminAccountingController extends AbstractController
         $repoSettlement       = $manager->getRepository(ProviderSettlement      ::class);
         $commandes            = $repoProviderCommande->lesCreanciers();
         $reglements           = $repoSettlement->reglementsIncomplets();
+        $nbrCommandes         = $repoProviderCommande->nombreCommandesDesCreanciers();
+        $restesAPayer         = $repoSettlement->restesAPayer();
+        if (!empty($reglements)) {
+          // On va sélectionner les différents clients
+          $providers = [];
+          foreach ($commandes as $value) {
+            $provider               = $value->getProvider();
+            $providerId             = $provider->getId();
+            $providers[$providerId] = $provider;
+          }
+          
+          foreach ($restesAPayer as $value) {
+            $restes[$value["id"]] = $value["reste"];
+          }
+        }
         // dump($reglements);
         return $this->render('Admin/Accounting/comptabilite-credit.html.twig', [
-          'ventes'     => $commandes,
-          'reglements' => $reglements,
-          'current'    => 'accounting',
+          'achats'       => $commandes,
+          'reglements'   => $reglements,
+          'current'      => 'accounting',
+          'nbrCommandes' => $nbrCommandes,
+          'restesAPayer' => $restes,
+          'providers'    => $providers,
         ]);
     }
 }

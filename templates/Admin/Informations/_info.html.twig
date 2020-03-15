@@ -1,0 +1,77 @@
+{{ form_start(form, {'attr': {'class': ''}}) }}
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.nom) }}</label>
+            {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.slogan) }}</label>
+                {{ form_widget(form.slogan, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.adresse) }}</label>
+                {{ form_widget(form.adresse, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.telephone) }}</label>
+                {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.email) }}</label>
+                {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.site_web) }}</label>
+                {{ form_widget(form.site_web, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.capital) }}</label>
+                {{ form_widget(form.capital, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.regime_imposition) }}</label>
+                {{ form_widget(form.regime_imposition, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.registre_commerce) }}</label>
+                {{ form_widget(form.registre_commerce, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.numero_compte_bancaire) }}</label>
+                {{ form_widget(form.numero_compte_bancaire, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.logo) }}</label>
+                {{ form_widget(form.logo, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
+{{ form_end(form) }}

@@ -238,6 +238,32 @@ class Customer
         return $this;
     }
 
+    public function getMontantTotalCommandeNonSoldees()
+    {
+        $total = 0;
+        foreach ($this->getCustomerCommandes() as $key => $value) {
+            if($value->getEnded() === false and $value->getIsDeleted() === false)
+                $total = $total + $value->getTotalAmount();
+        }
+        return $total;
+    }
+
+    public function getMontantTotalReglementCommandeNonSoldees()
+    {
+        $total = 0;
+        foreach ($this->getCustomerCommandes() as $key => $value) {
+            if($value->getEnded() === false and $value->getIsDeleted() === false)
+            {
+                foreach ($value->getSettlements() as $settlement) {
+                    if ($settlement->getIsDeleted() === false) {
+                        $total = $total + $settlement->getAmount();
+                    }
+                }
+            }
+        }
+        return $total;
+    }
+
     /**
      * @return Collection|CustomerCommande[]
      */

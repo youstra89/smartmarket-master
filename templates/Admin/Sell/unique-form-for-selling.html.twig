@@ -2,6 +2,7 @@
 
 
 {% block stylesheets %}
+  <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
 {% endblock %}
 
 
@@ -92,7 +93,7 @@
         <div class="row">
           <div class="form-group col-md-6">
             <label for="customer">Client</label>
-            <select name="customer" id="customer">
+            <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single">
               <option value="">Sélectionner un client</option>
               {% for customer in customers %}
                 <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
@@ -102,7 +103,7 @@
         {# </div>
         <div class="row"> #}
           <div class="form-group col-md-6">
-            <label for="date">Date de la commande</label>
+            <label for="date">Date de la commande</label><br>
             <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}">
           </div>
         </div>
@@ -391,6 +392,11 @@
         // submit the form    
         btn.form.submit();
     }
-
+  </script>
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+  <script>
+    $(document).ready(function() {
+      $('.js-example-basic-single').select2();
+    });
   </script>
 {% endblock %}

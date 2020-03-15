@@ -23,13 +23,10 @@
                 height: 50px;
 
                 /** Extra personal styles **/
-                background-color: DarkCyan;
-                color: white;
-                text-align: center;
-                line-height: 35px;
-
-                font-weight: bold;
-                font-size: 1.5em
+                color: gray;
+                text-align: left;
+                padding-left: 20px;
+                font-size: .9em
             }
 
             footer {
@@ -40,14 +37,13 @@
                 height: 50px; 
 
                 /** Extra personal styles **/
-                background-color: DarkCyan;
-                color: white;
+                color: darkGray;
                 text-align: center;
-                line-height: 35px;
+                font-size: 0.5em;
             }
 
             table{
-              width: 95%
+              width: 100%
             }
 
             table, th, td {
@@ -112,11 +108,10 @@
             .title{
               text-align: center;
               font-family: 'Elegance';
-            }
-
-            .title-form{
-              border: 3px solid black;
-              /* margin: 1px */
+              font-size: 1.3em;
+              padding-top: 10px;
+              margin-bottom: 0px;
+              padding-bottom: 0px;
             }
 
             .settlement{
@@ -129,17 +124,40 @@
     </head>
     <body>
         <header>
-            Smart Market
+            {% if info is defined %}
+              <strong>{{ info.nom }}</strong><br>
+              {% if info.telephone is not empty %}
+                Téléphone: {{ info.telephone }}<br>
+              {% endif %}
+              {% if info.email is not empty %}
+                Email: {{ info.email }}<br>
+              {% endif %}
+              {% if info.siteWeb is not empty %}
+                Site web: {{ info.siteWeb }}<br>
+              {% endif %}
+            {% else %}
+              SmartMarket
+            {% endif %}
+            <hr width="75%">
         </header>
 
-        <footer>
+        <footer style="font-family: Elegance; line-height: 10px; font-size: 0.8em">
+            <hr width="75%" style="align: left; border: solid black 2px">
+          {% if info is defined %}
+            {{ info.nom }} au capital de {{ info.capital|number_format(0, ',', ' ') }} F<br>
+            {% if info.adresse is not empty %}
+              Sise à {{ info.adresse }} <br>
+            {% endif %}
+            {% if info.numeroCompteBancaire is not empty %}
+              Compte bancaire {{ info.numeroCompteBancaire }} <br>
+            {% endif %}
+            {% if info.registreCommerce is not empty %}
+              RCM {{ info.registreCommerce }} <br>
+            {% endif %}
+          {% else %}
             Contacts: (00225) 07 31 09 99 - Email: contact.youstra@gmail.com
+          {% endif %}
         </footer>
-        <div class="title-form">
-          <h1 class="title">
-            Facture N° {{ settlements|last.reference }} 
-          </h1>
-        </div>
         <!-- Wrap the content of your PDF inside a main tag -->
         <main>
             {# <p style="page-break-after: always;">
@@ -148,35 +166,38 @@
             <p style="page-break-after: never;">
                 Content Page 2
             </p> #}
-          <div class="reference">
-            <div class="invoice-header">
-              <div class="info-enterprise" style="">
-                <h2>Info Commande</h2>
-                <div class="reference-commande">
-                <strong>Date de la commande:</strong>
-                <span>{{ commande.date|date('d-m-Y') }}</span><br>
-                <strong>Référence:</strong>
-                <span>{{ commande.reference }}</span><br>
-                <strong>Montant total de la vente:</strong>
-                <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
-                </div>
-              </div>
-              <div class="info-customer" style="">
-                <h2>Client</h2>
-                {% if commande.customer %}
-                  <div class="reference-client">
-                    <strong>Nom Client:</strong>
-                    <span>{{ commande.customer.firstname }} {{ commande.customer.lastname }}</span><br>
-                    <strong>Numéro de téléphone client:</strong>
-                    <span>{{ commande.customer.phoneNumber }}</span><br>
-                    <strong>Type du client:</strong>
-                    <span>{{ commande.customer.type.type }}</span><br>
-                  </div>
-                {% endif %}
-              </div>
-            </div><br><br>
-          </div>
           <div class="content">
+            <h1 class="title">
+              Reçu N°{{ settlements|last.reference }} 
+            </h1>
+            <div class="reference">
+              <div class="invoice-header">
+                <div class="info-enterprise" style="">
+                  <h2>Facture</h2>
+                  <div class="reference-commande">
+                  <strong>Date de facture:</strong>
+                  <span>{{ commande.date|date('d-m-Y') }}</span><br>
+                  <strong>N° de facture :</strong>
+                  <span>{{ commande.reference }}</span><br>
+                  <strong>Montant total:</strong>
+                  <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
+                  </div>
+                </div>
+                <div class="info-customer" style="">
+                  <h2>A l'intention de </h2>
+                  {% if commande.customer %}
+                    <div class="reference-client">
+                      <strong>Nom Client:</strong>
+                      <span>{{ commande.customer.firstname }} {{ commande.customer.lastname }}</span><br>
+                      <strong>Téléphone client:</strong>
+                      <span>{{ commande.customer.phoneNumber }}</span><br>
+                      <strong>Type du client:</strong>
+                      <span>{{ commande.customer.type.type }}</span><br>
+                    </div>
+                  {% endif %}
+                </div>
+              </div><br><br>
+            </div>
             <div class="table-responsive">
               {% set i = 0 %}
               <table class="table" cellspacing="0" border="0">
@@ -210,7 +231,7 @@
                 <tfoot>
                   <tr style="border: 1px solid black">
                     <td colspan="3">TOTAL</td>
-                    <td colspan="2" bgcolor="#D3D3D3" style="align: center">{{ commande.totalAmount|number_format(0, ',', ' ') }} F CFA</td>
+                    <td colspan="2" bgcolor="#D3D3D3" style="align: center">{{ commande.totalAmount|number_format(0, ',', ' ') }} F</td>
                   </tr>
                 </tfoot>
               </table>
@@ -226,14 +247,14 @@
 
             <h1>Détails règlements</h1>
             <div class="table-responsive">
-              <table class="table settlement" cellspacing="0" border="0">
+              <table class="table settlement" cellspacing="0" border="0" style="font-size: 1.2em">
                 <tbody>
                   <tr>
-                    <th>Montant du réglement</th>
-                    <th>Date du réglement</th>
-                    <th>Enregistré par</th>
-                    <th>Montant total payé</th>
-                    <th>Reste à payer</th>
+                    <th width="20%">Montant</th>
+                    <th width="20%">Date du réglement</th>
+                    <th width="20%">Enregistré par</th>
+                    <th width="20%">Montant total payé</th>
+                    <th width="20%">Reste à payer</th>
                   </tr>
                   <tr>
                     <td>{{ settlements|last.amount|number_format(0, ',', ' ') }} F</td>
@@ -250,11 +271,11 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
-          </div><br><br><br><br><br>
-          <div class="row">
-            <div style="text-align: right; font-style: italic">
-              <p class="annee">Editée le <strong>{{ 'now'|date('d-m-Y') }}</strong> à <strong>{{ 'now'|date('H:i:s') }}</strong> par <strong>{{ app.user.username }}</strong></strong></p>
+            </div><br><br><br><br><br>
+            <div class="row">
+              <div style="text-align: right; font-style: italic">
+                <p class="annee">Editée le <strong>{{ 'now'|date('d-m-Y') }}</strong> à <strong>{{ 'now'|date('H:i:s') }}</strong> par <strong>{{ app.user.username }}</strong></strong></p>
+              </div>
             </div>
           </div>
         </main>

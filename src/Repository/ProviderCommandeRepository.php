@@ -58,6 +58,22 @@ class ProviderCommandeRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+
+    public function nombreCommandesDesCreanciers()
+    {
+        return $this->createQueryBuilder('c')
+            ->select('p.id, COUNT(p.id) AS nbrCommandes')
+            ->join('c.provider', 'p')
+            ->where('c.ended = false')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('p.is_deleted = :status')
+            ->groupBy('p.id')  
+            ->setParameter('status', false)  
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     // /**
     //  * @return ProviderCommande[] Returns an array of ProviderCommande objects
     //  */

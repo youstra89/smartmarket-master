@@ -27,6 +27,9 @@
         <h3>Commande</h3>
         <strong>Montant total de la vente</strong><br>
         <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
+        <strong>Reste à payer</strong><br>
+        <span>{{ commande.getResteAPayer|number_format(0, ',', ' ') }} F</span><br>
+
       </div>
     </div><br><br>
     <form action="" method="post">
@@ -82,7 +85,7 @@
       </div><br>
       <div class="row">
         <input type="hidden" name="token" value="{{ csrf_token('token_dates_echeances') }}">
-        <button type="submit" class="btn-lg btn-info">Enregistrer</button>
+        <button type="submit" class="btn-lg btn-info" onclick="submitForm(this);">Enregistrer</button>
       </div>
     </form>
   </div>
@@ -144,5 +147,12 @@
         }
       })   
     });
+
+    function submitForm(btn) {
+      // disable the button
+      btn.disabled = true;
+      // submit the form    
+      btn.form.submit();
+    }
   </script>
 {% endblock %}

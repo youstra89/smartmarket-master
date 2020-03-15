@@ -82,7 +82,7 @@ class ProviderCommande
     private $additional_fees;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Provider", inversedBy="providerOrders")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Provider", inversedBy="providerCommandes")
      * @ORM\JoinColumn(nullable=false)
      */
     private $provider;

@@ -257,6 +257,16 @@ class CustomerCommande
         return $this;
     }
 
+    public function getTotalSettlments()
+    {
+        $total = 0;
+        foreach ($this->settlements as $key => $value) {
+            $total = $total + $value->getAmount();
+        }
+
+        return $total;
+    }
+
     /**
      * @return Collection|Settlement[]
      */
@@ -418,5 +428,16 @@ class CustomerCommande
         $this->status = $status;
 
         return $this;
+    }
+
+    public function getResteAPayer()
+    {
+        $total = 0;
+        foreach ($this->settlements as $settlement) {
+            if ($settlement->getIsDeleted() === false) {
+                $total = $total + $settlement->getAmount();
+            }
+        }
+        return $this->total_amount - $total;
     }
 }

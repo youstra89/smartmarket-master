@@ -1,16 +1,175 @@
 {% extends 'base.html.twig' %}
 
 
-{% block title %}Modification de la vente du {{ product.description }}{% endblock %}
+{% block stylesheets %}
+{% endblock %}
 
 
-{% block notifications %}{% endblock %}
+{% block title %}
+  Modification de la vente du N°{{ commande.reference }} du {{ commande.date|date('d-m-Y') }}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Modification d'un achat <strong>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</strong> </h2>
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    {{ include('Admin/Sell/_sell.html.twig', {button: 'Editer'}) }}
-  </div>
+    <h2>Modification de la vente N°<strong>{{ commande.reference }}</strong> du <strong>{{ commande.date|date('d-m-Y') }}</strong></h2>
+    <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
+    <div class="row">
+      <div class="col-md-4">
+        <h3>Client</h3>
+        {% if commande.customer is not empty %}
+          <strong>Nom Client:</strong>
+          <span>{{ commande.customer.firstname }} {{ commande.customer.lastname }}</span><br>
+          <strong>Numéro de téléphone client:</strong>
+          <span>{{ commande.customer.phoneNumber }}</span><br>
+          <strong>Type du client:</strong>
+          <span>{{ commande.customer.type.type }}</span><br>
+        {% else %}
+          Vente anomyne
+        {% endif %}
+      </div>
+      <div class="col-md-4">
+        <h3>Commande</h3>
+        <strong>Date de la commande:</strong>
+        <span>{{ commande.date|date('d-m-Y') }}</span><br>
+        <strong>Référence:</strong>
+        <span>{{ commande.reference }}</span><br>
+        <strong>Montant total:</strong>
+        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
+      </div>
+      {% set totalRetour = 0 %}
+      {% if commande.returnedProducts is not empty %}
+        <div class="col-md-4">
+          <h3>Retour de marchandises</h3>
+          {% for item in commande.returnedProducts %}
+            {# {% for prod in commande.product if item.product.id == prod.id %} #}
+              {# {% set totalRetour = totalRetour + (item.quantity * prod.unitPrice) %} #}
+              <li>{{ item.quantity }} {{ item.product.label }}</li>
+            {# {% endfor %} #}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div><br><br>
+    <div class="row">
+      <form action="" method="post">
+        <div class="table-responsive">
+          {% set i = 0 %}
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Référence</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix Unitaire</th>
+                <th>Sous-total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set total = 0 %}
+              {% for item in commande.product %}
+                {% set i = i + 1 %}
+                {% set total = total + item.subtotal %}
+                <tr>
+                  <td>{{ i }}</td>
+                  <td>{{ item.product.reference }}</td>
+                  <td>{{ item.product.label }}</td>
+                  <td>
+                    <input type="number" class="quantity" name="{{item.product.id}}" id="quantities[{{item.product.id}}]" value="{{ item.quantity }}" required>
+                    <input type="hidden" name="quantitiesH[{{item.product.id}}]" id="quantitiesH[{{item.product.id}}]" value="{{ item.quantity }}">
+                  </td>
+                  <td>
+                    <input type="number" class="price" name="{{item.product.id}}" id="prices[{{item.product.id}}]" value="{{ item.unitPrice }}" required>
+                    <input type="hidden" name="pricesH[{{item.product.id}}]" id="pricesH[{{item.product.id}}]" value="{{ item.unitPrice }}">
+                  </td>
+                  <td><input type="number" class="sousTotal" name="{{item.product.id}}" id="sousTotal[{{item.product.id}}]" value="{{ item.subtotal }}" readonly></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th colspan="5">Montant total de la commande</th>
+                <th><input type="text" id="total" name="total" value="{{ total }}" readonly required></th>
+              </tr>
+            </tfoot>
+          </table>
+          <input type="hidden" name="token" value="{{ csrf_token('modifier_vente') }}"/>
+          <button class="btn-lg btn-default">Appliquer les modifications</button>
+        </div><br><br>
+      </form>
+    </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    // A chaque fois que le prix change
+      $('.price').on('input',function(e){
+        var id = $(this).attr("name");
+        var unitPrice = $(this).val();
+        var price = document.getElementById('prices[' + id + ']');
+        var priceH = document.getElementById('pricesH[' + id + ']');
+        var qte = document.getElementById('quantities[' + id + ']').value;
+        var sousTotal = document.getElementById('sousTotal[' + id + ']');
+        var total = document.getElementById('total');
+        price.value = unitPrice;
+        priceH.value = unitPrice;
+        sousTotal.value = parseFloat(qte) * parseFloat(unitPrice);
+        var st = $('.sousTotal');
+        var tt = 0;
+        for (var i = 0; i < st.length; i++) {
+          tt += eval(st[i].value);
+          console.log(st[i].value);
+        }
+        total.value = tt;
+      });
+
+      // A chaque fois que la quantité change
+      $('.quantity').on('input',function(e){
+        var id = $(this).attr("name");
+        console.log(id);
+        
+        var qte = $(this).val();
+        var quantity = document.getElementById('quantities[' + id + ']');
+        var quantityH = document.getElementById('quantitiesH[' + id + ']');
+        var price = document.getElementById('prices[' + id + ']').value;
+        var sousTotal = document.getElementById('sousTotal[' + id + ']');
+        var total = document.getElementById('total');
+        quantity.value = qte;
+        quantityH.value = qte;
+        sousTotal.value = parseFloat(price) * parseFloat(qte);
+        var st = $('.sousTotal');
+        var tt = 0;
+        for (var i = 0; i < st.length; i++) {
+          tt += eval(st[i].value);
+          console.log(st[i].value);
+        }
+        total.value = tt;
+      });
+  </script>
 {% endblock %}

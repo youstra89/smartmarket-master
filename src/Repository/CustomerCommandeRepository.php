@@ -31,8 +31,8 @@ class CustomerCommandeRepository extends ServiceEntityRepository
 
       if($search->getCustomer()){
         $query = $query
-          ->andWhere('clt.customer = :customer')
-          ->andWhere('clt.is_deleted = :status')
+          ->andWhere('c.customer = :customer')
+          ->andWhere('c.is_deleted = :status')
           ->setParameter('status', false)
           ->setParameter('customer', $search->getCustomer()->getId());
       }
@@ -59,8 +59,8 @@ class CustomerCommandeRepository extends ServiceEntityRepository
 
       if($search->getCustomer()){
         $query = $query
-          ->andWhere('clt.customer = :customer')
-          ->andWhere('clt.is_deleted = :status')
+          ->andWhere('c.customer = :customer')
+          ->andWhere('c.is_deleted = :status')
           ->setParameter('status', false)
           ->setParameter('customer', $search->getCustomer()->getId());
       }
@@ -79,9 +79,11 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function dayCommande($date)
     {
       return $this->createQueryBuilder('c')
-          ->where('c.date LIKE :date')
+          ->andWhere('c.date LIKE :date')
+          ->andWhere('c.status = :commandeStatus')
           ->andWhere('c.is_deleted = :status')
           ->setParameter('status', false)
+          ->setParameter('commandeStatus', "LIVREE")
           ->setParameter('date', '%'.$date.'%')
           ->orderBy('c.id', 'DESC')
           ->getQuery()
@@ -92,9 +94,10 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function differentDates()
     {
         $manager = $this->getEntityManager()->getConnection();
-        $query = 'SELECT DISTINCT(SUBSTRING(cc.created_at, 1, 7)) AS `date` FROM customer_commande cc WHERE cc.is_deleted = :status ORDER BY `date` ASC;';
+        $query = 'SELECT DISTINCT(SUBSTRING(cc.created_at, 1, 7)) AS `date` FROM customer_commande cc WHERE cc.is_deleted = :status AND cc.status = :commandeStatus ORDER BY `date` ASC;';
         $statement = $manager->prepare($query);
         $statement->bindValue('status', false);
+        $statement->bindValue('commandeStatus', "LIVREE");
         $statement->execute();
         return $statement->fetchAll();
         ;
@@ -106,8 +109,10 @@ class CustomerCommandeRepository extends ServiceEntityRepository
             ->select('SUM(c.total_amount), c.date')
             ->where('c.date LIKE :dateActuelle')
             ->andWhere('c.is_deleted = :status')
+            ->andWhere('c.status = :commandeStatus')
             ->groupBy('c.date')
             ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
             ->setParameter('dateActuelle', $dateActuelle.'%')
             ->getQuery()
             ->getResult()
@@ -117,9 +122,10 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function monthSells($date)
     {
         $manager = $this->getEntityManager()->getConnection();
-        $requete_eentrees = 'SELECT SUM(cc.total_amount) AS somme FROM customer_commande cc WHERE cc.date LIKE :date AND cc.is_deleted = :status ORDER BY cc.date ASC;';
+        $requete_eentrees = 'SELECT SUM(cc.total_amount) AS somme FROM customer_commande cc WHERE cc.date LIKE :date AND cc.is_deleted = :status AND cc.status = :commandeStatus ORDER BY cc.date ASC;';
         $statement = $manager->prepare($requete_eentrees);
         $statement->bindValue('date', $date.'%');
+        $statement->bindValue('commandeStatus', "LIVREE");
         $statement->bindValue('status', false);
         $statement->execute();
         return $statement->fetchAll();
@@ -128,10 +134,30 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     public function lesDebiteurs()
     {
         return $this->createQueryBuilder('c')
-            ->where('c.ended = false')
+            ->andWhere('c.ended = false')
+            ->andWhere('c.status = :commandeStatus')
             ->andWhere('c.is_deleted = :status')
             ->orderBy('c.date', 'DESC')  
             ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
+    public function nombreCommandesDesDebiteurs()
+    {
+        return $this->createQueryBuilder('c')
+            ->select('cus.id, COUNT(cus.id) AS nbrCommandes')
+            ->join('c.customer', 'cus')
+            ->where('c.ended = false')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('cus.is_deleted = :status')
+            ->andWhere('c.status = :commandeStatus')
+            ->groupBy('cus.id')  
+            ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
             ->getQuery()
             ->getResult()
         ;

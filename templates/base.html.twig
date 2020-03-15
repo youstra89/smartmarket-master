@@ -83,6 +83,7 @@
 						{% endif %}	
 						{% if is_granted('ROLE_SUPER_ADMIN') %}
 							<li class="{% if current == 'users' %}fh5co-active{% endif %}"><a href="{{ path('users') }}">Utilisateurs</a></li>
+							<li class="{% if current == 'info' %}fh5co-active{% endif %}"><a href="{{ path('informations') }}">Admin</a></li>
 						{% endif %}	
 						<li class="{% if current == 'account' %}fh5co-active{% endif %}"><a href="{{ path('profile') }}">Mon compte</a></li>
 						<li><a href="{{ path('logout') }}">Déconnexion</a></li>

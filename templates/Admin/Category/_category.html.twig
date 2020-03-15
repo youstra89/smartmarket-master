@@ -1,11 +1,16 @@
 {{ form_start(form, {'attr': {'class': ''}}) }}
     <div class="row">
         <div class="col-md-6">
-            <div class="form-group">
+            <div>
                 <label for="">{{ form_label(form.name) }}</label>
                 {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
             </div>
+            <div class="form-error">
+                {{ form_errors(form.name) }}
+            </div>
         </div>
     </div>
-    <button class="btn btn-default">{{ button|default('Enregistrer') }}</button>
+    {# <button class="btn-sm btn-default">{{ button|default('Enregistrer') }}</button> #}
+    {# <button class="btn-sm btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button> #}
+    <input type="submit" value="{{ button|default('Enregistrer') }}" class="btn-sm btn-default" onclick="submitForm(this);">
 {{ form_end(form) }}

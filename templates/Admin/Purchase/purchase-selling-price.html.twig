@@ -71,7 +71,18 @@
               {% endfor %}
             </table>
             <input type="hidden" name="token" value="{{ csrf_token('prix_de_vente') }}"/>
-            <button class="btn btn-success btn-sm">{{ button|default('Enregistrer') }}</button><br><br>
+            <button class="btn btn-success btn-sm" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button><br><br>
         </form>
     </section>
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
 {% endblock %}

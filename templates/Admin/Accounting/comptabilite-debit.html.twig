@@ -10,7 +10,7 @@
 {% block body %}
 <div class="fh5co-narrow-content">
   <div class="row justify-content-center generic-height align-items-center mb-3">
-    <div class="col-lg-10">
+    <div class="col-lg-12">
       <a href="javascript:history.back()" class="btn btn-primary">
         <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
       </a><br><br>
@@ -20,8 +20,9 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Date</th>
               <th>Client</th>
+              <th>Total dettes</th>
+              <th>Date</th>
               <th>Montant</th>
               <th>Reste</th>
               <th>Actions</th>
@@ -30,43 +31,72 @@
           <tbody>
             {% set i = 0 %}
             {% set totalGeneral = 0 %}
-            {% for vente in ventes %}
+            {% for customer in nbrCommandes %}
               {% set i = i + 1 %}
-              <tr>
-                <td>{{ i }}</td>
-                <td>{{ vente.date|date('d-m-Y') }}</td>
-                <td>
-                  {% if vente.customer is empty %}
-                    Aucun règlement effectué
-                  {% else %}
-                    {{ vente.customer.firstname }} {{ vente.customer.lastname }} ({{ vente.customer.phoneNumber }})
-                  {% endif %}
-                </td>
-                <td>{{ vente.totalAmount|number_format(0, ',', ' ') }} F</td>
-                <td>
-                  {% set total = 0 %}
-                  {% for item in vente.settlements %}
-                    {% set total = total + item.amount %}
-                  {% endfor %}
-                  {% set dette = vente.totalAmount - total %}
-                  {% set totalGeneral = totalGeneral + dette %}
-                  {{ dette|number_format(0, ',', ' ') }} F</td>
-                <td>
-                  <a href="{{ path('customer.order.details', {'id': vente.id}) }}" class=" circle arrow small">Plus de détails</a>
-                  {% if vente.ended == false %}
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ path('settlement', {id: vente.id}) }}"data-toggle="tooltip" title="Enregistrer un règlement"><i class="icon-plus"></i></a>
+              {% set cpt = 0 %}
+              {% for vente in ventes if vente.customer.id == customer.id %}
+                {% set cpt = cpt + 1 %}
+                {% if cpt == 1 %}
+                  <tr>
+                    <td style="vertical-align: middle" rowspan="{{ customer.nbrCommandes }}">{{ i }}</td>
+                    <td style="vertical-align: middle" rowspan="{{ customer.nbrCommandes }}">
+                      {% if customers[customer.id] is empty %}
+                        Aucun règlement effectué
+                      {% else %}
+                        {{ customers[customer.id].firstname }} {{ customers[customer.id].lastname }} ({{ customers[customer.id].phoneNumber }})
                       {% endif %}
-                </td>
-              </tr>
+                    </td>
+                    {% set reste = vente.customer.getMontantTotalCommandeNonSoldees - vente.customer.getMontantTotalReglementCommandeNonSoldees %}
+                    <td style="vertical-align: middle" rowspan="{{ customer.nbrCommandes }}">{{ reste|number_format(0, ',', ' ') }} F</td>
+                    <td>{{ vente.date|date('d-m-Y') }}</td>
+                    <td>{{ vente.totalAmount|number_format(0, ',', ' ') }} F</td>
+                    <td>
+                      {% set total = 0 %}
+                      {% for item in vente.settlements %}
+                        {% set total = total + item.amount %}
+                      {% endfor %}
+                      {% set dette = vente.totalAmount - total %}
+                      {% set totalGeneral = totalGeneral + dette %}
+                      {{ dette|number_format(0, ',', ' ') }} F</td>
+                    <td>
+                      <a href="{{ path('customer.order.details', {'id': vente.id}) }}" class=" circle arrow small">Plus de détails</a>
+                      {% if vente.ended == false %}
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ path('settlement', {id: vente.id, 'from':'accounting'}) }}"data-toggle="tooltip" title="Enregistrer un règlement"><i class="icon-plus"></i></a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td>{{ vente.date|date('d-m-Y') }}</td>
+                    <td>{{ vente.totalAmount|number_format(0, ',', ' ') }} F</td>
+                    <td>
+                      {% set total = 0 %}
+                      {% for item in vente.settlements %}
+                        {% set total = total + item.amount %}
+                      {% endfor %}
+                      {% set dette = vente.totalAmount - total %}
+                      {% set totalGeneral = totalGeneral + dette %}
+                      {{ dette|number_format(0, ',', ' ') }} F</td>
+                    <td>
+                      <a href="{{ path('customer.order.details', {'id': vente.id}) }}" class=" circle arrow small">Plus de détails</a>
+                      {% if vente.ended == false %}
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ path('settlement', {id: vente.id, 'from':'accounting'}) }}"data-toggle="tooltip" title="Enregistrer un règlement"><i class="icon-plus"></i></a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
             {% endfor %}
           </tbody>
           <tfoot>
             <tr>
               <td colspan="4">Total de toutes les dettes</td>
               <td>{{ totalGeneral|number_format(0, ',', ' ') }} F</td>
+              <td></td>
             </tr>
           </tfoot>
         </table>
+        {# {{ dump(customers) }} #}
       </div>
     </div>
   </div>

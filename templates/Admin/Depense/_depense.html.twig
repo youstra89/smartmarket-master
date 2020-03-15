@@ -27,5 +27,5 @@
             </div>
         </div>
     </div>
-    <button class="btn-default btn-sm">{{ button|default('Enregistrer') }}</button>
+    <button class="btn-default btn-sm" id="save" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
 {{ form_end(form) }}

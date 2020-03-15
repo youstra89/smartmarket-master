@@ -19,6 +19,21 @@ class EcheanceRepository extends ServiceEntityRepository
         parent::__construct($registry, Echeance::class);
     }
 
+
+    public function toutesLesEcheances()
+    {
+        return $this->createQueryBuilder('e')
+            ->join('e.commande', 'c')
+            ->andWhere('c.ended = :status')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('e.is_deleted = :status')
+            ->setParameter('status', false)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
     public function differentesDatesEcheances()
     {
         $manager = $this->getEntityManager()->getConnection();

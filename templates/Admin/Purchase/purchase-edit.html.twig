@@ -14,3 +14,14 @@
     {{ include('Admin/Purchase/_purchase.html.twig', {button: 'Editer'}) }}
   </div>
 {% endblock %}
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

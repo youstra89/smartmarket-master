@@ -4,6 +4,11 @@
 {% block title %}Echéances de paiement enregistrées | Smart Market{% endblock %}
 
 
+{% block stylesheets %}
+    <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+
 {% block notifications %}
   {% for message in app.flashes('success') %}
     <div class="alert alert-success fade in">
@@ -36,7 +41,7 @@
     <div class="row row-bottom-padded-md">
       <div class="col-md-10">
         <div class="table-responsive">
-          <table class="table" width="75%">
+          <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
             <thead>
               <tr>
                 <th>#</th>
@@ -70,9 +75,10 @@
 
 
 {% block javascript %}
-  <script>
-    $(document).ready(function(){
-      // $(".alert").alert('close');
-    })
-  </script>
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/datatables-demo.js') }}"></script>
 {% endblock %}
+

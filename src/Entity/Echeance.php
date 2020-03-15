@@ -90,6 +90,7 @@ class Echeance
 
     public function __construct()
     {
+        $this->is_paid    = false;
         $this->is_deleted = false;
         $this->created_at = new \DateTime();
     }

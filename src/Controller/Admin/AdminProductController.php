@@ -137,6 +137,31 @@ class AdminProductController extends AbstractController
           }
           $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
           $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
+          /** @var UploadedFile $imageFile */
+          $imageFile = $form->get('image')->getData();
+
+          // this condition is needed because the 'brochure' field is not required
+          // so the PDF file must be processed only when a file is uploaded
+          if ($imageFile) {
+              $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+              // this is needed to safely include the file name as part of the URL
+              $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+              $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+              // Move the file to the directory where brochures are stored
+              try {
+                  $imageFile->move(
+                      $this->getParameter('images_directory'),
+                      $newFilename
+                  );
+              } catch (FileException $e) {
+                  // ... handle exception if something happens during file upload
+              }
+
+              // updates the 'brochureFilename' property to store the PDF file name
+              // instead of its contents
+              $product->setImage($newFilename);
+          }
           $product->setUpdatedAt(new \DateTime());
           $product->setUpdatedBy($this->getUser());
           try{

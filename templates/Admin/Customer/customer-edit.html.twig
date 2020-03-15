@@ -66,7 +66,19 @@
                 </div>
             </div>
         </div>
-        <button class="btn btn-default">{{ button|default('Editer') }}</button>
+        <button class="btn btn-default" onclick="submitForm(this);">{{ button|default('Editer') }}</button>
     {{ form_end(form) }}
   </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+      // disable the button
+      btn.disabled = true;
+      // submit the form    
+      btn.form.submit();
+    }
+  </script>
 {% endblock %}

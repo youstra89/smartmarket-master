@@ -91,16 +91,16 @@ class Provider
     private $country;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ProviderOrder", mappedBy="provider")
+     * @ORM\OneToMany(targetEntity="App\Entity\ProviderCommande", mappedBy="provider")
      */
-    private $providerOrders;
+    private $providerCommandes;
 
 
     public function __construct()
     {
         $this->is_deleted     = false;
         $this->created_at     = new \DateTime();
-        $this->providerOrders = new ArrayCollection();
+        $this->providerCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -111,6 +111,32 @@ class Provider
     public function getReference(): ?string
     {
         return $this->reference;
+    }
+
+    public function getMontantTotalCommandeNonSoldees()
+    {
+        $total = 0;
+        foreach ($this->getProviderCommandes() as $key => $value) {
+            if($value->getEnded() === false and $value->getIsDeleted() === false)
+                $total = $total + $value->getTotalAmount();
+        }
+        return $total;
+    }
+
+    public function getMontantTotalReglementCommandeNonSoldees()
+    {
+        $total = 0;
+        foreach ($this->getProviderCommandes() as $key => $value) {
+            if($value->getEnded() === false and $value->getIsDeleted() === false)
+            {
+                foreach ($value->getSettlements() as $settlement) {
+                    if ($settlement->getIsDeleted() === false) {
+                        $total = $total + $settlement->getAmount();
+                    }
+                }
+            }
+        }
+        return $total;
     }
 
     public function setReference(string $reference): self
@@ -221,26 +247,26 @@ class Provider
      */
     public function getProviderCommandes(): Collection
     {
-        return $this->providerOrders;
+        return $this->providerCommandes;
     }
 
-    public function addProviderCommande(ProviderCommande $providerOrder): self
+    public function addProviderCommande(ProviderCommande $providerCommande): self
     {
-        if (!$this->providerOrders->contains($providerOrder)) {
-            $this->providerOrders[] = $providerOrder;
-            $providerOrder->setProvider($this);
+        if (!$this->providerCommandes->contains($providerCommande)) {
+            $this->providerOrders[] = $providerCommande;
+            $providerCommande->setProvider($this);
         }
 
         return $this;
     }
 
-    public function removeProviderCommande(ProviderCommande $providerOrder): self
+    public function removeProviderCommande(ProviderCommande $providerCommande): self
     {
-        if ($this->providerOrders->contains($providerOrder)) {
-            $this->providerOrders->removeElement($providerOrder);
+        if ($this->providerCommandes->contains($providerCommande)) {
+            $this->providerCommandes->removeElement($providerCommande);
             // set the owning side to null (unless already changed)
-            if ($providerOrder->getProvider() === $this) {
-                $providerOrder->setProvider(null);
+            if ($providerCommande->getProvider() === $this) {
+                $providerCommande->setProvider(null);
             }
         }
 
