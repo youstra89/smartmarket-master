@@ -15,6 +15,11 @@
         <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
       </a><br><br>
       <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Les dettes en cours</h2>
+      {% if ventes|length != 0 %}
+        <a href="{{ path('print_creances') }}" class="btn-info btn-sm">
+          Imprimer les dettes
+        </a><br><br>
+      {% endif %}
       <div class="row">
         <table class="table table-sm">
           <thead>

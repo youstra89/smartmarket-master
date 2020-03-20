@@ -237,7 +237,7 @@
             $("#total").val($.fn.calculateTotal())
           }
           else{
-            $("#notif p").text('Quantité demandée indisponible pour le produit ' + label );
+            $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');
           }
         }
         e.preventDefault();

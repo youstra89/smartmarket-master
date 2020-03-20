@@ -41,10 +41,10 @@
     <h2>Détails l'achat N° {{ commande.reference }} du {{ commande.date|date('d-m-Y') }}</h2>
     <div class="row">
       <div class="col-md-6">
-        <h3>Client</h3>
-        <strong>Nom Fournisseur:</strong>
+        <h3>Fournisseur</h3>
+        <strong>Nom :</strong>
         <span>{{ commande.provider.firstname }} {{ commande.provider.lastname }}</span><br>
-        <strong>Numéro de téléphone fournisseur:</strong>
+        <strong>Numéro de téléphone :</strong>
         <span>{{ commande.provider.phoneNumber }}</span><br>
       </div>
       <div class="col-md-6">
@@ -67,12 +67,12 @@
                 <th>Sous-total</th>
               </tr>
             </thead>
-            {% for item in commande.providerCommandeDetails %}
+            {% for item in commande.product %}
               {% set i = i + 1 %}
                 <tbody>
                   <tr>
                     <td>{{ i }}</td>
-                    <td>{{ item.product.category.name }} {{ item.product.mark.label }} - {{ item.product.description }}</td>
+                    <td>{{ item.product.label }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
                     <td>{{ item.subtotal|number_format(0, ',', ' ') }} F</td>

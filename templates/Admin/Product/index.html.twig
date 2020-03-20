@@ -41,7 +41,7 @@
       <a href="{{ path('mark') }}" class="btn-primary btn-sm">Gestion des marques de produits</a>
       <a href="{{ path('category') }}" class="btn-primary btn-sm">Gestion des catégories</a>
       <a href="{{ path('product.add') }}" class="btn-primary btn-sm">Ajouter une marchandise</a>
-      <a href="{{ path('impression_inventaire') }}" class="btn-primary btn-sm">Impression</a>
+      <a href="{{ path('impression_inventaire') }}" class="btn-primary btn-sm">Vente prévisionnelle</a>
       <a href="{{ path('cout_total_en_stock') }}" class="btn-primary btn-sm">Valeur totale</a>
       <a href="{{ path('impression_cout_total_en_stock') }}" class="btn-primary btn-sm"><i class="icon-edit"></i>Valeur Total</a><br><br>
     {% endif %}
@@ -75,7 +75,7 @@
             {% set i = 0 %}
             {% for product in products %}
               {% set i = i + 1 %}
-              <tr {% if product.stock < product.securityStock %}class="bg-danger"{% endif %}>
+              <tr {% if product.stock == 0 %}class="bg-danger"{% elseif product.stock < product.securityStock %}class="bg-warning"{% endif %}>
                 <td>{{ i }}</td>
                 <td>{{ product.reference }}</td>
                 <td>{{ product.category.name }}</td>

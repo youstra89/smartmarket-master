@@ -2,7 +2,10 @@
 // src/Controller/LuckyController.php
 namespace App\Controller\Admin;
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use App\Entity\Product;
+use App\Entity\Informations;
 use App\Entity\ProviderCommande;
 use App\Entity\ProviderSettlement;
 use App\Form\ProviderCommandeType;
@@ -400,6 +403,54 @@ class AdminPurchaseController extends AbstractController
         'reste'    => $reste,
         'commande' => $commande,
       ]);
+    }
+
+    /**
+     * @Route("/bon-de-commande/{id}", name="bon_commande", requirements={"id"="\d+"})
+     * @param ProviderCommande $commande
+     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     */
+    public function bon_de_commande(ObjectManager $manager, ProviderCommande $commande, int $id)
+    {
+        $info = $manager->getRepository(Informations::class)->find(1);
+        
+        // dd($commande);
+        $settlements = $manager->getRepository(ProviderSettlement::class)->findByCommande($id);
+
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('Admin/Purchase/bon-commande.html.twig', [
+            'info'        => $info,
+            'commande'    => $commande,
+            'settlements' => $settlements,
+        ]);
+        
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+        //"dompdf/dompdf": "^0.8.3",
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("mypdf.pdf", [
+            "Attachment" => false
+        ]);
+        return $this->render('Admin/Sell/sell-details.html.twig', [
+          'current'     => 'sells',
+          'commande'    => $commande,
+          'settlements' => $settlements
+        ]);
     }
 
 

@@ -2,7 +2,10 @@
 
 namespace App\Controller\Admin;
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use App\Entity\Settlement;
+use App\Entity\Informations;
 use App\Entity\CustomerCommande;
 use App\Entity\ProviderCommande;
 use App\Entity\ProviderSettlement;
@@ -160,7 +163,7 @@ class AdminAccountingController extends AbstractController
           return $this->redirectToRoute('login');
 
         $repoProviderCommande = $manager->getRepository(ProviderCommande::class);
-        $repoSettlement       = $manager->getRepository(ProviderSettlement      ::class);
+        $repoSettlement       = $manager->getRepository(ProviderSettlement::class);
         $commandes            = $repoProviderCommande->lesCreanciers();
         $reglements           = $repoSettlement->reglementsIncomplets();
         $nbrCommandes         = $repoProviderCommande->nombreCommandesDesCreanciers();
@@ -186,6 +189,156 @@ class AdminAccountingController extends AbstractController
           'nbrCommandes' => $nbrCommandes,
           'restesAPayer' => $restes,
           'providers'    => $providers,
+        ]);
+    }
+
+
+    /**
+     * @Route("/impression-des-creances", name="print_dettes")
+     */
+    public function impression_des_dettes(ObjectManager $manager)
+    {
+        $info = $manager->getRepository(Informations::class)->find(1);
+        $repoCustomerCommande = $manager->getRepository(CustomerCommande::class);
+        $repoSettlement       = $manager->getRepository(Settlement      ::class);
+        $commandes            = $repoCustomerCommande->lesDebiteurs();
+        $nbrCommandes         = $repoCustomerCommande->nombreCommandesDesDebiteurs();
+        $reglements           = $repoSettlement->reglementsIncomplets();
+        $restesAPayer         = $repoSettlement->restesAPayer();
+        // dd($restesAPayer);
+        
+        if (!empty($reglements)) {
+          // On va sélectionner les différents clients
+          $customers = [];
+          foreach ($commandes as $value) {
+            $customer               = $value->getCustomer();
+            $customerId             = $customer->getId();
+            $customers[$customerId] = $customer;
+          }
+          
+          foreach ($restesAPayer as $value) {
+            $restes[$value["id"]] = $value["reste"];
+          }
+        }
+        // dd($commande);
+        if (setlocale(LC_TIME, 'fr_FR') == '') {
+          $format_jour = '%#d';
+        } else {
+          $format_jour = '%e';
+        }
+        setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
+
+        $date = utf8_encode(strftime("%A $format_jour %B %Y", strtotime((new \DateTime())->format("Y-m-d"))));
+        // dump(strftime("%a $format_jour %b %Y", strtotime('2008-04-18')));
+        $date = ucwords($date);
+
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('Admin/Accounting/impression-dettes.html.twig', [
+          'info'         => $info,
+          'date'         => $date,
+          'current'      => 'accounting',
+          'ventes'       => $commandes,
+          'nbrCommandes' => $nbrCommandes,
+          'restesAPayer' => $restes,
+          'customers'    => $customers,
+          'reglements'   => $reglements,
+        ]);
+        
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+        //"dompdf/dompdf": "^0.8.3",
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("creances.pdf", [
+            "Attachment" => false
+        ]);
+    }
+
+
+    /**
+     * @Route("/impression-des-creances", name="print_creances")
+     */
+    public function impression_des_creances(ObjectManager $manager)
+    {
+        $info = $manager->getRepository(Informations::class)->find(1);
+        $repoProviderCommande = $manager->getRepository(ProviderCommande::class);
+        $repoSettlement       = $manager->getRepository(ProviderSettlement::class);
+        $commandes            = $repoProviderCommande->lesCreanciers();
+        $reglements           = $repoSettlement->reglementsIncomplets();
+        $nbrCommandes         = $repoProviderCommande->nombreCommandesDesCreanciers();
+        $restesAPayer         = $repoSettlement->restesAPayer();
+        if (!empty($reglements)) {
+          // On va sélectionner les différents clients
+          $providers = [];
+          foreach ($commandes as $value) {
+            $provider               = $value->getProvider();
+            $providerId             = $provider->getId();
+            $providers[$providerId] = $provider;
+          }
+          
+          foreach ($restesAPayer as $value) {
+            $restes[$value["id"]] = $value["reste"];
+          }
+        }
+        // dd($commande);
+        if (setlocale(LC_TIME, 'fr_FR') == '') {
+          $format_jour = '%#d';
+        } else {
+          $format_jour = '%e';
+        }
+        setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
+
+        $date = utf8_encode(strftime("%A $format_jour %B %Y", strtotime((new \DateTime())->format("Y-m-d"))));
+        // dump(strftime("%a $format_jour %b %Y", strtotime('2008-04-18')));
+        $date = ucwords($date);
+
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('Admin/Accounting/impression-creances.html.twig', [
+          'info'         => $info,
+          'date'         => $date,
+          'achats'       => $commandes,
+          'reglements'   => $reglements,
+          'current'      => 'accounting',
+          'nbrCommandes' => $nbrCommandes,
+          'restesAPayer' => $restes,
+          'providers'    => $providers,
+        ]);
+        
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+        //"dompdf/dompdf": "^0.8.3",
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("creances.pdf", [
+            "Attachment" => false
         ]);
     }
 }

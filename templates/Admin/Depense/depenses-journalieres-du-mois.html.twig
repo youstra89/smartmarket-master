@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dépense du mois{% endblock %}
+{% block title %}Dépense du mois {{ mois }}{% endblock %}
 
 
 {% block notifications %}
@@ -33,7 +33,8 @@
   <a href="javascript:history.back()" class="btn-primary btn-sm">
     <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
   </a><br><br>
-  <h2 class="animate-box" data-animate-effect="fadeInLeft">Toutes les dépenses du mois</h2>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Toutes les dépenses du mois <strong>{{ mois }}</strong></h2>
+  <a href="{{ path('print_depenses_mensuelles', {mois: app.request.get('mois')}) }}" class="btn-info btn-sm"> <i class="icon-show"></i> Imprimer les dépenses mensulles</a><br><br>
   <div class="row">
     <table class="table table-sm">
       <thead>
@@ -47,17 +48,25 @@
       </thead>
       <tbody>
         {% set i = 0 %}
+        {% set total = 0 %}
         {% for depense in depenses %}
           {% set i = i + 1 %}
+          {% set total = total + depense.amount %}
           <tr>
             <td>{{ i }}</td>
             <td>{{ depense.dateDepense|date('d-m-Y') }}</td>
             <td>{{ depense.type.label }}</td>
             <td>{{ depense.description }}</td>
-            <td>{{ depense.amount|number_format(0, ',', ' ') }} F CFA</td>
+            <td>{{ depense.amount|number_format(0, ',', ' ') }} F</td>
           </tr>
         {% endfor %}
       </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="4">Total</th>
+          <th>{{ total|number_format(0, ',', ' ') }} F</th>
+        </tr>
+      </tfoot>
     </table>
   </div>
 </div>

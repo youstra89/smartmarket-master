@@ -24,9 +24,12 @@ class EcheanceRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('e')
             ->join('e.commande', 'c')
+            ->addSelect('e')
+            ->addSelect('DATE_DIFF(e.date_echeance, CURRENT_DATE()) AS intervalle')
             ->andWhere('c.ended = :status')
             ->andWhere('c.is_deleted = :status')
             ->andWhere('e.is_deleted = :status')
+            ->andWhere('e.is_paid = :status')
             ->setParameter('status', false)
             ->getQuery()
             ->getResult()

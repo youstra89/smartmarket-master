@@ -2,11 +2,16 @@
 
 namespace App\Controller\Admin;
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use App\Entity\Depense;
 use App\Form\DepenseType;
+use App\Entity\Settlement;
+use App\Entity\Informations;
+use App\Entity\CustomerCommande;
 use App\Service\CheckConnectedUser;
-use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
@@ -89,7 +94,18 @@ class AdminDepenseController extends AbstractController
           $this->addFlash('error', 'La date sélectionnée n\'est pas correcte.');
           return $this->redirectToRoute('depenses_mensuelles');
         }
+        if (setlocale(LC_TIME, 'fr_FR') == '') {
+          // setlocale(LC_TIME, 'FRA');  //correction problème pour windows
+            $format_jour = '%#d';
+        } else {
+            $format_jour = '%e';
+        }
+        setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
+        $date = strftime("%d %B %Y", strtotime($mois));
+        $mois = ucfirst(substr($date, 3));
+        
         return $this->render('Admin/Depense/depenses-journalieres-du-mois.html.twig', [
+          'mois'  => $mois,
           'depenses'  => $depenses,
           'current' => 'accounting',
         ]);
@@ -129,7 +145,6 @@ class AdminDepenseController extends AbstractController
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
 
-        $repoCommande  = $manager->getRepository(Commande  ::class);
         $repoCustomerCommande  = $manager->getRepository(CustomerCommande  ::class);
         $repoSettlement = $manager->getRepository(Settlement::class);
         $commandes     = $repoCustomerCommande->lesDebiteurs();
@@ -139,6 +154,61 @@ class AdminDepenseController extends AbstractController
           'ventes'  => $commandes,
           'reglements'  => $reglements,
           'current'    => 'accounting',
+        ]);
+    }
+
+
+    /**
+     * @Route("/liste-des-depenses-menseulles", name="print_depenses_mensuelles")
+     */
+    public function liste_des_depenses_menseulles(ObjectManager $manager, Request $request)
+    {
+        $info = $manager->getRepository(Informations::class)->find(1);
+        
+        $mois = $request->get('mois');
+        // dd($commande);
+        if (setlocale(LC_TIME, 'fr_FR') == '') {
+          $format_jour = '%#d';
+        } else {
+          $format_jour = '%e';
+        }
+        setlocale(LC_TIME, "fr_FR","French");
+        setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
+        $date = strftime("%d %B %Y", strtotime($mois));
+
+        // dump(utf8_encode(strftime("%A $format_jour %B %Y", strtotime('2008-04-18'))));
+        // dump(strftime("%a $format_jour %b %Y", strtotime('2008-04-18')));
+        $depenses = $manager->getRepository(Depense::class)->depensesDuMois($mois);
+        $mois = ucfirst(substr($date, 3));
+
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('Admin/Depense/impression-depenses-mensuelles.html.twig', [
+            'info'     => $info,
+            'mois'     => $mois,
+            'depenses' => $depenses,
+        ]);
+        
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+        //"dompdf/dompdf": "^0.8.3",
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("depenses-".$mois.".pdf", [
+            "Attachment" => false
         ]);
     }
 }

@@ -74,11 +74,6 @@
             <div class="col">
             </div>
           </div>
-          {# <div class="row">
-            <div class="">
-              <p>Nombre de redoublants : <span class="info">{{ annee.label }}</span></p>
-            </div>
-          </div> #}
         </div>
         <div class="content">
           <table cellspacing="0">
@@ -89,12 +84,16 @@
                 <th class="">Désignation</th>
                 <th class="">Stock</th>
                 <th class="">Prix de vente</th>
+                <th class="">Sous-total</th>
               </tr>
             </thead>
             <tbody>
               {% set i = 0 %}
+              {% set total = 0 %}
               {% for product in products %}
                 {% set i = i + 1 %}
+                {% set sousTotal = product.stock * product.unitPrice %}
+                {% set total = total + sousTotal %}
                 <tr>
                   <td class="numero">{{ i }}</td>
                   <td>{{ product.reference }}</td>
@@ -104,10 +103,17 @@
                   {% endif %}
                   <td>{{ product.label }}</td>
                   <td>{{ product.stock }}</td>
-                  <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
+                  <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F</td>
+                  <td>{{ sousTotal|number_format(0, ',', ' ') }} F</td>
                 </tr>
               {% endfor %}
             </tbody>
+            <tfoot>
+              <tr>
+                <th colspan="5">Total</th>
+                <th>{{ total|number_format(0, ',', ' ') }} F</th>
+              </tr>
+            </tfoot>
           </table>
         </div>
     </body>

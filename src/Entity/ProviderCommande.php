@@ -120,7 +120,7 @@ class ProviderCommande
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ProviderCommandeDetails", mappedBy="commande")
      */
-    private $providerCommandeDetails;
+    private $product;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ProviderSettlement", mappedBy="commande")
@@ -139,7 +139,7 @@ class ProviderCommande
         $this->created_at  = new \DateTime();
         $this->echeances   = new ArrayCollection();
         $this->settlements = new ArrayCollection();
-        $this->providerCommandeDetails = new ArrayCollection();
+        $this->product = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -263,25 +263,25 @@ class ProviderCommande
     /**
      * @return Collection|ProviderCommandeDetails[]
      */
-    public function getProviderCommandeDetails(): Collection
+    public function getProduct(): Collection
     {
-        return $this->providerCommandeDetails;
+        return $this->product;
     }
 
-    public function addProviderCommandeDetail(ProviderCommandeDetails $providerCommandeDetail): self
+    public function addProduct(ProviderCommandeDetails $providerCommandeDetail): self
     {
-        if (!$this->providerCommandeDetails->contains($providerCommandeDetail)) {
-            $this->providerCommandeDetails[] = $providerCommandeDetail;
+        if (!$this->product->contains($providerCommandeDetail)) {
+            $this->product[] = $providerCommandeDetail;
             $providerCommandeDetail->setCommande($this);
         }
 
         return $this;
     }
 
-    public function removeProviderCommandeDetail(ProviderCommandeDetails $providerCommandeDetail): self
+    public function removeProduct(ProviderCommandeDetails $providerCommandeDetail): self
     {
-        if ($this->providerCommandeDetails->contains($providerCommandeDetail)) {
-            $this->providerCommandeDetails->removeElement($providerCommandeDetail);
+        if ($this->product->contains($providerCommandeDetail)) {
+            $this->product->removeElement($providerCommandeDetail);
             // set the owning side to null (unless already changed)
             if ($providerCommandeDetail->getCommande() === $this) {
                 $providerCommandeDetail->setCommande(null);

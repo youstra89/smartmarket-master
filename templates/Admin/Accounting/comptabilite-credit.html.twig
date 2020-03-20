@@ -15,12 +15,18 @@
         <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
       </a><br><br>
       <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Les créances en cours</h2>
+      {% if achats|length != 0 %}
+        <a href="{{ path('print_creances') }}" class="btn-info btn-sm">
+          Imprimer les créances
+        </a><br><br>
+      {% endif %}
+      
       <div class="row">
         <table class="table table-sm">
           <thead>
             <tr>
               <th>#</th>
-              <th>Client</th>
+              <th>Fournisseur</th>
               <th>Total dettes</th>
               <th>Date</th>
               <th>Montant</th>
@@ -101,11 +107,3 @@
   </div>
 </div>
 {% endblock %}
-{# 
-<td>
-                  <a href="{{ path('provider.order.details', {'id': achat.id}) }}" class=" circle arrow small">Plus de détails</a>
-                  {% if achat.ended == false %}
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ path('provider_settlement', {id: achat.id, 'option':'compabilite'}) }}"data-toggle="tooltip" title="Enregistrer un règlement"><i class="icon-plus"></i></a>
-                  {% endif %}
-                </td>
- #}

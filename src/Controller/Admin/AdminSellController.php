@@ -779,8 +779,11 @@ class AdminSellController extends AbstractController
         // Render the HTML as PDF
         $dompdf->render();
 
+        //File name
+        $filename = "vente-".$commande->getReference();
+
         // Output the generated PDF to Browser (force download)
-        $dompdf->stream("mypdf.pdf", [
+        $dompdf->stream($filename.".pdf", [
             "Attachment" => false
         ]);
         return $this->render('Admin/Sell/sell-details.html.twig', [
