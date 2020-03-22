@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="no-js"> <!--<![endif]-->
 	<head>
-	<meta charset="utf-8">
+	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>
 		{% block title %}Index Page d'administration - Smart Market{% endblock %}
@@ -66,7 +66,7 @@
 		<a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle"><i></i></a>
 		<aside id="fh5co-aside" role="complementary" class="border js-fullheight">
 
-			<h1 id="fh5co-logo"><a href="{{ path('admin') }}">Smart Market</a></h1>
+			<h1 id="fh5co-logo"><a href="{{ path('homepage') }}">Smart Market</a></h1>
 			<nav id="fh5co-main-menu" role="navigation">
 				<ul>
 					{% if is_granted('IS_AUTHENTICATED_FULLY') %}
@@ -138,7 +138,7 @@
 								<div class="col-md-6">
 									<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
 										<div class="fh5co-icon">
-											<i class="glyphicon glyphicon-shopping-cart"></i>
+											<i class="icon-shopping-cart"></i>
 										</div>
 										<div class="fh5co-text">
 											<h3>Commandes</h3>

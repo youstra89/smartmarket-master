@@ -138,6 +138,39 @@ class SettlementRepository extends ServiceEntityRepository
         return substr_replace("0000",$result, -strlen($result));
     }
 
+
+    public function entreesDuMois($dateActuelle)
+    {
+        return $this->createQueryBuilder('s')
+            ->select('SUM(s.amount) AS entree, s.date')
+            ->join('s.commande', 'c')
+            ->where('s.date LIKE :dateActuelle')
+            ->andWhere('s.is_deleted = :status')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('c.status = :commandeStatus')
+            ->groupBy('s.date')
+            ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
+    public function versementsDuJour($date)
+    {
+      return $this->createQueryBuilder('s')
+          ->andWhere('s.date LIKE :date')
+          ->andWhere('s.is_deleted = :status')
+          ->setParameter('status', false)
+          ->setParameter('date', '%'.$date.'%')
+          ->orderBy('s.id', 'DESC')
+          ->getQuery()
+          ->getResult()
+      ;
+    }
+
     // /**
     //  * @return Settlement[] Returns an array of Settlement objects
     //  */

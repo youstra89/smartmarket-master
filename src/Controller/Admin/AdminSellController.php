@@ -12,13 +12,12 @@ use App\Entity\CustomerCommande;
 use App\Entity\CustomerCommandeSearch;
 use App\Entity\CustomerCommandeDetails;
 use App\Form\CustomerCommandeSearchType;
+use Doctrine\Common\Collections\Collection;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
-
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -34,20 +33,21 @@ class AdminSellController extends AbstractController
    */
   public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
   {
-      // dd($_SERVER['HTTP_USER_AGENT']);
-      $search = new CustomerCommandeSearch();
-      $form = $this->createForm(CustomerCommandeSearchType::class, $search);
-      $form->handleRequest($request);
-      $commandes = $paginator->paginate(
-        $manager->getRepository(CustomerCommande::class)->commandesClients($search),
-        $request->query->getInt('page', 1),
-        20
-      );
-      return $this->render('Admin/Sell/index.html.twig', [
-        'form'      => $form->createView(),
-        'current'   => 'sells',
-        'commandes' => $commandes
-      ]);
+    // dd($_SERVER['HTTP_USER_AGENT']);
+    $search = new CustomerCommandeSearch();
+    $form = $this->createForm(CustomerCommandeSearchType::class, $search);
+    $form->handleRequest($request);
+    $commandes = $paginator->paginate(
+      $manager->getRepository(CustomerCommande::class)->commandesClients($search),
+      $request->query->getInt('page', 1),
+      20
+    );
+
+    return $this->render('Admin/Sell/index.html.twig', [
+      'form'      => $form->createView(),
+      'current'   => 'sells',
+      'commandes' => $commandes
+    ]);
   }
 
   
@@ -57,20 +57,21 @@ class AdminSellController extends AbstractController
    */
   public function preparing_sells(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
   {
-      $search = new CustomerCommandeSearch();
-      $form = $this->createForm(CustomerCommandeSearchType::class, $search);
-      $form->handleRequest($request);
+    $search = new CustomerCommandeSearch();
+    $form   = $this->createForm(CustomerCommandeSearchType::class, $search);
+    $form->handleRequest($request);
 
-      $commandes = $paginator->paginate(
-        $manager->getRepository(CustomerCommande::class)->commandesClientsAPreparer($search),
-        $request->query->getInt('page', 1),
-        20
-      );
-      return $this->render('Admin/Sell/preparing-sells.html.twig', [
-        'form'      => $form->createView(),
-        'current'   => 'sells',
-        'commandes' => $commandes
-      ]);
+    $commandes = $paginator->paginate(
+      $manager->getRepository(CustomerCommande::class)->commandesClientsAPreparer($search),
+      $request->query->getInt('page', 1),
+      20
+    );
+
+    return $this->render('Admin/Sell/preparing-sells.html.twig', [
+      'form'      => $form->createView(),
+      'current'   => 'sells',
+      'commandes' => $commandes
+    ]);
   }
 
 
@@ -122,116 +123,116 @@ class AdminSellController extends AbstractController
      */
     public function unique_form_for_selling(Request $request, ObjectManager $manager)
     {
-        $customers = $manager->getRepository(Customer::class)->findAll();
-        $products = $manager->getRepository(Product::class)->findAll();
+      $customers = $manager->getRepository(Customer::class)->findAll();
+      $products = $manager->getRepository(Product::class)->findAll();
 
-        if($request->isMethod('post'))
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        // return new Response(var_dump($data));
+        if(!empty($data['token']))
         {
-          $data = $request->request->all();
-          // return new Response(var_dump($data));
-          if(!empty($data['token']))
-          {
-            $token = $data['token'];
-            if($this->isCsrfTokenValid('vente', $token)){
-              $data = $request->request->all();
-              if(empty($data['date']))
+          $token = $data['token'];
+          if($this->isCsrfTokenValid('vente', $token)){
+            $data = $request->request->all();
+            if(empty($data['date']))
+            {
+              $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
+              return $this->redirectToRoute('unique_form_for_selling');
+            }
+            elseif(empty($data["products"]))
+            {
+              $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
+              return $this->redirectToRoute('unique_form_for_selling');
+            }
+            else {
+              $date       = new \DateTime($data["date"]);
+              $prices     = $data["prices"];
+              $quantities = $data["quantities"];
+              $seller = $this->getUser();
+              $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
+              $customerCommande = new CustomerCommande();
+              if(isset($data['customer']))
               {
-                $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
-                return $this->redirectToRoute('unique_form_for_selling');
+                $customer = (int) $data['customer'];
+                $customer = $manager->getRepository(Customer::class)->find($data['customer']);
+                $customerCommande->setCustomer($customer);
               }
-              elseif(empty($data["products"]))
-              {
-                $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
-                return $this->redirectToRoute('unique_form_for_selling');
-              }
-              else {
-                $date       = new \DateTime($data["date"]);
-                $prices     = $data["prices"];
-                $quantities = $data["quantities"];
-                $seller = $this->getUser();
-                $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
-                $customerCommande = new CustomerCommande();
-                if(isset($data['customer']))
+              $customerCommande->setReference($reference);
+              $customerCommande->setSeller($seller);
+              $customerCommande->setDate($date);
+              $customerCommande->setStatus("LIVREE");
+              $customerCommande->setCreatedBy($this->getUser());
+              $manager->persist($customerCommande);
+
+              // On va enregistrer les détails de la commande
+              // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
+              $commandeGlobalCost = 0;
+              foreach ($prices as $key => $value) {
+                $product   = $manager->getRepository(Product::class)->find($key);
+                $quantity = $quantities[$key];
+                $subtotal = $value * $quantity;
+                $stockQte  = $product->getStock() - $quantity;
+
+                if($quantity <= 0)
                 {
-                  $customer = (int) $data['customer'];
-                  $customer = $manager->getRepository(Customer::class)->find($data['customer']);
-                  $customerCommande->setCustomer($customer);
-                }
-                $customerCommande->setReference($reference);
-                $customerCommande->setSeller($seller);
-                $customerCommande->setDate($date);
-                $customerCommande->setStatus("LIVREE");
-                $customerCommande->setCreatedBy($this->getUser());
-                $manager->persist($customerCommande);
-
-                // On va enregistrer les détails de la commande
-                // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
-                $commandeGlobalCost = 0;
-                foreach ($prices as $key => $value) {
-                  $product   = $manager->getRepository(Product::class)->find($key);
-                  $quantity = $quantities[$key];
-                  $subtotal = $value * $quantity;
-                  $stockQte  = $product->getStock() - $quantity;
-
-                  if($quantity <= 0)
-                  {
-                    $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
-                    // return new Response(var_dump("Quantité"));
-                    return $this->redirectToRoute('unique_form_for_selling');
-                  }
-                  
-                  if($value <= 0)
-                  {
-                    $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
-                    // return new Response(var_dump("Prix"));
-                    return $this->redirectToRoute('unique_form_for_selling');
-                  }
-                  
-                  if($stockQte < 0)
-                  {
-                    $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> indisponible en stock.');
-                    // return new Response(var_dump("Stock"));
-                    return $this->redirectToRoute('unique_form_for_selling');
-                  }
-                  // On enregistre d'abord les détails de commande
-                  $commandeProduit = new CustomerCommandeDetails();
-                  $commandeProduit->setCommande($customerCommande);
-                  $commandeProduit->setProduct($product);
-                  $commandeProduit->setQuantity($quantity);
-                  $commandeProduit->setUnitPrice($value);
-                  $commandeProduit->setSubtotal($subtotal);
-                  $commandeProduit->setCreatedBy($this->getUser());
-                  $commandeGlobalCost += $subtotal;
-                  $manager->persist($commandeProduit);
-
-                  // Ensuite, on met à jour le stock
-                  $product->setStock($stockQte);
-                  $product->setLastSeller($seller);
-                  $product->setUpdatedAt(new \DateTime());
-                }
-                $customerCommande->setTotalAmount($commandeGlobalCost);
-
-                //On va maintenant enregistrer le règlement de la commande
-                try{
-                  $manager->flush();
-                  $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
-                  // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
-                  return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
-                } 
-                catch(\Exception $e){
-                  $this->addFlash('danger', $e->getMessage());
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                  // return new Response(var_dump("Quantité"));
                   return $this->redirectToRoute('unique_form_for_selling');
                 }
+                
+                if($value <= 0)
+                {
+                  $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
+                  // return new Response(var_dump("Prix"));
+                  return $this->redirectToRoute('unique_form_for_selling');
+                }
+                
+                if($stockQte < 0)
+                {
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> indisponible en stock.');
+                  // return new Response(var_dump("Stock"));
+                  return $this->redirectToRoute('unique_form_for_selling');
+                }
+                // On enregistre d'abord les détails de commande
+                $commandeProduit = new CustomerCommandeDetails();
+                $commandeProduit->setCommande($customerCommande);
+                $commandeProduit->setProduct($product);
+                $commandeProduit->setQuantity($quantity);
+                $commandeProduit->setUnitPrice($value);
+                $commandeProduit->setSubtotal($subtotal);
+                $commandeProduit->setCreatedBy($this->getUser());
+                $commandeGlobalCost += $subtotal;
+                $manager->persist($commandeProduit);
+
+                // Ensuite, on met à jour le stock
+                $product->setStock($stockQte);
+                $product->setLastSeller($seller);
+                $product->setUpdatedAt(new \DateTime());
+              }
+              $customerCommande->setTotalAmount($commandeGlobalCost);
+
+              //On va maintenant enregistrer le règlement de la commande
+              try{
+                $manager->flush();
+                $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
+                return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+                return $this->redirectToRoute('unique_form_for_selling');
               }
             }
           }
         }
-        
-        return $this->render('Admin/Sell/unique-form-for-selling.html.twig', [
-          'current'   => 'sells',
-          'products'  => $products,
-          'customers' => $customers,
-        ]);
+      }
+      
+      return $this->render('Admin/Sell/unique-form-for-selling.html.twig', [
+        'current'   => 'sells',
+        'products'  => $products,
+        'customers' => $customers,
+      ]);
     }
 
     /**
@@ -332,93 +333,93 @@ class AdminSellController extends AbstractController
      */
     public function prepare_sell_for_customer(Request $request, ObjectManager $manager, Customer $customer, int $id)
     {
-        $products = $manager->getRepository(Product::class)->findAll();
+      $products = $manager->getRepository(Product::class)->findAll();
 
-        if($request->isMethod('post'))
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        // return new Response(var_dump($data));
+        if(!empty($data['token']))
         {
-          $data = $request->request->all();
-          // return new Response(var_dump($data));
-          if(!empty($data['token']))
-          {
-            $token = $data['token'];
-            if($this->isCsrfTokenValid('vente', $token)){
-              $data = $request->request->all();
-              if(empty($data["products"]))
-              {
-                $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
-                return $this->redirectToRoute('prepare_sell_for_customer');
-              }
-              else {
-                $date       = new \DateTime();
-                $prices     = $data["prices"];
-                $quantities = $data["quantities"];
-                $seller = $this->getUser();
-                $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
-                $customerCommande = new CustomerCommande();
-                $customerCommande->setCustomer($customer);
-                $customerCommande->setReference($reference);
-                $customerCommande->setSeller($seller);
-                $customerCommande->setDate($date);
-                $customerCommande->setCreatedBy($this->getUser());
-                $customerCommande->setStatus("ENREGISTREE");
-                $manager->persist($customerCommande);
+          $token = $data['token'];
+          if($this->isCsrfTokenValid('vente', $token)){
+            $data = $request->request->all();
+            if(empty($data["products"]))
+            {
+              $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
+              return $this->redirectToRoute('prepare_sell_for_customer');
+            }
+            else {
+              $date       = new \DateTime();
+              $prices     = $data["prices"];
+              $quantities = $data["quantities"];
+              $seller = $this->getUser();
+              $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
+              $customerCommande = new CustomerCommande();
+              $customerCommande->setCustomer($customer);
+              $customerCommande->setReference($reference);
+              $customerCommande->setSeller($seller);
+              $customerCommande->setDate($date);
+              $customerCommande->setCreatedBy($this->getUser());
+              $customerCommande->setStatus("ENREGISTREE");
+              $manager->persist($customerCommande);
 
-                // On va enregistrer les détails de la commande
-                // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
-                $commandeGlobalCost = 0;
-                foreach ($prices as $key => $value) {
-                  $product   = $manager->getRepository(Product::class)->find($key);
-                  $quantity = $quantities[$key];
-                  $subtotal = $value * $quantity;
+              // On va enregistrer les détails de la commande
+              // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
+              $commandeGlobalCost = 0;
+              foreach ($prices as $key => $value) {
+                $product   = $manager->getRepository(Product::class)->find($key);
+                $quantity = $quantities[$key];
+                $subtotal = $value * $quantity;
 
-                  if($quantity <= 0)
-                  {
-                    $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
-                    // return new Response(var_dump("Quantité"));
-                    return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
-                  }
-                  
-                  if($value <= 0)
-                  {
-                    $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
-                    // return new Response(var_dump("Prix"));
-                    return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
-                  }
-                  
-                  // On enregistre d'abord les détails de commande
-                  $commandeProduit = new CustomerCommandeDetails();
-                  $commandeProduit->setCommande($customerCommande);
-                  $commandeProduit->setProduct($product);
-                  $commandeProduit->setQuantity($quantity);
-                  $commandeProduit->setUnitPrice($value);
-                  $commandeProduit->setSubtotal($subtotal);
-                  $commandeProduit->setCreatedBy($this->getUser());
-                  $commandeGlobalCost += $subtotal;
-                  $manager->persist($commandeProduit);
-                }
-                $customerCommande->setTotalAmount($commandeGlobalCost);
-
-                //On va maintenant enregistrer le règlement de la commande
-                try{
-                  $manager->flush();
-                  $this->addFlash('success', '<li>Enregistrement de la commande client N° <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
-                  // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
-                  return $this->redirectToRoute('preparing_sells');
-                } 
-                catch(\Exception $e){
-                  $this->addFlash('danger', $e->getMessage());
+                if($quantity <= 0)
+                {
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                  // return new Response(var_dump("Quantité"));
                   return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
                 }
+                
+                if($value <= 0)
+                {
+                  $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
+                  // return new Response(var_dump("Prix"));
+                  return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
+                }
+                
+                // On enregistre d'abord les détails de commande
+                $commandeProduit = new CustomerCommandeDetails();
+                $commandeProduit->setCommande($customerCommande);
+                $commandeProduit->setProduct($product);
+                $commandeProduit->setQuantity($quantity);
+                $commandeProduit->setUnitPrice($value);
+                $commandeProduit->setSubtotal($subtotal);
+                $commandeProduit->setCreatedBy($this->getUser());
+                $commandeGlobalCost += $subtotal;
+                $manager->persist($commandeProduit);
+              }
+              $customerCommande->setTotalAmount($commandeGlobalCost);
+
+              //On va maintenant enregistrer le règlement de la commande
+              try{
+                $manager->flush();
+                $this->addFlash('success', '<li>Enregistrement de la commande client N° <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
+                return $this->redirectToRoute('preparing_sells');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+                return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
               }
             }
           }
         }
-        
-        return $this->render('Admin/Sell/prepare-sell-for-customer.html.twig', [
-          'current'  => 'sells',
-          'products' => $products,
-          'customer' => $customer,
-        ]);
+      }
+      
+      return $this->render('Admin/Sell/prepare-sell-for-customer.html.twig', [
+        'current'  => 'sells',
+        'products' => $products,
+        'customer' => $customer,
+      ]);
     }
 
     /**
@@ -427,17 +428,75 @@ class AdminSellController extends AbstractController
      */
     public function deliver_customer_commande(Request $request, ObjectManager $manager, CustomerCommande $commande, int $id)
     {
+      $livraisonPossible = true;
+      $products = $commande->getProduct();
+      $stocks = $this->verification_stock_produits($manager, $products);
+      // dump($stocks);
+      foreach ($stocks as $key => $value) {
+        if($value["disponibilite"] == false)
+         $livraisonPossible = false;
+      }
+
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        // dd($commande);
+        // return new Response(var_dump($data));
+        if(!empty($data['token']))
+        {
+          $token = $data['token'];
+          if($this->isCsrfTokenValid('vente', $token)){}
+          $commande->setUpdatedBy($this->getUser());
+          $commande->setUpdatedAt(new \DateTime());
+          $commande->setStatus("LIVREE");
+
+          foreach ($products as $key => $value) {
+            $productId = $value->getProduct()->getId();
+            $product = $manager->getRepository(Product::class)->find($productId);
+            $newStock = $product->getStock() - $value->getQuantity();
+            $product->setStock($newStock);
+          }
+
+          //On va maintenant enregistrer le règlement de la commande
+          try{
+            $manager->flush();
+            $this->addFlash('success', '<li>Livraison de la commande client N° <strong>'.$commande->getReference().'</strong> effectuée.</li>');
+            // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
+            return $this->redirectToRoute('settlement', ["id" => $id]);
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+            return $this->redirectToRoute('deliver_customer_commande', ["id" => $id]);
+          }
+        }
+      }
+
       return $this->render('Admin/Sell/deliver-customer-commande.html.twig', [
+        'stocks'   => $stocks,
         'current'  => 'sells',
         'commande' => $commande,
+        'livraisonPossible' => $livraisonPossible,
       ]);
+    }
+
+    public function verification_stock_produits(ObjectManager $manager, Collection $products)
+    {
+      $stocks = [];
+      foreach ($products as $key => $value) {
+        $productId = $value->getProduct()->getId();
+        $item = $manager->getRepository(Product::class)->find($productId);
+        $stocks[$productId]["stock"] = $item->getStock();
+        $stocks[$productId]["disponibilite"] = $item->getStock() >= $value->getQuantity() ? true : false;
+      }
+
+      return $stocks;
     }
 
     /**
      * @Route("/annuler-la-vente-en-cours", name="customer.commande.reset")
      * @IsGranted("ROLE_VENTE")
      */
-    public function reset_commande(ObjectManager $manager)
+    public function reset_commande()
     {
         $this->get('session')->remove('idProductsForSelling');
         $this->addFlash('success', 'Vente a été réinitialisée.');
@@ -748,48 +807,48 @@ class AdminSellController extends AbstractController
      */
     public function facture_client(int $id, int $settlementId, ObjectManager $manager, CustomerCommande $commande)
     {
-        $info = $manager->getRepository(Informations::class)->find(1);
-        
-        // Sélection des versements 
-        $settlement = $manager->getRepository(Settlement::class)->find($settlementId);
-        $settlements = $manager->getRepository(Settlement::class)->versementsAnterieurs($id, $settlement);
-        // dd($settlements);
-        // Configure Dompdf according to your needs
-        $pdfOptions = new Options();
-        $pdfOptions->set('defaultFont', 'Arial');
-        
-        // Instantiate Dompdf with our options
-        $dompdf = new Dompdf($pdfOptions);
-        
-        // Retrieve the HTML generated in our twig file
-        $html = $this->renderView('Admin/Sell/facture.html.twig', [
-            'info'        => $info,
-            'commande'    => $commande,
-            'settlements' => $settlements
-        ]);
-        
-        // Load HTML to Dompdf
-        $dompdf->loadHtml($html);
-        //"dompdf/dompdf": "^0.8.3",
-        
-        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->setPaper('A4', 'portrait');
-
-        // Render the HTML as PDF
-        $dompdf->render();
-
-        //File name
-        $filename = "vente-".$commande->getReference();
-
-        // Output the generated PDF to Browser (force download)
-        $dompdf->stream($filename.".pdf", [
-            "Attachment" => false
-        ]);
-        return $this->render('Admin/Sell/sell-details.html.twig', [
-          'current'     => 'sells',
+      $info = $manager->getRepository(Informations::class)->find(1);
+      
+      // Sélection des versements 
+      $settlement = $manager->getRepository(Settlement::class)->find($settlementId);
+      $settlements = $manager->getRepository(Settlement::class)->versementsAnterieurs($id, $settlement);
+      // dd($settlements);
+      // Configure Dompdf according to your needs
+      $pdfOptions = new Options();
+      $pdfOptions->set('defaultFont', 'Arial');
+      
+      // Instantiate Dompdf with our options
+      $dompdf = new Dompdf($pdfOptions);
+      
+      // Retrieve the HTML generated in our twig file
+      $html = $this->renderView('Admin/Sell/facture.html.twig', [
+          'info'        => $info,
           'commande'    => $commande,
           'settlements' => $settlements
-        ]);
+      ]);
+      
+      // Load HTML to Dompdf
+      $dompdf->loadHtml($html);
+      //"dompdf/dompdf": "^0.8.3",
+      
+      // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+      $dompdf->setPaper('A4', 'landscape');
+      $dompdf->setPaper('A4', 'portrait');
+
+      // Render the HTML as PDF
+      $dompdf->render();
+
+      //File name
+      $filename = "vente-".$commande->getReference();
+
+      // Output the generated PDF to Browser (force download)
+      $dompdf->stream($filename.".pdf", [
+          "Attachment" => false
+      ]);
+      return $this->render('Admin/Sell/sell-details.html.twig', [
+        'current'     => 'sells',
+        'commande'    => $commande,
+        'settlements' => $settlements
+      ]);
     }
 }

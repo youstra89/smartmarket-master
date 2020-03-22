@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 
-{% block title %}Les catégories{% endblock %}
+{% block title %}Les pays{% endblock %}
 
 
 {% block notifications %}
@@ -41,7 +41,7 @@
         <div class="col-md-3 col-sm-6 col-padding text-center animate-box card" style="width: 18rem">
           <div class="card-body">
             <h5 class="card-title" style="margin: 0px">{{ country.name }}</h5>
-            <h6 class="card-subtitle text-muted" style="margin: 0px">Catégorie {{ i }}</h6>
+            <h6 class="card-subtitle text-muted" style="margin: 0px">Pays {{ i }}</h6>
             <a href="{{ path('country.edit', {id: country.id}) }}" class="card-link">Edition</a>
           </div>
         </div>

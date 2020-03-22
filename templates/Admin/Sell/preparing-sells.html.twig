@@ -85,7 +85,9 @@
                     </td>
                     <td>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</td>
                     <td>
-                      <a href="{{ path('customer_commande_details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
+                      <a href="{{ path('customer_commande_details', {id: commande.id}) }}" data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
+                      &nbsp;&nbsp;&nbsp;
+                      <a href="{{ path('deliver_customer_commande', {id: commande.id}) }}" data-toggle="tooltip" title="Servir la commande"><i class="icon-shopping-cart"></i></a>
                     </td>
                   </tr>
                 {% endfor %}

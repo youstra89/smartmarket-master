@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Détails de la commande N°{{ commande.reference }}
+  Livraison de la commande N°{{ commande.reference }}
 {% endblock %}
 
 
@@ -38,7 +38,7 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2>Détails de la commande client <strong>N°{{ commande.reference }}</strong></h2>
+    <h2>Livraison de la commande <strong>N°{{ commande.reference }}</strong></h2>
     <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
     <div class="row">
       <div class="col-md-4">
@@ -69,12 +69,19 @@
       </div>
       <div class="col-md-4">
         <h3>Opérations</h3>
-        <a href="{{ path('delete_commande', {'id': commande.id, '_csrf_token': csrf_token('delete_commande')}) }}" class="btn-sm btn-danger" data-toggle="tooltip" data-placement="top" title="Supprimer la commande {{ commande.reference }}" onclick="return confirm('Etes-vous sûrs de supprimer la commande {{ commande.reference }} ?')">
-          <i class="icon-trash"></i>Annuler la commande
-        </a><br><br>
-        <a href="{{ path('deliver_customer_commande', {'id': commande.id}) }}" class="btn-sm btn-info">
-          <i class="icon-send"></i>Livrer la commande
-        </a><br><br>
+        {% if livraisonPossible == true %}
+        <form action="" method="post">
+          <input type="hidden" name="token" value="{{ csrf_token('vente') }}"/>
+          <button class="btn-sm btn-info" onclick="submitForm(this);">
+            <i class="icon-shopping-cart"></i>Valider la livraison
+          </button>
+        </form>
+        {% else %}
+          <button class="btn-sm btn-danger">
+            <i class="icon-send"></i>Livraison Impossible
+          </button>
+        {% endif %}
+        <br><br>
       </div>
     </div><br><br>
     <div class="row">
@@ -89,19 +96,29 @@
                 <th>Quantité</th>
                 <th>Prix Unitaire</th>
                 <th>Sous-total</th>
+                <th>Disponibilité</th>
               </tr>
             </thead>
             {% for item in commande.product %}
-              {% set i = i + 1 %}
-                <tbody>
-                  <tr>
-                    <td>{{ i }}</td>
-                    <td>{{ item.product.label }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
-                    <td>{{ item.subtotal|number_format(0, ',', ' ') }} F</td>
-                  </tr>
-                </tbody>
+              {% for key, stock in stocks if key == item.product.id %}
+                {% set i = i + 1 %}
+                  <tbody>
+                    <tr>
+                      <td>{{ i }}</td>
+                      <td>{{ item.product.label }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
+                      <td>{{ item.subtotal|number_format(0, ',', ' ') }} F</td>
+                      <td>
+                        {% if stock.disponibilite == true %}
+                          <span style="color: green; font-weight: bold">Disponible</span>
+                        {% else %}
+                          <span style="color: red; font-weight: bold">Indisponible</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </tbody>
+              {% endfor %}
             {% endfor %}
           </table>
         </div><br><br>
@@ -151,4 +168,16 @@
       </div>
     </div>
   </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+      // disable the button
+      btn.disabled = true;
+      // submit the form    
+      btn.form.submit();
+    }
+  </script>
 {% endblock %}

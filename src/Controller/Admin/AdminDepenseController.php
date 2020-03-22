@@ -172,7 +172,6 @@ class AdminDepenseController extends AbstractController
         } else {
           $format_jour = '%e';
         }
-        setlocale(LC_TIME, "fr_FR","French");
         setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
         $date = strftime("%d %B %Y", strtotime($mois));
 

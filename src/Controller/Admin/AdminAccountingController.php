@@ -37,24 +37,48 @@ class AdminAccountingController extends AbstractController
     }
 
     /**
-     * @Route("/ventes-du-jour/{date}", name="vente.du.jour")
+     * @Route("/ventes-du-jour/{date}", name="ventes_du_jour")
      */
-    public function vente_du_jour(Request $request, ObjectManager $manager, $date, CheckConnectedUser $checker)
+    public function vente_du_jour(ObjectManager $manager, $date, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
 
-        $date = new \DateTime($date);
-        $date = $date->format('Y-m-d');
         $ventes = $manager->getRepository(CustomerCommande::class)->dayCommande($date);
+
+        $dateVente = $this->dateEnFrancais($date);;
         // return new Response(var_dump($ventes));
         if(empty($ventes)){
           $this->addFlash('danger', 'La date saisie n\'est pas correcte.');
           return $this->redirectToRoute('dayly.accounting');
         }
-        return $this->render('Admin/Accounting/vente-du-jour.html.twig', [
+        return $this->render('Admin/Accounting/ventes-du-jour.html.twig', [
           'ventes'  => $ventes,
-          'date'    => $date,
+          'dateVente'    => $dateVente,
+          'current' => 'accounting',
+        ]);
+    }
+
+
+    /**
+     * @Route("/entrees-du-jour/{date}", name="entrees_du_jour")
+     */
+    public function entrees_du_jour(ObjectManager $manager, $date, CheckConnectedUser $checker)
+    {
+        if($checker->getAccess() == true)
+          return $this->redirectToRoute('login');
+
+        $entrees = $manager->getRepository(Settlement::class)->versementsDuJour($date);
+
+        $dateVente = $this->dateEnFrancais($date);;
+        // return new Response(var_dump($ventes));
+        if(empty($entrees)){
+          $this->addFlash('danger', 'La date saisie n\'est pas correcte.');
+          return $this->redirectToRoute('dayly.accounting');
+        }
+        return $this->render('Admin/Accounting/entrees-du-jour.html.twig', [
+          'entrees'  => $entrees,
+          'dateVente'    => $dateVente,
           'current' => 'accounting',
         ]);
     }
@@ -71,17 +95,38 @@ class AdminAccountingController extends AbstractController
         if(empty($mois))
           $mois = (new \DateTime())->format('Y-m');
         $ventes = $manager->getRepository(CustomerCommande::class)->monthlySelling($mois);
+        $entrees = $manager->getRepository(Settlement::class)->entreesDuMois($mois);
         $benefices = $manager->getRepository(CustomerCommandeDetails::class)->benefice_journalier($mois);
-        // dd($benefices);
+        // dump($entrees);
         if(empty($ventes)){
           $this->addFlash('error', 'La date sélectionnée n\'est pas correcte.');
           // return $this->redirectToRoute('dayly.accounting');
         }
+
+        $dates = $this->differentesDates($ventes, $entrees);
+        $mois = $this->dateEnFrancais($mois, false);
+
         return $this->render('Admin/Accounting/comptabilite-journaliere.html.twig', [
+          'dates'     => $dates,
           'ventes'    => $ventes,
+          'entrees'   => $entrees,
+          'mois'      => $mois,
           'benefices' => $benefices,
           'current'   => 'accounting',
         ]);
+    }
+
+
+    public function differentesDates($ventes, $entrees)
+    {
+      $dates = [];
+      foreach ($ventes as $key => $value) {
+        $dates[] = $value["date"]->format("Y-m-d");
+      }
+      foreach ($entrees as $key => $value) {
+        $dates[] = $value["date"]->format("Y-m-d");
+      }
+      return array_unique($dates);
     }
 
     /**
@@ -95,23 +140,68 @@ class AdminAccountingController extends AbstractController
         $repoCommande = $manager->getRepository(CustomerCommande::class);
         $mois  = $repoCommande->differentDates();
         $gains = [];
+        $entrees = [];
         $benefices = [];
         foreach ($mois as $key => $value) {
+          $mois[$key]['nomFr'] = $this->dateEnFrancais($value['date'], false);
           $ventes = $repoCommande->monthSells($value['date']);
           $somme = 0;
           foreach ($ventes as $keyV => $valueV) {
             $somme += $valueV['somme'];
           }
+
+          // Total des entrées du mois
+          $entreesDunMois = $manager->getRepository(Settlement::class)->entreesDuMois($value['date']);
+          $sommeEntrees   = 0;
+          foreach ($entreesDunMois as $keyV => $valueV) {
+            $sommeEntrees += $valueV['entree'];
+          }
+          $entrees[$value['date']]   = $sommeEntrees;
           $benefices[$value['date']] = $manager->getRepository(CustomerCommandeDetails::class)->benefice_mensuel($value['date']);
-          $gains[$value['date']] = $somme;
+          $gains[$value['date']]     = $somme;
         }
-        // dump($mois[1]['date'], $benefices, $gains);
+        
         return $this->render('Admin/Accounting/comptabilite-mensuelle.html.twig', [
           'mois'      => $mois,
           'gains'     => $gains,
+          'entrees'   => $entrees,
           'benefices' => $benefices,
           'current'   => 'accounting',
         ]);
+    }
+
+    public function dateEnFrancais($date, bool $jour = true)
+    {
+      // Cette fonction me permet de convertir la date reçu en paramètre en français
+      /**
+       * Elle reçoit deux paramètres
+       *      ----- Paramètre 1
+       *    - Le premier est la date à convertir
+       * 
+       *      ----- Paramètre 2
+       *    - Le deuxième est le type de retour qui peut être soit en mois (ex: Mars 2020) ou en jour (ex: Vendredi 20 Mars 2020)
+       *      Ce deuxième paramètre est de type booléen et facultatif. S'il est à true (qui est d'ailleurs sa valeur par défaut) 
+       *      alors le retour sera en jour. Sinon, il est en mois.
+       */
+      if (setlocale(LC_TIME, 'fr_FR') == '') {
+        $format_jour = '%#d';
+      } else {
+        $format_jour = '%e';
+      }
+      setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
+
+      if($jour == true)
+      {
+        $date = $date instanceof DateTime ? $date->format("Y-m-d") : $date;
+        $date = utf8_encode(strftime("%A $format_jour %B %Y", strtotime($date)));
+        $dateEnFrancais = ucwords($date);
+      }
+      else{
+        $mois = utf8_encode(strftime("$format_jour %B %Y", strtotime($date)));
+        $dateEnFrancais = ucfirst(substr($mois, 3));
+      }
+
+      return $dateEnFrancais;
     }
 
     /**
@@ -220,17 +310,8 @@ class AdminAccountingController extends AbstractController
             $restes[$value["id"]] = $value["reste"];
           }
         }
-        // dd($commande);
-        if (setlocale(LC_TIME, 'fr_FR') == '') {
-          $format_jour = '%#d';
-        } else {
-          $format_jour = '%e';
-        }
-        setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
-
-        $date = utf8_encode(strftime("%A $format_jour %B %Y", strtotime((new \DateTime())->format("Y-m-d"))));
-        // dump(strftime("%a $format_jour %b %Y", strtotime('2008-04-18')));
-        $date = ucwords($date);
+       
+        $date = $this->dateEnFrancais((new \DateTime())->format("Y-m-d"));;
 
         // Configure Dompdf according to your needs
         $pdfOptions = new Options();
@@ -294,17 +375,8 @@ class AdminAccountingController extends AbstractController
             $restes[$value["id"]] = $value["reste"];
           }
         }
-        // dd($commande);
-        if (setlocale(LC_TIME, 'fr_FR') == '') {
-          $format_jour = '%#d';
-        } else {
-          $format_jour = '%e';
-        }
-        setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
 
-        $date = utf8_encode(strftime("%A $format_jour %B %Y", strtotime((new \DateTime())->format("Y-m-d"))));
-        // dump(strftime("%a $format_jour %b %Y", strtotime('2008-04-18')));
-        $date = ucwords($date);
+        $date = $this->dateEnFrancais((new \DateTime())->format("Y-m-d"));;
 
         // Configure Dompdf according to your needs
         $pdfOptions = new Options();

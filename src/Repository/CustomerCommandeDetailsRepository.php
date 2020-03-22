@@ -57,7 +57,7 @@ class CustomerCommandeDetailsRepository extends ServiceEntityRepository
         $statement->bindValue('date', $date.'%');
         $statement->bindValue('status', false);
         $statement->execute();
-        return $statement->fetchAll();
+        return $statement->fetchAll()[0];
     }
 
     // /**
