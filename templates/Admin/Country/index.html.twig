@@ -31,9 +31,9 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Pays</h2>
-    <a href="{{ path('country.add') }}" class="btn btn-primary">Ajouter un nouveau pays</a>
+    <a href="{{ path('country.add') }}" class="btn-sm btn-primary">Ajouter un nouveau pays</a>
     <div class="row row-bottom-padded-md mb-5">
       {% set i = 0 %}
       {% for country in countries %}

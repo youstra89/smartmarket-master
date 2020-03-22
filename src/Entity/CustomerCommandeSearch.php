@@ -14,6 +14,13 @@ class CustomerCommandeSearch
    */
   private $customer;
 
+  /**
+   * Undocumented variable
+   *
+   * @var string|null
+   */
+  private $reference;
+
   // /**
   //  *@var int|null
   //  *@Assert\Range(min=10, max=400)
@@ -49,6 +56,18 @@ class CustomerCommandeSearch
   {
     $this->customer = $customer;
     return $this;
+  }
+
+  public function getReference(): ?string
+  {
+      return $this->reference;
+  }
+
+  public function setReference(string $reference): self
+  {
+      $this->reference = $reference;
+
+      return $this;
   }
 
   // /**

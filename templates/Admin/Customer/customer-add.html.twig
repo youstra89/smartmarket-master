@@ -1,6 +1,15 @@
 {% extends 'base.html.twig' %}
 
 
+{% block stylesheets %}
+  <style>
+    label.required:before{
+      content: "* ";
+    }
+  </style>
+{% endblock %}
+
+
 {% block title %}Enregistrement d'un client{% endblock %}
 
 
@@ -9,8 +18,8 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Enregistrement d'un client</h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'un client</h2>
     {{ include('Admin/Customer/_customer.html.twig') }}
   </div>
 {% endblock %}

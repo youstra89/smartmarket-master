@@ -22,6 +22,8 @@ class ProviderType extends AbstractType
             ->add('phone_number', TextType::class, ['label' => 'Numéro de téléphone', 'required' => true])
             ->add('email',        TextType::class, ['label' => 'Email', 'required' => true])
             ->add('city',         TextType::class, ['label' => 'Ville', 'required' => true])
+            ->add('numero_compte_bancaire', TextType::class, ['label' => 'Numéro de compte bancaire', 'required' => false])
+            ->add('nationalite',      TextType::class, ['label' => 'Nationalité', 'required' => false])
             ->add('country', EntityType::class, [
                 'required' => true,
                 'class'    => Country::class,

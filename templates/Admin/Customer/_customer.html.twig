@@ -21,6 +21,46 @@
     </div>
     <div class="row">
         <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.profession) }}</label>
+            {{ form_widget(form.profession, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.nationalite) }}</label>
+                {{ form_widget(form.nationalite, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.sexe) }}</label>
+                {{ form_widget(form.sexe, {'attr': {'class': 'form-control', 'placeholder': 'Sélectionnez le sexe'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.date_naissance) }}</label>
+            {{ form_widget(form.date_naissance, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.lieu_naissance) }}</label>
+                {{ form_widget(form.lieu_naissance, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">{{ form_label(form.civilite) }}</label>
+                {{ form_widget(form.civilite, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
             <div class="form-group">
                 <label for="">{{ form_label(form.phone_number) }}</label>
                 {{ form_widget(form.phone_number, {'attr': {'class': 'form-control'}}) }}
@@ -51,6 +91,46 @@
                 <label for="">{{ form_label(form.residence) }}</label>
                 {{ form_widget(form.residence, {'attr': {'class': 'form-control'}}) }}
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="">{{ form_label(form.nature_piece_identite) }}</label>
+            {{ form_widget(form.nature_piece_identite, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="">{{ form_label(form.numero_piece_identite) }}</label>
+                {{ form_widget(form.numero_piece_identite, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="">{{ form_label(form.date_etablissement_piece_identite) }}</label>
+            {{ form_widget(form.date_etablissement_piece_identite, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="">{{ form_label(form.date_expiration_piece_identite) }}</label>
+                {{ form_widget(form.date_expiration_piece_identite, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+          <div class="form-group">
+            <label for="">{{ form_label(form.numero_compte_bancaire) }}</label>
+            {{ form_widget(form.numero_compte_bancaire, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="">{{ form_label(form.photo) }}</label>
+            {{ form_widget(form.photo, {'attr': {'class': 'form-control'}}) }}
+          </div>
         </div>
     </div>
     <button class="btn btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>

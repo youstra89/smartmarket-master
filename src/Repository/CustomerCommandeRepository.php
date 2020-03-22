@@ -45,6 +45,14 @@ class CustomerCommandeRepository extends ServiceEntityRepository
         }
       }
 
+      if($search->getReference()){
+        $query = $query
+          ->andWhere('c.reference LIKE :reference')
+          ->andWhere('c.is_deleted = :status')
+          ->setParameter('status', false)
+          ->setParameter('reference', '%'.$search->getReference().'%');
+      }
+
       return $query->getQuery();
     }
 

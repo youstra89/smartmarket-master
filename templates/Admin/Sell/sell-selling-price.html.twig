@@ -37,7 +37,8 @@
 
 
 {% block body %}
-    <h2>Enregistrement du prix minimum de vente de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}</h2>
+  <div class="fh5co-narrow-content">
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement du prix minimum de vente de la commande fournisseur du {{ commande.commande.date|date('d-mY') }}</h2>
     <section class="contact-area container">
         <form class="ui form" action="" method="post">
             {% set i = 0 %}
@@ -72,4 +73,5 @@
             <button class="btn btn-success btn-sm">{{ button|default('Enregistrer') }}</button><br><br>
         </form>
     </section>
+  </div>
 {% endblock %}

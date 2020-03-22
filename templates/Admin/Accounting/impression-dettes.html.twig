@@ -89,41 +89,8 @@
         <title>Dettes {{ 'now'|date('d-m-Y H:i:s') }} | Smart Market</title>
     </head>
     <body>
-        <header>
-            {% if info is defined %}
-              <strong>{{ info.nom }}</strong><br>
-              {% if info.telephone is not empty %}
-                Téléphone: {{ info.telephone }}<br>
-              {% endif %}
-              {% if info.email is not empty %}
-                Email: {{ info.email }}<br>
-              {% endif %}
-              {% if info.siteWeb is not empty %}
-                Site web: {{ info.siteWeb }}<br>
-              {% endif %}
-            {% else %}
-              SmartMarket
-            {% endif %}
-            <hr width="75%">
-        </header>
-
-        <footer style="font-family: Elegance; line-height: 10px; font-size: 0.8em">
-            <hr width="75%" style="align: left; border: solid black 2px">
-          {% if info is defined %}
-            {{ info.nom }} au capital de {{ info.capital|number_format(0, ',', ' ') }} F<br>
-            {% if info.adresse is not empty %}
-              Sise à {{ info.adresse }} <br>
-            {% endif %}
-            {% if info.numeroCompteBancaire is not empty %}
-              Compte bancaire {{ info.numeroCompteBancaire }} <br>
-            {% endif %}
-            {% if info.registreCommerce is not empty %}
-              RCM {{ info.registreCommerce }} <br>
-            {% endif %}
-          {% else %}
-            Contacts: (00225) 07 31 09 99 - Email: contact.youstra@gmail.com
-          {% endif %}
-        </footer>
+        {# Inclusion de l'entête de du pied de page #}
+        {{ include('header.html.twig') }}
         <div class="title-form">
           <h1 class="title">Liste des dettes</h3>
         </div>

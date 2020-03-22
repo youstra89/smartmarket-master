@@ -90,13 +90,13 @@
             } */
         </style>
         <meta charset="UTF-8">
-        <title>Inventaire du stock {{ 'now'|date('d-m-Y H:i:s') }} | Smart Market</title>
+        <title>Liste des clients | Smart Market</title>
     </head>
     <body>
         {# Inclusion de l'entête de du pied de page #}
         {{ include('header.html.twig') }}
         <div class="title-form">
-          <h1 class="title">Coût total des produits en stock</h3>
+          <h1 class="title">Liste des clients</h3>
         </div>
         <div class="reference">
           <div class="row">
@@ -108,11 +108,6 @@
             <div class="col">
             </div>
           </div>
-          {# <div class="row">
-            <div class="">
-              <p>Nombre de redoublants : <span class="info">{{ annee.label }}</span></p>
-            </div>
-          </div> #}
         </div>
         <div class="content">
           <table cellspacing="0">
@@ -120,35 +115,28 @@
               <tr>
                 <th class="numero">N°</th>
                 <th class="">Référence</th>
-                <th class="">Désignation</th>
-                <th class="">Stock</th>
-                <th class="">Prix d'achat</th>
-                <th class="">Sous-total</th>
+                <th class="">Nom & Prénom</th>
+                <th class="">Téléphone</th>
+                <th class="">Email</th>
+                <th class="">Type</th>
               </tr>
             </thead>
             <tbody>
               {% set i = 0 %}
               {% set total = 0 %}
-              {% for product in products %}
+              {% for customer in customers %}
                 {% set i = i + 1 %}
                 <tr>
                   <td class="numero">{{ i }}</td>
-                  <td>{{ product.reference }}</td>
-                  {% set nom = product.label %}
-                  {% if nom|length > 30 %}
-                    {% set nom = nom|slice(0, 30) ~ '.' %}
-                  {% endif %}
-                  <td>{{ product.label }}</td>
-                  <td>{{ product.stock }}</td>
-                  <td>{{ product.purchasingPrice|number_format(0, ',', ' ') }} F</td>
-                  {% set sousTotal = product.stock * product.purchasingPrice %}
-                  <td>{{ sousTotal|number_format(0, ',', ' ') }} F</td>
-                  {% set total = total + sousTotal %}
+                  <td>{{ customer.reference }}</td>
+                  <td>{{ customer.firstname }} {{ customer.lastname }}</td>
+                  <td>{{ customer.phoneNumber }}</td>
+                  <td>{{ customer.email }}</td>
+                  <td>{{ customer.type.type }}</td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
-          Coût total des marchandises: {{ total|number_format(0, ',', ' ') }} F
         </div>
     </body>
 </html>

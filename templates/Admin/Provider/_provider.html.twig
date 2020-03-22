@@ -47,5 +47,19 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="">{{ form_label(form.nationalite) }}</label>
+                {{ form_widget(form.nationalite, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="">{{ form_label(form.numero_compte_bancaire) }}</label>
+                {{ form_widget(form.numero_compte_bancaire, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
     <button class="btn btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
 {{ form_end(form) }}

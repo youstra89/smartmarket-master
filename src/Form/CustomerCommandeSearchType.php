@@ -4,16 +4,17 @@ namespace App\Form;
 
 use App\Entity\Product;
 use App\Entity\Customer;
-use App\Entity\CustomerCommandeSearch;
 use Doctrine\ORM\EntityRepository;
+use App\Entity\CustomerCommandeSearch;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class CustomerCommandeSearchType extends AbstractType
 {
@@ -33,6 +34,8 @@ class CustomerCommandeSearchType extends AbstractType
               },
               'multiple' => false
             ])
+            ->add('reference',   TextType::class, ['label' => false, 'required' => false])
+
             // ->add('products', EntityType::class, [
             //   'required' => false,
             //   'label' => false,

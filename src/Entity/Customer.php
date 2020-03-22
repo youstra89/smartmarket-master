@@ -11,6 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Customer
 {
+    const SEXE = [
+        0 => 'Homme',
+        1 => 'Femme',
+      ];
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -100,17 +105,82 @@ class Customer
      */
     private $customerCommandes;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $photo;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $profession;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_naissance;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $lieu_naissance;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $nature_piece_identite;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $numero_piece_identite;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $numero_compte_bancaire;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $sexe;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $civilite;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_etablissement_piece_identite;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $date_expiration_piece_identite;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $nationalite;
+
 
     public function __construct()
     {
-        $this->created_at        = new \DateTime();
         $this->is_deleted        = false;
+        $this->created_at        = new \DateTime();
         $this->customerCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getSexeType(): string
+    {
+      return empty($this->sexe) ? 'Indéfini' : self::SEXE[$this->sexe];
     }
 
     public function getFirstname(): ?string
@@ -351,6 +421,150 @@ class Customer
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): self
+    {
+        $this->photo = $photo;
+
+        return $this;
+    }
+
+    public function getProfession(): ?string
+    {
+        return $this->profession;
+    }
+
+    public function setProfession(?string $profession): self
+    {
+        $this->profession = $profession;
+
+        return $this;
+    }
+
+    public function getDateNaissance(): ?\DateTimeInterface
+    {
+        return $this->date_naissance;
+    }
+
+    public function setDateNaissance(?\DateTimeInterface $date_naissance): self
+    {
+        $this->date_naissance = $date_naissance;
+
+        return $this;
+    }
+
+    public function getLieuNaissance(): ?string
+    {
+        return $this->lieu_naissance;
+    }
+
+    public function setLieuNaissance(?string $lieu_naissance): self
+    {
+        $this->lieu_naissance = $lieu_naissance;
+
+        return $this;
+    }
+
+    public function getNaturePieceIdentite(): ?string
+    {
+        return $this->nature_piece_identite;
+    }
+
+    public function setNaturePieceIdentite(?string $nature_piece_identite): self
+    {
+        $this->nature_piece_identite = $nature_piece_identite;
+
+        return $this;
+    }
+
+    public function getNumeroPieceIdentite(): ?string
+    {
+        return $this->numero_piece_identite;
+    }
+
+    public function setNumeroPieceIdentite(?string $numero_piece_identite): self
+    {
+        $this->numero_piece_identite = $numero_piece_identite;
+
+        return $this;
+    }
+
+    public function getNumeroCompteBancaire(): ?string
+    {
+        return $this->numero_compte_bancaire;
+    }
+
+    public function setNumeroCompteBancaire(?string $numero_compte_bancaire): self
+    {
+        $this->numero_compte_bancaire = $numero_compte_bancaire;
+
+        return $this;
+    }
+
+    public function getSexe(): ?string
+    {
+        return $this->sexe;
+    }
+
+    public function setSexe(?string $sexe): self
+    {
+        $this->sexe = $sexe;
+
+        return $this;
+    }
+
+    public function getCivilite(): ?string
+    {
+        return $this->civilite;
+    }
+
+    public function setCivilite(?string $civilite): self
+    {
+        $this->civilite = $civilite;
+
+        return $this;
+    }
+
+    public function getDateEtablissementPieceIdentite(): ?\DateTimeInterface
+    {
+        return $this->date_etablissement_piece_identite;
+    }
+
+    public function setDateEtablissementPieceIdentite(?\DateTimeInterface $date_etablissement_piece_identite): self
+    {
+        $this->date_etablissement_piece_identite = $date_etablissement_piece_identite;
+
+        return $this;
+    }
+
+    public function getDateExpirationPieceIdentite(): ?string
+    {
+        return $this->date_expiration_piece_identite;
+    }
+
+    public function setDateExpirationPieceIdentite(?string $date_expiration_piece_identite): self
+    {
+        $this->date_expiration_piece_identite = $date_expiration_piece_identite;
+
+        return $this;
+    }
+
+    public function getNationalite(): ?string
+    {
+        return $this->nationalite;
+    }
+
+    public function setNationalite(?string $nationalite): self
+    {
+        $this->nationalite = $nationalite;
 
         return $this;
     }

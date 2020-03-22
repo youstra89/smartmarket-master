@@ -10,6 +10,38 @@
                 src: url("http://eclecticgeek.com/dompdf/fonts/Elegance.ttf") format("truetype");
             }
 
+            /** Define the margins of your page **/
+            @page {
+                margin: 100px 50px;
+            }
+
+            header {
+                position: fixed;
+                top: -60px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+
+                /** Extra personal styles **/
+                color: gray;
+                text-align: left;
+                padding-left: 20px;
+                font-size: .9em
+            }
+
+            footer {
+                position: fixed; 
+                bottom: -60px; 
+                left: 0px; 
+                right: 0px;
+                height: 50px; 
+
+                /** Extra personal styles **/
+                color: darkGray;
+                text-align: center;
+                font-size: 0.5em;
+            }
+
             table{
               width: 95%
             }
@@ -61,6 +93,8 @@
         <title>Inventaire du stock {{ 'now'|date('d-m-Y H:i:s') }} | Smart Market</title>
     </head>
     <body>
+        {# Inclusion de l'entête de du pied de page #}
+        {{ include('header.html.twig') }}
         <div class="title-form">
           <h1 class="title">Liste des produits</h3>
         </div>

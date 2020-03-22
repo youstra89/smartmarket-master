@@ -4,14 +4,18 @@ namespace App\Form;
 
 use App\Entity\Customer;
 use App\Entity\CustomerType as Type;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
 
 class CustomerType extends AbstractType
 {
@@ -31,6 +35,63 @@ class CustomerType extends AbstractType
                 'label'    => 'Type de client',
                 'multiple' => false,
                 'placeholder' => 'Sélectionner un type de client'
+            ])
+            ->add('numero_compte_bancaire', TextType::class, ['label' => 'Numéro de compte bancaire', 'required' => false])
+            ->add('profession',      TextType::class, ['label' => 'Profession', 'required' => false])
+            ->add('nationalite',      TextType::class, ['label' => 'Nationalité', 'required' => false])
+            ->add('date_naissance',   BirthdayType::class, ['label' => 'Date de naissance', 'required' => false])
+            ->add('lieu_naissance',   TextType::class, ['label' => 'Lieu de naissance', 'required' => false])
+            ->add('nature_piece_identite',   ChoiceType::class, [
+                'label' => 'Nature de la pièce d\'identité', 
+                'required' => false,
+                'choices' => [
+                    "CNI" => "Carte Nationale d'Identité",
+                    "Passeport" => "Passeport",
+                ]
+            ])
+            ->add('numero_piece_identite',   TextType::class, ['label' => 'Numéro de la pièce d\'identité', 'required' => false])
+            ->add('date_etablissement_piece_identite',   BirthdayType::class, ['label' => 'Date d\'établissement de la pièce d\'identité', 'required' => false])
+            ->add('date_expiration_piece_identite',   BirthdayType::class, ['label' => 'Date d\'expiration de la pièce d\'identité', 'required' => false])
+            ->add('sexe',     ChoiceType::class, [
+                'label'    => 'Sexe',
+                'required' => false,
+                'choices'  => $this->getChoices()
+            ])
+            ->add('civilite',     ChoiceType::class, [
+                'label' => 'Civilité',
+                'required' => false,
+                'choices' => [
+                    "M"   => "Monsieur",
+                    "Mme" => "Madame",
+                    "Mlle" => "Mademoiselle",
+                ]
+            ])
+            ->add('photo', FileType::class, [
+                'label' => 'Sélectionner une image',
+
+                // unmapped means that this field is not associated to any entity property
+                'mapped' => false,
+
+                // make it optional so you don't have to re-upload the PDF file
+                // everytime you edit the Product details
+                'required' => false,
+
+                // unmapped fields can't define their validation using annotations
+                // in the associated entity, so you can use the PHP constraint classes
+                'constraints' => [
+                    new File([
+                        'maxSize' => '1024k',
+                        // 'maxWidth' => '500',
+                        // 'maxWidthMessage' => 'La largeur de l\'image ne doit pas dépasser 500px',
+                        // 'maxHeight' => '500',
+                        // 'maxHeightMessage' => 'La hauteur de l\'image ne doit pas dépasser 500px',
+
+                        'mimeTypes' => [
+                            'image/*'
+                        ],
+                        'mimeTypesMessage' => 'Veuillez sélectionner une image',
+                    ])
+                ],
             ])
         ;
 
@@ -54,5 +115,15 @@ class CustomerType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Customer::class,
         ]);
+    }
+
+    public function getChoices()
+    {
+      $choices = Customer::SEXE;
+      $output = [];
+      foreach($choices as $k => $v){
+        $output[$v] = $k;
+      }
+      return $output;
     }
 }

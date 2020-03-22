@@ -95,6 +95,16 @@ class Provider
      */
     private $providerCommandes;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $numero_compte_bancaire;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $nationalite;
+
 
     public function __construct()
     {
@@ -360,6 +370,30 @@ class Provider
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getNumeroCompteBancaire(): ?string
+    {
+        return $this->numero_compte_bancaire;
+    }
+
+    public function setNumeroCompteBancaire(?string $numero_compte_bancaire): self
+    {
+        $this->numero_compte_bancaire = $numero_compte_bancaire;
+
+        return $this;
+    }
+
+    public function getNationalite(): ?string
+    {
+        return $this->nationalite;
+    }
+
+    public function setNationalite(?string $nationalite): self
+    {
+        $this->nationalite = $nationalite;
 
         return $this;
     }

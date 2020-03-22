@@ -16,10 +16,11 @@
 
 {% block body %}
   <!-- Begin Page Content -->
-  <div class="container-fluid">
+  <div class="fh5co-narrow-content">
 
     <!-- Page Heading -->
-    <h1 class="h3 mb-1 text-gray-800">Informatiosns utilisateur - {{ user.username }}</h1>
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    <h1 class="animate-box" data-animate-effect="fadeInLeft">Informatiosns utilisateur - <strong>{{ user.username }}</strong></h1>
     {# <p class="mb-4">Bootstrap's default utility classes can be found on the official <a href="https://getbootstrap.com/docs">Bootstrap Documentation</a> page. The custom utilities below were created to extend this theme past the default utility classes built into Bootstrap's framework.</p> #}
 
     <!-- Content Row -->
@@ -29,7 +30,7 @@
         <!-- Overflow Hidden -->
         <div class="card mb-4">
           <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Identification personnelle</h6>
+            <h6 class=" text-primary">Identification personnelle</h6>
           </div>
           <div class="card-body">  
             <strong>Nom & prénoms :</strong> {{ user.lastname }} {{ user.firstname }}<br>

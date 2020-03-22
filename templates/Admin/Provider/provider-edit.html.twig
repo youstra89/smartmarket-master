@@ -9,8 +9,8 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="animate-box" data-animate-effect="fadeInLeft">Mise à jour des informations du fournisseur <strong>{{ provider.firstname }} {{ provider.lastname }}</strong> </h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Mise à jour des informations du fournisseur <strong>{{ provider.firstname }} {{ provider.lastname }}</strong> </h2>
     {{ form_start(form, {'attr': {'class': ''}}) }}
         <div class="row">
             <div class="col-md-4">
@@ -57,6 +57,20 @@
                 <div class="form-group">
                     <label for="">{{ form_label(form.city) }}</label>
                     {{ form_widget(form.city, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.nationalite) }}</label>
+                    {{ form_widget(form.nationalite, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="">{{ form_label(form.numero_compte_bancaire) }}</label>
+                    {{ form_widget(form.numero_compte_bancaire, {'attr': {'class': 'form-control'}}) }}
                 </div>
             </div>
         </div>

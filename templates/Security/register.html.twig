@@ -31,6 +31,7 @@
 
 
 {% block body %}
+  <div class="fh5co-narrow-content">
     <h1 class="uk-heading-line uk-heading-primary uk-text-center"><span>Inscription</span></h1>
     {% if not form.vars.valid %}
       <div class="uk-alert-danger" uk-alert>
@@ -111,6 +112,7 @@
         {{ form_rest(form) }}
       {{ form_end(form)}}
     </div>
+  </div>
 {% endblock %}
 
 

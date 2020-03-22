@@ -39,30 +39,47 @@
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Clients</h2>
     <a href="{{ path('customer.add') }}" class="btn-sm btn-primary">Ajouter un client</a>
+    <a href="{{ path('impression_customers') }}" class="btn-sm btn-primary">Liste des clients</a>
     <a href="{{ path('customertypes') }}" class="btn-sm btn-primary">Gestion des types de client</a><br><br>
     <div class="table-responsive">
-      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+      <table class="table table-borderless" id="dataTable" cellspacing="0">
         <thead>
           <tr>
-            <th>N°</th>
-            <th>Référence</th>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Téléphone</th>
-            <th>Email</th>
-            <th>Type</th>
-            <th>Actions</th>
+            <th width="auto">N°</th>
+            <th width="auto">Référence</th>
+            <th width="auto">Civilité</th>
+            <th width="auto">Nom</th>
+            <th width="auto">Prénom</th>
+            <th width="auto">Sexe</th>
+            <th width="auto">Téléphone</th>
+            <th width="auto">Email</th>
+            <th width="auto">Type</th>
+            <th width="auto">Nationalite</th>
+            <th width="auto">Profession</th>
+            <th width="auto">Date de naissance</th>
+            <th width="auto">Lieu de naissance</th>
+            <th width="auto">Nature pièce</th>
+            <th width="auto">Nature pièce</th>
+            <th width="auto">Actions</th>
           </tr>
         </thead>
         <tfoot>
           <tr>
             <th>N°</th>
             <th>Référence</th>
+            <th>Civilité</th>
             <th>Nom</th>
             <th>Prénom</th>
+            <th>Sexe</th>
             <th>Téléphone</th>
             <th>Email</th>
             <th>Type</th>
+            <th>Nationalite</th>
+            <th>Profession</th>
+            <th>Date de naissance</th>
+            <th>Lieu de naissance</th>
+            <th>Nature pièce</th>
+            <th>Nature pièce</th>
             <th>Actions</th>
           </tr>
         </tfoot>
@@ -73,14 +90,23 @@
             <tr>
               <td>{{ i }}</td>
               <td>{{ customer.reference }}</td>
+              <td>{{ customer.civilite }}</td>
               <td>{{ customer.lastname }}</td>
               <td>{{ customer.firstname }}</td>
+              <td>{{ customer.sexeType }}</td>
               <td>{{ customer.phoneNumber }}</td>
               <td>{{ customer.email }}</td>
               <td>{{ customer.type.type }}</td>
+              <td>{{ customer.nationalite }}</td>
+              <td>{{ customer.profession }}</td>
+              <td>{{ customer.dateNaissance|date("d-m-Y") }}</td>
+              <td>{{ customer.lieuNaissance }}</td>
+              <td>{{ customer.naturePieceIdentite }}</td>
+              <td>{{ customer.numeroPieceIdentite }}</td>
               <td>
                 <a href="{{ path('customer.edit', {id: customer.id}) }}" title="Modifier info client"><i class="icon-edit"></i></a>
                 <a href="{{ path('prepare_sell_for_customer', {id: customer.id}) }}" title="Préparer une commande"><i class="icon-plus"></i></a>
+                <a href="{{ path('customer_info', {id: customer.id}) }}" title="Voir les détails"><i class="icon-params"></i></a>
               </td>
             </tr>
           {% endfor %}
