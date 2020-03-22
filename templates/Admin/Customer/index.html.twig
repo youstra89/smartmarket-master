@@ -6,6 +6,12 @@
 
 {% block stylesheets %}
     <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+    <style>
+      .table{
+        table-layout: auto;
+        width: 200%;
+      }
+    </style>
 {% endblock %}
 
 
@@ -45,22 +51,22 @@
       <table class="table table-borderless" id="dataTable" cellspacing="0">
         <thead>
           <tr>
-            <th width="auto">N°</th>
-            <th width="auto">Référence</th>
-            <th width="auto">Civilité</th>
-            <th width="auto">Nom</th>
-            <th width="auto">Prénom</th>
-            <th width="auto">Sexe</th>
-            <th width="auto">Téléphone</th>
-            <th width="auto">Email</th>
-            <th width="auto">Type</th>
-            <th width="auto">Nationalite</th>
-            <th width="auto">Profession</th>
-            <th width="auto">Date de naissance</th>
-            <th width="auto">Lieu de naissance</th>
-            <th width="auto">Nature pièce</th>
-            <th width="auto">Nature pièce</th>
-            <th width="auto">Actions</th>
+            <th>N°</th>
+            <th>Référence</th>
+            <th>Civilité</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Sexe</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Type</th>
+            <th>Nationalite</th>
+            <th>Profession</th>
+            <th>Date de naissance</th>
+            <th>Lieu de naissance</th>
+            <th>Nature pièce</th>
+            <th>Numéro pièce</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tfoot>
@@ -79,7 +85,7 @@
             <th>Date de naissance</th>
             <th>Lieu de naissance</th>
             <th>Nature pièce</th>
-            <th>Nature pièce</th>
+            <th>Numéro pièce</th>
             <th>Actions</th>
           </tr>
         </tfoot>

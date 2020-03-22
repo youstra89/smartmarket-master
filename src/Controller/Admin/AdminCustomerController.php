@@ -11,11 +11,10 @@ use App\Controller\FonctionsController;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\Response;
-
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
  * @Route("/clients")
@@ -48,6 +47,31 @@ class AdminCustomerController extends AbstractController
         $reference = $fonctions->generateReference("customer", $last_customer);
         if($form->isSubmitted() && $form->isValid())
         {
+          /** @var UploadedFile $imageFile */
+          $imageFile = $form->get('photo')->getData();
+
+          // this condition is needed because the 'brochure' field is not required
+          // so the PDF file must be processed only when a file is uploaded
+          if ($imageFile) {
+              $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+              // this is needed to safely include the file name as part of the URL
+              $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+              $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+              // Move the file to the directory where brochures are stored
+              try {
+                  $imageFile->move(
+                      $this->getParameter('customers_images_directory'),
+                      $newFilename
+                  );
+              } catch (FileException $e) {
+                  // ... handle exception if something happens during file upload
+              }
+
+              // updates the 'brochureFilename' property to store the PDF file name
+              // instead of its contents
+              $customer->setPhoto($newFilename);
+          }
           $customer->setCreatedBy($this->getUser());
           $manager->persist($customer);
           try{
@@ -77,6 +101,31 @@ class AdminCustomerController extends AbstractController
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
+          /** @var UploadedFile $imageFile */
+          $imageFile = $form->get('photo')->getData();
+
+          // this condition is needed because the 'brochure' field is not required
+          // so the PDF file must be processed only when a file is uploaded
+          if ($imageFile) {
+              $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+              // this is needed to safely include the file name as part of the URL
+              $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+              $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+              // Move the file to the directory where brochures are stored
+              try {
+                  $imageFile->move(
+                      $this->getParameter('customers_images_directory'),
+                      $newFilename
+                  );
+              } catch (FileException $e) {
+                  // ... handle exception if something happens during file upload
+              }
+
+              // updates the 'brochureFilename' property to store the PDF file name
+              // instead of its contents
+              $customer->setPhoto($newFilename);
+          }
           $customer->setUpdatedAt(new \DateTime());
           $customer->setUpdatedBy($this->getUser());
           $manager->persist($customer);

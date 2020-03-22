@@ -15,8 +15,6 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
-
 // Include Dompdf required namespaces
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -248,39 +246,39 @@ class AdminProductController extends AbstractController
      */
     public function inventaire_de_stock_de_produits(ObjectManager $manager)
     {
-        $products = $manager->getRepository(Product::class)->findAll();
-        if(empty($products)){
-            $this->addFlash('warning', "Aucun produit enregistré pour le moment.");
-            return $this->redirectToRoute('product');
-        }
+      $products = $manager->getRepository(Product::class)->findAll();
+      if(empty($products)){
+          $this->addFlash('warning', "Aucun produit enregistré pour le moment.");
+          return $this->redirectToRoute('product');
+      }
 
-        // Configure Dompdf according to your needs
-        $pdfOptions = new Options();
-        $pdfOptions->set('defaultFont', 'Arial');
-        
-        // Instantiate Dompdf with our options
-        $dompdf = new Dompdf($pdfOptions);
-        
-        // Retrieve the HTML generated in our twig file
-        $html = $this->renderView('Admin/Product/inventaire-stock-de-produits.html.twig', [
-            'products'  => $products
-        ]);
-        
-        // Load HTML to Dompdf
-        $dompdf->loadHtml($html);
-        //"dompdf/dompdf": "^0.8.3",
-        
-        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->setPaper('A4', 'landscape');
+      // Configure Dompdf according to your needs
+      $pdfOptions = new Options();
+      $pdfOptions->set('defaultFont', 'Arial');
+      
+      // Instantiate Dompdf with our options
+      $dompdf = new Dompdf($pdfOptions);
+      
+      // Retrieve the HTML generated in our twig file
+      $html = $this->renderView('Admin/Product/inventaire-stock-de-produits.html.twig', [
+          'products'  => $products
+      ]);
+      
+      // Load HTML to Dompdf
+      $dompdf->loadHtml($html);
+      //"dompdf/dompdf": "^0.8.3",
+      
+      // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+      $dompdf->setPaper('A4', 'portrait');
+      $dompdf->setPaper('A4', 'landscape');
 
-        // Render the HTML as PDF
-        $dompdf->render();
+      // Render the HTML as PDF
+      $dompdf->render();
 
-        // Output the generated PDF to Browser (force download)
-        $dompdf->stream("stock-".(new \DateTime())->format('d-m-Y H:i:s').".pdf", [
-            "Attachment" => false
-        ]);
+      // Output the generated PDF to Browser (force download)
+      $dompdf->stream("stock-".(new \DateTime())->format('d-m-Y H:i:s').".pdf", [
+          "Attachment" => false
+      ]);
     }
 
     /**
