@@ -32,17 +32,17 @@
 {% block body %}
   <div class="fh5co-narrow-content">
     <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Pays</h2>
-    <a href="{{ path('country.add') }}" class="btn btn-primary">Ajouter un nouveau pays</a>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Catégories</h2>
+    <a href="{{ path('category.add') }}" class="btn btn-primary">Ajouter une nouvelle catégorie</a>
     <div class="row row-bottom-padded-md mb-5">
       {% set i = 0 %}
-      {% for country in countries %}
+      {% for category in categories %}
         {% set i = i + 1 %}
         <div class="col-md-3 col-sm-6 col-padding text-center animate-box card" style="width: 18rem">
           <div class="card-body">
-            <h5 class="card-title" style="margin: 0px">{{ country.name }}</h5>
+            <h5 class="card-title" style="margin: 0px">{{ category.name }}</h5>
             <h6 class="card-subtitle text-muted" style="margin: 0px">Catégorie {{ i }}</h6>
-            <a href="{{ path('country.edit', {id: country.id}) }}" class="card-link">Edition</a>
+            <a href="{{ path('category.edit', {id: category.id}) }}" class="card-link">Edition</a>
           </div>
         </div>
       {% endfor %}
