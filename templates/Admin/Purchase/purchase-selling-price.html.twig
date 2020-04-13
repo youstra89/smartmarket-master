@@ -37,7 +37,8 @@
 
 
 {% block body %}
-    <h2>Enregistrement du prix minimum de vente de la commande N°{{ commande.reference }} fournisseur du {{ commande.date|date('d-m-Y') }}</h2>
+  <div class="fh5co-narrow-content">
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement du prix minimum de vente de la commande fournisseur <strong>N°{{ commande.reference }}</strong></h2>
     <section class="contact-area container">
         <form class="ui form" action="" method="post">
             {% set i = 0 %}
@@ -53,7 +54,7 @@
                   <th>Marge bénéficiaire</th>
                 </tr>
               </thead>
-              {% for item in commande.providerCommandeDetails %}
+              {% for item in commande.product %}
                 {% set i = i + 1 %}
                   <tbody>
                     <tr>
@@ -74,6 +75,7 @@
             <button class="btn btn-success btn-sm" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button><br><br>
         </form>
     </section>
+  </div>
 {% endblock %}
 
 {% block javascript %}

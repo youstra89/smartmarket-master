@@ -39,61 +39,50 @@
 {% block body %}
   <div class="fh5co-narrow-content">
     <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une nouvelle vente</h2>
-    <button type="button" class="btn-lg btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Ajouter un produit</button>
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Sélection de produits</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <form>
-            <div class="modal-body">
-              <div class="form-group">
-                <label for="reference" class="col-form-label">Référence de produit</label>
-                <input type="text" name="reference" class="form-control" id="reference" value="PR">
-              </div>
-              <div class="form-group">
-                <label for="products" class="col-form-label">Produits</label>
-                <select name="products" id="products" class="form-control">
-                  <option value="">Sélectionnez un produit</option>
-                  {% for product in products if product.stock > 0 %}
-                    <option value="{{ product.id }}">{{ product.label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="row">
-                <div class="form-group col-md-6">
-                  <label for="quantity" class="col-form-label">Quantité:</label>
-                  <input type="number" class="form-control" id="quantity" value="1" min="1" required>
-                </div>
-                <div class="form-group col-md-6">
-                  <label for="price" class="col-form-label">Prix unitaire:</label>
-                  <input type="number" class="form-control" id="price" value="" required>
-                </div>
-              </div>
-              <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
-            </div>
-            <div class="modal-footer">
-              <input type="hidden" name="productId" id="productId" value="">
-              <input type="hidden" name="productLabel" id="productLabel" value="">
-              <input type="hidden" name="productStock" id="productStock" value="">
-              <button type="button" class="btn-lg btn-default" data-dismiss="modal">Fermer</button>
-              <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
     <section class="container">
-      <form class="ui form" action="" method="post">
+      <form class="text-sm">
+        <fieldset>
+          <legend>Ajoute de produit au pannier</legend>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="reference" class="col-form-label">Référence de produit</label>
+              <input type="text" name="reference" class="form-control" id="reference" value="PR">
+            </div>
+            <div class="form-group">
+              <label for="products" class="col-form-label">Produits</label>
+              <select name="products" id="products" class="form-control">
+                <option value="">Sélectionnez un produit</option>
+                {% for product in products if product.stock > 0 %}
+                  <option value="{{ product.id }}">{{ product.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="row">
+              <div class="form-group col-md-6 col-sm-6 col-xs-6">
+                <label for="quantity" class="col-form-label">Quantité:</label>
+                <input type="number" class="form-control" id="quantity" value="1" min="1" required>
+              </div>
+              <div class="form-group col-md-6 col-sm-6 col-xs-6">
+                <label for="price" class="col-form-label">Prix unitaire:</label>
+                <input type="number" class="form-control" id="price" value="" required>
+              </div>
+            </div>
+            <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
+          </div>
+          <div class="modal-footer">
+            <input type="hidden" name="productId" id="productId" value="">
+            <input type="hidden" name="productLabel" id="productLabel" value="">
+            <input type="hidden" name="productStock" id="productStock" value="">
+            <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
+          </div>
+        </fieldset>
+      </form>
+      <form class="form" action="" method="post">
         <br>
         <div class="row">
           <div class="form-group col-md-6">
             <label for="customer">Client</label>
-            <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single">
+            <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
               <option value="">Sélectionner un client</option>
               {% for customer in customers %}
                 <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
@@ -108,29 +97,31 @@
           </div>
         </div>
         {% set i = 0 %}
-        <table class="table" id="myTable">
-          <thead>
-            <tr>
-              <th>Référence</th>
-              <th>Produit</th>
-              <th>Quantité</th>
-              <th>Prix Unitaire</th>
-              <th>Sous total</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          {% set total = 0 %}
-          <tbody>
-            {# <tr><td>Reference</td><td>label</td><td><input type="number" class="quantity" id="quantities[]" name="quantities[]" value="" required readonly></td><td><input type="number" class="price" id="prices[]" name="prices[]" value="" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[]" name="sousTotal[]" value="" readonly><input type="hidden" name="products[]" value=""></td><td><i class="icon-trash" title="Retirer de la vente en cours"></i></td></tr> #}
-            <tr></tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="4"><h4>Total de la commande</h4></td>
-              <td><h4><input type="text" id="total" name="total" value="" readonly required></h4></td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="table-responsive">
+          <table class="table" id="myTable">
+            <thead>
+              <tr>
+                <th>Référence</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix Unitaire</th>
+                <th>Sous total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            {% set total = 0 %}
+            <tbody>
+              {# <tr><td>Reference</td><td>label</td><td><input type="number" class="quantity" id="quantities[]" name="quantities[]" value="" required readonly></td><td><input type="number" class="price" id="prices[]" name="prices[]" value="" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[]" name="sousTotal[]" value="" readonly><input type="hidden" name="products[]" value=""></td><td><i class="icon-trash" title="Retirer de la vente en cours"></i></td></tr> #}
+              <tr></tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4"><h4>Total de la commande</h4></td>
+                <td><h4><input type="text" id="total" name="total" value="" readonly required></h4></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
         <input type="hidden" name="token" value="{{ csrf_token('vente') }}"/>
         <input type="submit" class="btn-default btn-lg" id="save" value="Enregistrer" onclick="submitForm(this);">
         {# <button class="btn-default btn-lg" id="save">{{ button|default('Enregistrer') }}</button><br><br> #}

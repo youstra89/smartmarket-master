@@ -399,7 +399,7 @@ class AdminPurchaseController extends AbstractController
         }
       }
       return $this->render('Admin/Purchase/settlement.html.twig', [
-        'current'  => 'sells',
+        'current'  => 'purchases',
         'reste'    => $reste,
         'commande' => $commande,
       ]);
@@ -445,11 +445,6 @@ class AdminPurchaseController extends AbstractController
         // Output the generated PDF to Browser (force download)
         $dompdf->stream("mypdf.pdf", [
             "Attachment" => false
-        ]);
-        return $this->render('Admin/Sell/sell-details.html.twig', [
-          'current'     => 'sells',
-          'commande'    => $commande,
-          'settlements' => $settlements
         ]);
     }
 

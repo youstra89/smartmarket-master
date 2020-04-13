@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Product;
+use App\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\Settlement;
 use App\Entity\Informations;
@@ -511,6 +512,10 @@ class AdminSellController extends AbstractController
      */
     public function settlement(Request $request, int $id, CustomerCommande $commande, ObjectManager $manager)
     {
+      if ($commande->getEnded() == true) {
+        $this->addFlash('warning', 'Cette commande est déjà soldée.');
+        return $this->redirectToRoute('sell');
+      }
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       $reglements = $commande->getSettlements();
       // $total = array_sum(array_map('getValue', $reglements));

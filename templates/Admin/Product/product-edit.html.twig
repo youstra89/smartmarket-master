@@ -9,7 +9,7 @@
 
 {% block body %}
     <div class="fh5co-narrow-content">
-        <a href="javascript:history.back()" class="btn-sm btn-primary">Retour</a><br><br>
+        <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
         <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Modification de la marchandise <strong>{{ product.label }}</strong> </h2>
         <div class="row">
             <div class="col-md-8">
@@ -32,7 +32,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="">Marque</label>
-                        <input type="text" name="" id="" value="{{ product.mark.label }}" class="form-control" readonly>
+                        <input type="text" name="" id="" value="{% if product.mark.label is defined %}{{ product.mark.label }}{% endif %}" class="form-control" readonly>
                     </div>
                 </div>
                 <div class="col-md-6">

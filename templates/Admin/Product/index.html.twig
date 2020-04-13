@@ -6,6 +6,26 @@
 
 {% block stylesheets %}
     <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+    <style>
+      .btn-circle {
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        /* padding: 6px 0; */
+        font-size: 12px;
+        line-height: 1.428571429;
+        border-radius: 15px;
+      }
+      .btn-circle.btn-xl {
+        width: 100px;
+        height: 100px;
+        /* padding: 10px 16px; */
+        font-size: 10px;
+        text-align: center;
+        line-height: 1.33;
+        border-radius: 50px;
+      }
+    </style>
 {% endblock %}
 
 
@@ -38,12 +58,15 @@
   <div class="fh5co-narrow-content">
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Marchandises</h2>
     {% if is_granted('ROLE_ADMIN') %}
-      <a href="{{ path('mark') }}" class="btn-primary btn-sm">Gestion des marques de produits</a>
-      <a href="{{ path('category') }}" class="btn-primary btn-sm">Gestion des catégories</a>
-      <a href="{{ path('product.add') }}" class="btn-primary btn-sm">Ajouter une marchandise</a>
-      <a href="{{ path('impression_inventaire') }}" class="btn-primary btn-sm">Vente prévisionnelle</a>
-      <a href="{{ path('cout_total_en_stock') }}" class="btn-primary btn-sm">Valeur totale</a>
-      <a href="{{ path('impression_cout_total_en_stock') }}" class="btn-primary btn-sm"><i class="icon-edit"></i>Valeur Total</a><br><br>
+
+      <a href="{{ path('product.add') }}" title="Ajouter un produit"><button class="btn btn-primary btn-circle btn-xl" style="text-align: center">Ajouter <br> un produit</button></a>
+      <a href="{{ path('contitution_catalogue') }}" title="Constituer un catalogue de produits"><button class="btn btn-info btn-circle btn-xl">Constituer <br>un catalogue <br> de produits</button></a>
+      <a href="{{ path('mark') }}" title="Gestion des marques de produits"><button class="btn btn-default btn-circle btn-xl">Marques</button></a>
+      <a href="{{ path('category') }}" title="Gestion des catégories de produits"><button class="btn btn-info btn-circle btn-xl">Catégories</button></a>
+      <a href="{{ path('impression_inventaire') }}" title="Vente prévisionnelle"><button class="btn btn-default btn-circle btn-xl">Vente <br> Prévisionnelle</button></a>
+      <a href="{{ path('cout_total_en_stock') }}" title="Inventaire"><button class="btn btn-info btn-circle btn-xl" style="font-size: 10px;">Inventaire</button></a>
+      <a href="{{ path('impression_cout_total_en_stock') }}" title="Inventaire en PDF"><button class="btn btn-primary btn-circle btn-xl"><i class="icon-file"></i>Inventaire</button></a>
+      <br><br>
     {% endif %}
     <div class="table-responsive">
         <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
@@ -82,7 +105,7 @@
                 <td>{% if product.mark %} {{ product.mark.label }} {% endif %}</td>
                 <td>{{ product.description }}</td>
                 <td>{{ product.stock }}</td>
-                <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F CFA</td>
+                <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F</td>
                 <td>
                   <a href="{{ path('product.edit', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-edit"></i></a>
                 </td>

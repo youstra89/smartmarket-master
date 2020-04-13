@@ -5,17 +5,19 @@ namespace App\Controller\Admin;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Product;
+use App\Entity\Category;
 use App\Form\ProductType;
+use App\Entity\Informations;
 use App\Entity\ProductSearch;
 use App\Form\ProductSearchType;
 use App\Controller\FonctionsController;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 
 // Include Dompdf required namespaces
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -71,7 +73,7 @@ class AdminProductController extends AbstractController
             return $this->redirectToRoute('product');
           }
           $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
-          $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
+          $label = $product->getCategory()->getName().' '.$mark.' '.$product->getDescription();
           $product->setCreatedBy($this->getUser());
           
           /** @var UploadedFile $imageFile */
@@ -134,7 +136,7 @@ class AdminProductController extends AbstractController
             return $this->redirectToRoute('product');
           }
           $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
-          $label = $product->getCategory()->getName().' '.$mark.' - '.$product->getDescription();
+          $label = $product->getCategory()->getName().' '.$mark.' '.$product->getDescription();
           /** @var UploadedFile $imageFile */
           $imageFile = $form->get('image')->getData();
 
@@ -335,6 +337,101 @@ class AdminProductController extends AbstractController
         // Output the generated PDF to Browser (force download)
         $dompdf->stream("stock-".(new \DateTime())->format('d-m-Y H:i:s').".pdf", [
             "Attachment" => false
+        ]);
+    }
+
+    /**
+     * @Route("/impression-de-catalogue-de-produits", name="imprimer_catalogue")
+     */
+    public function imprimer_catalogue(ObjectManager $manager)
+    {
+        $idsProducts = $this->get('session')->get('idProductsProviderOrder');
+        
+        if(empty($idsProducts)){
+          $this->addFlash('warning', "Aucun produit enregistré pour le moment.");
+          return $this->redirectToRoute('contitution_catalogue');
+        }
+        $products = $manager->getRepository(Product::class)->findProductsByIds($idsProducts);
+        $info = $manager->getRepository(Informations::class)->find(1);
+
+        // $categories = $manager->getRepository(Category::class)->distinctCategories();
+        $categories = $this->categorieDesProduitsSelectionnes($products);
+        
+        // dd($categories);
+        // Configure Dompdf according to your needs
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        
+        // Instantiate Dompdf with our options
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Retrieve the HTML generated in our twig file
+        $html = $this->renderView('Admin/Product/impression-catalogue-produits.html.twig', [
+            'info'       => $info,
+            'products'   => $products,
+            'categories' => $categories
+        ]);
+        
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+        //"dompdf/dompdf": "^0.8.3",
+        
+        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser (force download)
+        $dompdf->stream("catalogue.pdf", [
+            "Attachment" => false
+        ]);
+    }
+
+    public function categorieDesProduitsSelectionnes($products)
+    {
+      $categories = [];
+      foreach ($products as $key => $value) {
+        $category = $value->getCategory();
+        if(!in_array($category, $categories))
+          $categories[] = $category;
+      }
+
+      return $categories;
+    }
+
+    /**
+     * @Route("/constitution-de-catalogue-de-produits", name="contitution_catalogue")
+     */
+    public function constitution_de_catalogue_de_produits(Request $request, ObjectManager $manager)
+    {
+        $products   = $manager->getRepository(Product::class)->allProductsByCategory();
+        $categories = $manager->getRepository(Category::class)->distinctCategories();
+
+        if($request->isMethod('post'))
+        {
+          $data = $request->request->all();
+          $token = $data['_csrf_token'];
+          if($this->isCsrfTokenValid('provider.order', $token)){
+            $idsProducts = $data["products"];
+            if(empty($idsProducts))
+            {
+              $this->addFlash('danger', 'Impossible de continuer. Vous devez obligatoirement sélectionner des produits.');
+              return $this->redirectToRoute('contitution_catalogue');
+            }
+            else{
+              // $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
+              $this->get('session')->set('idProductsProviderOrder', $idsProducts);
+              return $this->redirectToRoute('imprimer_catalogue');
+            }
+            return new Response(var_dump($data));
+          }
+        }
+        return $this->render('Admin/Product/constituer-catalogue-produits.html.twig', [
+          'current'    => 'products',
+          'products'   => $products,
+          'categories' => $categories,
         ]);
     }
 }

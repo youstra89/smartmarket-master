@@ -127,7 +127,7 @@ class Product
     public function getLabel(): ?string
     {
         $mark = !empty($this->mark) ? $this->mark->getLabel() : '';
-        return $this->category->getName().' '.$mark.' - '.$this->description;
+        return $this->category->getName().' '.$mark.' '.$this->description;
     }
 
     public function getReference(): ?string

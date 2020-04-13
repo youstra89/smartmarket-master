@@ -4,6 +4,11 @@
 {% block title %}Les catégories{% endblock %}
 
 
+{% block stylesheets %}
+    <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+
 {% block notifications %}
   {% for message in app.flashes('success') %}
     <div class="alert alert-success fade in">
@@ -33,28 +38,46 @@
   <div class="fh5co-narrow-content">
     <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
     <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Catégories</h2>
-    <a href="{{ path('category.add') }}" class="btn-sm btn-primary">Ajouter une nouvelle catégorie</a>
-    <div class="row row-bottom-padded-md mb-5">
-      {% set i = 0 %}
-      {% for category in categories %}
-        {% set i = i + 1 %}
-        <div class="col-md-3 col-sm-6 col-padding text-center animate-box card" style="width: 18rem">
-          <div class="card-body">
-            <h5 class="card-title" style="margin: 0px">{{ category.name }}</h5>
-            <h6 class="card-subtitle text-muted" style="margin: 0px">Catégorie {{ i }}</h6>
-            <a href="{{ path('category.edit', {id: category.id}) }}" class="card-link">Edition</a>
-          </div>
-        </div>
-      {% endfor %}
+    <a href="{{ path('category.add') }}" class="btn-sm btn-primary">Ajouter une nouvelle catégorie</a><br><br>
+    <div class="table-responsive">
+      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Catégorie</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>N°</th>
+            <th>Catégorie</th>
+            <th>Actions</th>
+          </tr>
+        </tfoot>
+        <tbody>
+          {% set i = 0 %}
+          {% for category in categories %}
+            {% set i = i + 1 %}
+            <tr>
+              <td>{{ i }}</td>
+              <td>{{ category.name }}</td>
+              <td>
+                <a href="{{ path('category.edit', {id: category.id}) }}" title="Modifier cette catégorie"><i class="icon-edit"></i></a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 {% endblock %}
 
 
 {% block javascript %}
-  <script>
-    $(document).ready(function(){
-      // $(".alert").alert('close');
-    })
-  </script>
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/datatables-demo.js') }}"></script>
 {% endblock %}

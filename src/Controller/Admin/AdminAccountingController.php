@@ -218,20 +218,19 @@ class AdminAccountingController extends AbstractController
         $nbrCommandes         = $repoCustomerCommande->nombreCommandesDesDebiteurs();
         $reglements           = $repoSettlement->reglementsIncomplets();
         $restesAPayer         = $repoSettlement->restesAPayer();
+        $restes               = [];
+        $customers            = [];
         // dd($restesAPayer);
         
-        if (!empty($reglements)) {
-          // On va sélectionner les différents clients
-          $customers = [];
-          foreach ($commandes as $value) {
-            $customer               = $value->getCustomer();
-            $customerId             = $customer->getId();
-            $customers[$customerId] = $customer;
-          }
-          
-          foreach ($restesAPayer as $value) {
-            $restes[$value["id"]] = $value["reste"];
-          }
+        // On va sélectionner les différents clients
+        foreach ($commandes as $value) {
+          $customer               = $value->getCustomer();
+          $customerId             = $customer->getId();
+          $customers[$customerId] = $customer;
+        }
+        
+        foreach ($restesAPayer as $value) {
+          $restes[$value["id"]] = $value["reste"];
         }
         // dump($restesAPayer);
         return $this->render('Admin/Accounting/comptabilite-debit.html.twig', [
@@ -258,20 +257,19 @@ class AdminAccountingController extends AbstractController
         $reglements           = $repoSettlement->reglementsIncomplets();
         $nbrCommandes         = $repoProviderCommande->nombreCommandesDesCreanciers();
         $restesAPayer         = $repoSettlement->restesAPayer();
-        if (!empty($reglements)) {
-          // On va sélectionner les différents clients
-          $providers = [];
-          foreach ($commandes as $value) {
-            $provider               = $value->getProvider();
-            $providerId             = $provider->getId();
-            $providers[$providerId] = $provider;
-          }
-          
-          foreach ($restesAPayer as $value) {
-            $restes[$value["id"]] = $value["reste"];
-          }
+        $restes               = [];
+        $providers            = [];
+        // On va sélectionner les différents clients
+        foreach ($commandes as $value) {
+          $provider               = $value->getProvider();
+          $providerId             = $provider->getId();
+          $providers[$providerId] = $provider;
         }
-        // dump($reglements);
+        
+        foreach ($restesAPayer as $value) {
+          $restes[$value["id"]] = $value["reste"];
+        }
+        // dump($providers);
         return $this->render('Admin/Accounting/comptabilite-credit.html.twig', [
           'achats'       => $commandes,
           'reglements'   => $reglements,
@@ -284,7 +282,7 @@ class AdminAccountingController extends AbstractController
 
 
     /**
-     * @Route("/impression-des-creances", name="print_dettes")
+     * @Route("/impression-des-dettes", name="print_dettes")
      */
     public function impression_des_dettes(ObjectManager $manager)
     {
@@ -295,20 +293,19 @@ class AdminAccountingController extends AbstractController
         $nbrCommandes         = $repoCustomerCommande->nombreCommandesDesDebiteurs();
         $reglements           = $repoSettlement->reglementsIncomplets();
         $restesAPayer         = $repoSettlement->restesAPayer();
+        $restes               = [];
+        $customers            = [];
         // dd($restesAPayer);
         
-        if (!empty($reglements)) {
-          // On va sélectionner les différents clients
-          $customers = [];
-          foreach ($commandes as $value) {
-            $customer               = $value->getCustomer();
-            $customerId             = $customer->getId();
-            $customers[$customerId] = $customer;
-          }
-          
-          foreach ($restesAPayer as $value) {
-            $restes[$value["id"]] = $value["reste"];
-          }
+        // On va sélectionner les différents clients
+        foreach ($commandes as $value) {
+          $customer               = $value->getCustomer();
+          $customerId             = $customer->getId();
+          $customers[$customerId] = $customer;
+        }
+        
+        foreach ($restesAPayer as $value) {
+          $restes[$value["id"]] = $value["reste"];
         }
        
         $date = $this->dateEnFrancais((new \DateTime())->format("Y-m-d"));;
@@ -362,18 +359,17 @@ class AdminAccountingController extends AbstractController
         $reglements           = $repoSettlement->reglementsIncomplets();
         $nbrCommandes         = $repoProviderCommande->nombreCommandesDesCreanciers();
         $restesAPayer         = $repoSettlement->restesAPayer();
-        if (!empty($reglements)) {
-          // On va sélectionner les différents clients
-          $providers = [];
-          foreach ($commandes as $value) {
-            $provider               = $value->getProvider();
-            $providerId             = $provider->getId();
-            $providers[$providerId] = $provider;
-          }
-          
-          foreach ($restesAPayer as $value) {
-            $restes[$value["id"]] = $value["reste"];
-          }
+        $restes               = [];
+        $providers            = [];
+        // On va sélectionner les différents clients
+        foreach ($commandes as $value) {
+          $provider               = $value->getProvider();
+          $providerId             = $provider->getId();
+          $providers[$providerId] = $provider;
+        }
+        
+        foreach ($restesAPayer as $value) {
+          $restes[$value["id"]] = $value["reste"];
         }
 
         $date = $this->dateEnFrancais((new \DateTime())->format("Y-m-d"));;

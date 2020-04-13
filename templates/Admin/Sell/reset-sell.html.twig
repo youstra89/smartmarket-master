@@ -38,8 +38,8 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="animate-box" data-animate-effect="fadeInLeft">Retour de marchandise - Vente {{ commande.reference }} du {{ commande.date|date('d-m-Y') }}</h2>
     <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Retour de marchandise pour la vente <strong>N°{{ commande.reference }}</strong> du <strong>{{ commande.date|date('d-m-Y') }}</strong></h2>
     <div class="row">
       <div class="col-md-4">
         <h3>Client</h3>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	      <link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
+        <style>
+            @font-face {
+                font-family: 'Elegance';
+                font-weight: normal;
+                font-style: normal;
+                font-variant: normal;
+                src: url("http://eclecticgeek.com/dompdf/fonts/Elegance.ttf") format("truetype");
+            }
+
+            /** Define the margins of your page **/
+            @page {
+                margin: 100px 50px;
+            }
+
+            header {
+                position: fixed;
+                top: -60px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+
+                /** Extra personal styles **/
+                color: gray;
+                text-align: left;
+                padding-left: 20px;
+                font-size: .9em
+            }
+
+            footer {
+                position: fixed; 
+                bottom: -60px; 
+                left: 0px; 
+                right: 0px;
+                height: 50px; 
+
+                /** Extra personal styles **/
+                color: darkGray;
+                text-align: center;
+                font-size: 0.5em;
+            }
+
+            .main.container{
+              padding-top: 30px;
+            }
+
+            .niveau{
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              grid-column-gap: 5px;
+            }
+
+            .classe-n{
+                background: rgba(255, 0, 0, 0.233);
+                border: 1px solid rgba(5, 239, 247, 0.993);
+                font-size: 1.3em;
+                font-weight: bold;
+                color: rgba(0, 153, 255, 0.767);
+                padding: 15px;
+                margin: 5px;
+                width: 100%;
+            }
+
+            .classe{
+                border: 1px solid rgba(13, 148, 141, 0.459);
+                font-size: 1.3em;
+                font-weight: bold;
+                padding: 15px;
+                margin: 5px;
+                width: 100%;
+            }
+
+            .classe:hover{
+                background: rgba(13, 148, 141, 0.233);
+                border-radius: 5px;
+                font-size: 1.4em;
+            }
+
+            .numero{
+              text-align: center;
+            }
+
+            .row{
+              margin: 0px;
+              padding: 0px;
+              width: 100%;
+            }
+
+            .col{
+              width: 32%;
+              display: inline-block;
+            }
+
+            p{
+              margin: 0px;
+              padding: 5px;
+            }
+
+            .info{
+              font-weight: bold;
+            }
+
+            /* body{
+              display: flex;
+              flex-direction: column-reverse;
+            } */
+            .numero{
+              text-align: center;
+            }
+
+
+            .info-product{
+              width: 32%;
+              display: inline-block;
+              height: 200px;
+              /* float: left; */
+              vertical-align : top;
+              margin-top: 1px;
+              /* padding: 1px; */
+              /* clear: both */
+              /* word-break: keep-all  */
+            }
+
+            .product-image{
+              width: auto; 
+              height: 95%;
+              /* max-width: 100px;  */
+              
+            }
+
+            .vl{
+              border: none;
+              border-left: 1px solid hsla(200, 10%, 50%, 100);
+              height: 100vh;
+              width: 1px;
+            }
+            
+        </style>
+        <meta charset="UTF-8">
+        <title>Catalogue de produits {{ 'now'|date('d-m-Y H:i:s') }} | Smart Market</title>
+    </head>
+    <body>
+        {# Inclusion de l'entête de du pied de page #}
+        {{ include('header.html.twig') }}
+        {% for cat in categories %}
+          {% set i = 0 %}
+          <strong>{{ cat.name }}</strong>
+          <div class="content">
+            {% for item in products if item.category.id == cat.id %}
+              {% set i = i + 1 %}
+              <div class="info-product">
+                <div height="100%">
+                  <div style="border: 0px solid black; text-align: center; height: 150px; vertical-align: middle;">
+                    {% if item.image %}
+                      <img src=".{{ asset('uploads/images/' ~ item.image) }}" alt="" class="product-image">
+                    {% else %}
+                      <p style="font-style: italic; padding: 50px; color: gray">Pas d'image disponible </p>
+                    {% endif %}
+                  </div>
+                  <hr style="width: 75%;">
+                  <div style="border: 0px solid black; line-height: 8px; text-align: center; font-family: Elegance; font-size: .8em">{{ item.label }}</div>
+                  <hr style="width: 50%;">
+                  <div style="border: 0px solid black; line-height: 8px; text-align: center; font-family: Elegance; font-size: .8em">{{ item.unitPrice|number_format(0, ',', ' ') }} F</div>
+                </div>
+              </div>
+              {% if i % 3 == 0%}<br style="line-height: 1px"><br style="line-height: 50px">{% else %} {#<hr class="vl">#} {% endif %}
+            {% endfor %}
+          </div><br><br>
+        {% endfor %}
+        {# <div class="content">
+          <table cellspacing="0">
+            <thead>
+              <tr>
+                <th class="numero">N°</th>
+                <th class="">Référence</th>
+                <th class="">Désignation</th>
+                <th class="">Stock</th>
+                <th class="">Prix de vente</th>
+                <th class="">Sous-total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% set total = 0 %}
+              {% for product in products %}
+                {% set i = i + 1 %}
+                {% set sousTotal = product.stock * product.unitPrice %}
+                {% set total = total + sousTotal %}
+                <tr>
+                  <td class="numero">{{ i }}</td>
+                  <td>{{ product.reference }}</td>
+                  {% set nom = product.label %}
+                  {% if nom|length > 30 %}
+                    {% set nom = nom|slice(0, 30) ~ '.' %}
+                  {% endif %}
+                  <td>{{ product.label }}</td>
+                  <td>{{ product.stock }}</td>
+                  <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F</td>
+                  <td>{{ sousTotal|number_format(0, ',', ' ') }} F</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th colspan="5">Total</th>
+                <th>{{ total|number_format(0, ',', ' ') }} F</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div> #}
+    </body>
+</html>

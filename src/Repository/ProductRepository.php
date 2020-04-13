@@ -90,6 +90,20 @@ class ProductRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findProductsByIds(array $idsProducts)
+    {
+        $query = $this->createQueryBuilder('p');
+        $query = $query
+            ->where('p.is_deleted = :status')
+            ->andWhere('p.id IN (:ids)')
+            ->setParameter('status', false)
+            ->setParameter('ids', $idsProducts)
+
+        ;
+
+        return $query->getQuery()->getResult();
+    }
+
     // /**
     //  * @return Product[] Returns an array of Product objects
     //  */

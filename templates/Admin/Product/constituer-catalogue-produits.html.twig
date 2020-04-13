@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 
-{% block title %}Ajout de marchandises pour l'achat du {{ commande.date|date('d-m-Y') }}{% endblock %}
+{% block title %}Constitution de catalogue de produits{% endblock %}
 
 
 {% block notifications %}
@@ -31,8 +31,8 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour l'achat du {{ commande.date|date('d-m-Y') }}</h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Constitution de catalogue de produits</h2>
     {% if products|length != 0 %}
       <form action="" method="post">
         {% for category in categories %}
@@ -48,12 +48,38 @@
             {% endfor %}
           </div><br><br>
         {% endfor %}
-        <input type="hidden" name="commandeId" value="{{ commande.id }}">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('provider.order') }}"/>
         <button type="submit" name="valider" id="valider" class="btn btn-primary btn-sm" onclick="submitForm(this);">Valider</button>
       </form>
     {% endif %}
   </div>
+  {#<script type="text/javascript">
+      function checkAllBox(ref, name) {
+          var form = ref;
+          
+          while (form.parentNode && form.nodeName.toLowerCase() != 'form') { form = form.parentNode; }
+          
+          var elements = form.getElementsByTagName('input');
+          
+          for (var i = 0; i < elements.length; i++) {
+              if (elements[i].type == 'checkbox' && elements[i].name == name) {
+                  elements[i].checked = ref.checked;
+              }
+          }
+      }
+  </script>
+      
+  <form name="monForm">
+  <input type="checkbox" onclick="checkAllBox(this, 'choix[]');" />Choix <br>
+  <input type="checkbox" onclick="checkAllBox(this, 'test[]');" />Test
+  <br><br><br>
+  <input type="checkbox" name="choix[]" value="1">Teste 1<br>
+  <input type="checkbox" name="choix[]" value="2">Teste 2<br>
+  <input type="checkbox" name="choix[]" value="3">Teste 3<br>
+  <input type="checkbox" name="choix[]" value="4">Teste 4<br>
+  <input type="checkbox" name="test[]" value="5">Choix 1<br>
+  <input type="checkbox" name="test[]" value="6">Choix 2
+  </form>#}
 {% endblock %}
 
 

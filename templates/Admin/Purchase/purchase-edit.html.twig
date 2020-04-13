@@ -9,7 +9,7 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Modification de la commande <strong>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</strong> </h2>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Modification de la commande <strong>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</strong> </h2>
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     {{ include('Admin/Purchase/_purchase.html.twig', {button: 'Editer'}) }}
   </div>

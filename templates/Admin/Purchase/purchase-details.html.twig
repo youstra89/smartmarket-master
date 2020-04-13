@@ -38,8 +38,8 @@
 
 {% block body %}
   <div class="fh5co-narrow-content">
-    <h2>Détails commande fournisseur <strong>N°{{ commande.reference }}</strong> du <strong>{{ commande.date|date('d-m-Y') }}</strong></h2>
     <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
+    <h2 class="animate-box" data-animate-effect="fadeInLeft">Détails commande fournisseur <strong>N°{{ commande.reference }}</strong> du <strong>{{ commande.date|date('d-m-Y') }}</strong></h2>
     <div class="row">
       <div class="col-lg-4 col-md-4 col-sm-6">
         <span style="font-weight: bold; font-size: 2em">Charges</span><br>
@@ -99,7 +99,7 @@
                 <tbody>
                   <tr>
                     <td>{{ i }}</td>
-                    <td>{{ item.product.category.name }} {{ item.product.mark.label }} - {{ item.product.description }}</td>
+                    <td>{{ item.product.label }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
                     <td>{{ item.minimumSellingPrice|number_format(0, ',', ' ') }} F</td>
