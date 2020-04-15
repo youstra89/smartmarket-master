@@ -62,7 +62,7 @@ class AdminResetSellController extends AbstractController
                     if($prod->getProduct()->getId() == $key){
                       $montantDepense     = $quantity * $prod->getUnitPrice();
                       $typeDepense = $manager->getRepository(TypeDepense::class)->find(1);
-                      $descriptionDepense = "Retour de ".$quantity." ".$product->getLabel()." de la commande numéro ".$commande->getReference();
+                      $descriptionDepense = "Retour de ".$quantity." ".$product->label()." de la commande numéro ".$commande->getReference();
                       $date = new \DateTime();
                       $depense = new Depense();
                       $depense->setType($typeDepense);
@@ -111,7 +111,7 @@ class AdminResetSellController extends AbstractController
         $ids = $this->get('session')->get('idProductsForSelling');
         if($product->getStock() == 0)
         {
-          $this->addFlash('warning', '<strong>'.$product->getLabel().'</strong> est fini en stock.');
+          $this->addFlash('warning', '<strong>'.$product->label().'</strong> est fini en stock.');
           return $this->redirectToRoute('customer.order.add');
         }
         // On va vérifier la session pour voir si le produit n'est pas déjà sélectionné
@@ -119,7 +119,7 @@ class AdminResetSellController extends AbstractController
 
           foreach ($ids as $key => $value) {
             if($value === $productId){
-              $this->addFlash('warning', '<strong>'.$product->getLabel().'</strong> est déjà sélectioné(e).');
+              $this->addFlash('warning', '<strong>'.$product->label().'</strong> est déjà sélectioné(e).');
               return $this->redirectToRoute('customer.order.add');
             }
           }
@@ -129,7 +129,7 @@ class AdminResetSellController extends AbstractController
         // Set value back to session
         $this->get('session')->set('idProductsForSelling', $ids);
 
-        $this->addFlash('success', '<strong>'.$product->getLabel().'</strong> ajouté(e) à la vente.');
+        $this->addFlash('success', '<strong>'.$product->label().'</strong> ajouté(e) à la vente.');
         return $this->redirectToRoute('customer.order.add');
     }
 }

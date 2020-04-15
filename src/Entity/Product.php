@@ -124,7 +124,7 @@ class Product
         return $this->id;
     }
 
-    public function getLabel(): ?string
+    public function label(): ?string
     {
         $mark = !empty($this->mark) ? $this->mark->getLabel() : '';
         return $this->category->getName().' '.$mark.' '.$this->description;

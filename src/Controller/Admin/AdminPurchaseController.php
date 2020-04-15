@@ -93,14 +93,14 @@ class AdminPurchaseController extends AbstractController
 
                 if($quantity <= 0)
                 {
-                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->label().'</strong> incorrecte.');
                   // return new Response(var_dump("Quantité"));
                   return $this->redirectToRoute('unique_form_provider_order');
                 }
                 
                 if($value <= 0)
                 {
-                  $this->addFlash('danger', 'Prix d\'achat de <strong>'.$product->getLabel().'</strong> incorrect.');
+                  $this->addFlash('danger', 'Prix d\'achat de <strong>'.$product->label().'</strong> incorrect.');
                   // return new Response(var_dump("Prix"));
                   return $this->redirectToRoute('unique_form_provider_order');
                 }

@@ -217,18 +217,6 @@ class ProviderSettlement
         return $this;
     }
 
-    public function getReference(): ?string
-    {
-        return $this->reference;
-    }
-
-    public function setReference(string $reference): self
-    {
-        $this->reference = $reference;
-
-        return $this;
-    }
-
     public function getNumber(): ?int
     {
         return $this->number;

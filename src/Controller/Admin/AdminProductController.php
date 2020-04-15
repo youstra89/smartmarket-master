@@ -69,7 +69,7 @@ class AdminProductController extends AbstractController
           // $product->setReference($reference);
           if($product->getPurchasingPrice() > $product->getUnitPrice())
           {
-            $this->addFlash('error', 'Impossible de continuer. Prix d\'achat supérieur au prix de vente.');
+            $this->addFlash('danger', 'Impossible de continuer. Prix d\'achat supérieur au prix de vente.');
             return $this->redirectToRoute('product');
           }
           $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';

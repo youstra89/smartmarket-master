@@ -86,7 +86,7 @@ class AdminSellController extends AbstractController
     $data = [
       "id"               => $product->getId(),
       "reference"        => $product->getReference(),
-      "label"            => $product->getLabel(),
+      "label"            => $product->label(),
       "stock"            => $product->getStock(),
       "unit_price"       => $product->getUnitPrice(),
       "purchasing_price" => $product->getPurchasingPrice(),
@@ -177,21 +177,21 @@ class AdminSellController extends AbstractController
 
                 if($quantity <= 0)
                 {
-                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->label().'</strong> incorrecte.');
                   // return new Response(var_dump("Quantité"));
                   return $this->redirectToRoute('unique_form_for_selling');
                 }
                 
                 if($value <= 0)
                 {
-                  $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
+                  $this->addFlash('danger', 'Prix de <strong>'.$product->label().'</strong> incorrect.');
                   // return new Response(var_dump("Prix"));
                   return $this->redirectToRoute('unique_form_for_selling');
                 }
                 
                 if($stockQte < 0)
                 {
-                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> indisponible en stock.');
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->label().'</strong> indisponible en stock.');
                   // return new Response(var_dump("Stock"));
                   return $this->redirectToRoute('unique_form_for_selling');
                 }
@@ -375,14 +375,14 @@ class AdminSellController extends AbstractController
 
                 if($quantity <= 0)
                 {
-                  $this->addFlash('danger', 'Quantité de <strong>'.$product->getLabel().'</strong> incorrecte.');
+                  $this->addFlash('danger', 'Quantité de <strong>'.$product->label().'</strong> incorrecte.');
                   // return new Response(var_dump("Quantité"));
                   return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
                 }
                 
                 if($value <= 0)
                 {
-                  $this->addFlash('danger', 'Prix de <strong>'.$product->getLabel().'</strong> incorrect.');
+                  $this->addFlash('danger', 'Prix de <strong>'.$product->label().'</strong> incorrect.');
                   // return new Response(var_dump("Prix"));
                   return $this->redirectToRoute('prepare_sell_for_customer', ["id" => $id]);
                 }

@@ -39,7 +39,7 @@ class ProviderCommandeRepository extends ServiceEntityRepository
       if($search->getProducts()->count() > 0){
         foreach($search->getProducts() as $k => $option){
           $query = $query
-          ->andWhere(":product$k MEMBER OF p.providerCommandeDetails")
+          ->andWhere(":product$k MEMBER OF p.product")
           ->setParameter("product$k", $option);
         }
       }
