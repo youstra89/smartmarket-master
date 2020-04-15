@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Provider;
 use App\Form\ProviderType;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -21,7 +21,7 @@ class AdminProviderController extends AbstractController
    * @Route("/", name="provider")
    * @IsGranted("ROLE_ADMIN")
    */
-   public function index(ObjectManager $manager)
+   public function index(EntityManagerInterface $manager)
    {
        $providers = $manager->getRepository(Provider::class)->findAll();
        return $this->render('Admin/Provider/index.html.twig', [
@@ -34,7 +34,7 @@ class AdminProviderController extends AbstractController
      * @Route("/add", name="provider.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager, FonctionsController $fonctions)
+    public function add(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions)
     {
         $provider = new Provider();
         $form = $this->createForm(ProviderType::class, $provider);
@@ -66,7 +66,7 @@ class AdminProviderController extends AbstractController
      * @IsGranted("ROLE_ADMIN")
      * @param Provider $provider
      */
-    public function edit(Request $request, ObjectManager $manager, Provider $provider)
+    public function edit(Request $request, EntityManagerInterface $manager, Provider $provider)
     {
         $form = $this->createForm(ProviderType::class, $provider);
         $form->handleRequest($request);

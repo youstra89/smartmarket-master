@@ -9,7 +9,7 @@ use App\Form\CustomerType;
 use App\Entity\Informations;
 use App\Controller\FonctionsController;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -25,7 +25,7 @@ class AdminCustomerController extends AbstractController
    * @Route("/", name="customer")
    * @IsGranted("ROLE_ADMIN")
    */
-   public function index(ObjectManager $manager)
+   public function index(EntityManagerInterface $manager)
    {
        $customers = $manager->getRepository(Customer::class)->findAll();
        return $this->render('Admin/Customer/index.html.twig', [
@@ -38,7 +38,7 @@ class AdminCustomerController extends AbstractController
      * @Route("/add", name="customer.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager, FonctionsController $fonctions)
+    public function add(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions)
     {
         $customer = new Customer();
         $form = $this->createForm(CustomerType::class, $customer);
@@ -95,7 +95,7 @@ class AdminCustomerController extends AbstractController
      * @IsGranted("ROLE_ADMIN")
      * @param Customer $customer
      */
-    public function edit(Request $request, ObjectManager $manager, Customer $customer)
+    public function edit(Request $request, EntityManagerInterface $manager, Customer $customer)
     {
         $form = $this->createForm(CustomerType::class, $customer);
         $form->handleRequest($request);
@@ -162,7 +162,7 @@ class AdminCustomerController extends AbstractController
     /**
      * @Route("/impression-liste-des-clients", name="impression_customers")
      */
-    public function inventaire_de_stock_de_produits(ObjectManager $manager)
+    public function inventaire_de_stock_de_produits(EntityManagerInterface $manager)
     {
         $info = $manager->getRepository(Informations::class)->find(1);
         $customers = $manager->getRepository(Customer::class)->findBy(["is_deleted" => false]);

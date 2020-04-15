@@ -11,7 +11,7 @@ use App\Entity\Informations;
 use App\Entity\CustomerCommande;
 use App\Service\CheckConnectedUser;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -26,7 +26,7 @@ class AdminDepenseController extends AbstractController
     /**
      * @Route("/", name="depenses")
      */
-    public function index(ObjectManager $manager, CheckConnectedUser $checker)
+    public function index(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -39,7 +39,7 @@ class AdminDepenseController extends AbstractController
     /**
      * @Route("/add", name="depenses_add")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, EntityManagerInterface $manager)
     {
         $depense = new Depense();
         $form = $this->createForm(DepenseType::class, $depense);
@@ -80,7 +80,7 @@ class AdminDepenseController extends AbstractController
     /**
      * @Route("/depenses-journalieres-du-mois", name="depenses_du_mois")
      */
-    public function depenses_du_mois(Request $request, ObjectManager $manager, CheckConnectedUser $checker)
+    public function depenses_du_mois(Request $request, EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -113,7 +113,7 @@ class AdminDepenseController extends AbstractController
     /**
      * @Route("/depenses-mensuelles", name="depenses_mensuelles")
      */
-    public function depenses_mensuelles(ObjectManager $manager, CheckConnectedUser $checker)
+    public function depenses_mensuelles(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -137,9 +137,9 @@ class AdminDepenseController extends AbstractController
     }
 
     /**
-     * @Route("/comptabilite-les-débits", name="accountingdebtor")
+     * @Route("/comptabilite-les-debits", name="accountingdebtor")
      */
-    public function debits(ObjectManager $manager, CheckConnectedUser $checker)
+    public function debits(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -160,7 +160,7 @@ class AdminDepenseController extends AbstractController
     /**
      * @Route("/liste-des-depenses-menseulles", name="print_depenses_mensuelles")
      */
-    public function liste_des_depenses_menseulles(ObjectManager $manager, Request $request)
+    public function liste_des_depenses_menseulles(EntityManagerInterface $manager, Request $request)
     {
         $info = $manager->getRepository(Informations::class)->find(1);
         

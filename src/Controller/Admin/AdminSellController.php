@@ -16,12 +16,11 @@ use App\Form\CustomerCommandeSearchType;
 use Doctrine\Common\Collections\Collection;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/ventes")
@@ -32,7 +31,7 @@ class AdminSellController extends AbstractController
    * @Route("/", name="sell")
    * @IsGranted("ROLE_VENTE")
    */
-  public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+  public function index(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
   {
     // dd($_SERVER['HTTP_USER_AGENT']);
     $search = new CustomerCommandeSearch();
@@ -56,7 +55,7 @@ class AdminSellController extends AbstractController
    * @Route("/preparing-sells", name="preparing_sells")
    * @IsGranted("ROLE_VENTE")
    */
-  public function preparing_sells(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+  public function preparing_sells(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
   {
     $search = new CustomerCommandeSearch();
     $form   = $this->createForm(CustomerCommandeSearchType::class, $search);
@@ -80,7 +79,7 @@ class AdminSellController extends AbstractController
    * @Route("/select-product/{id}", name="get_product")
    * @IsGranted("ROLE_VENTE")
    */
-  public function get_product(Request $request, ObjectManager $manager, int $id)
+  public function get_product(Request $request, EntityManagerInterface $manager, int $id)
   {
     $product = $manager->getRepository(Product::class)->find($id);
     $data = [
@@ -99,7 +98,7 @@ class AdminSellController extends AbstractController
    * @Route("/select-product-by-reference/{reference}", name="get_product_by_reference")
    * @IsGranted("ROLE_VENTE")
    */
-  public function get_product_by_reference(Request $request, ObjectManager $manager, string $reference)
+  public function get_product_by_reference(Request $request, EntityManagerInterface $manager, string $reference)
   {
     $product = $manager->getRepository(Product::class)->findByReference($reference);
     $data = [];
@@ -108,7 +107,7 @@ class AdminSellController extends AbstractController
       $data = [
         "id"               => $product[0]->getId(),
         "reference"        => $product[0]->getReference(),
-        "label"            => $product[0]->getLabel(),
+        "label"            => $product[0]->label(),
         "stock"            => $product[0]->getStock(),
         "unit_price"       => $product[0]->getUnitPrice(),
         "purchasing_price" => $product[0]->getPurchasingPrice(),
@@ -122,7 +121,7 @@ class AdminSellController extends AbstractController
      * @Route("/unique-form-for-selling", name="unique_form_for_selling")
      * @IsGranted("ROLE_VENTE")
      */
-    public function unique_form_for_selling(Request $request, ObjectManager $manager)
+    public function unique_form_for_selling(Request $request, EntityManagerInterface $manager)
     {
       $customers = $manager->getRepository(Customer::class)->findAll();
       $products = $manager->getRepository(Product::class)->findAll();
@@ -240,7 +239,7 @@ class AdminSellController extends AbstractController
      * @Route("/edit-sell/{id}", name="edit_sell")
      * @param CustomerCommande $commande
      */
-    public function edit_sell(Request $request, ObjectManager $manager, int $id, CustomerCommande $commande)
+    public function edit_sell(Request $request, EntityManagerInterface $manager, int $id, CustomerCommande $commande)
     {
       if(count($commande->getSettlements()) > 1)
         return $this->redirectToRoute('customer.order.details', ["id" => $id]);
@@ -332,7 +331,7 @@ class AdminSellController extends AbstractController
      * @IsGranted("ROLE_VENTE")
      * @param Customer $customer
      */
-    public function prepare_sell_for_customer(Request $request, ObjectManager $manager, Customer $customer, int $id)
+    public function prepare_sell_for_customer(Request $request, EntityManagerInterface $manager, Customer $customer, int $id)
     {
       $products = $manager->getRepository(Product::class)->findAll();
 
@@ -427,7 +426,7 @@ class AdminSellController extends AbstractController
      * @Route("/deliver-customer-commande/{id}", name="deliver_customer_commande", requirements={"id"="\d+"})
      * @param CustomerCommande $commande
      */
-    public function deliver_customer_commande(Request $request, ObjectManager $manager, CustomerCommande $commande, int $id)
+    public function deliver_customer_commande(Request $request, EntityManagerInterface $manager, CustomerCommande $commande, int $id)
     {
       $livraisonPossible = true;
       $products = $commande->getProduct();
@@ -480,7 +479,7 @@ class AdminSellController extends AbstractController
       ]);
     }
 
-    public function verification_stock_produits(ObjectManager $manager, Collection $products)
+    public function verification_stock_produits(EntityManagerInterface $manager, Collection $products)
     {
       $stocks = [];
       foreach ($products as $key => $value) {
@@ -510,7 +509,7 @@ class AdminSellController extends AbstractController
      * @IsGranted("ROLE_VENTE")
      * @param CustomerCommande $commande
      */
-    public function settlement(Request $request, int $id, CustomerCommande $commande, ObjectManager $manager)
+    public function settlement(Request $request, int $id, CustomerCommande $commande, EntityManagerInterface $manager)
     {
       if ($commande->getEnded() == true) {
         $this->addFlash('warning', 'Cette commande est déjà soldée.');
@@ -616,7 +615,7 @@ class AdminSellController extends AbstractController
      * @IsGranted("ROLE_VENTE")
      * @param Settlement $settlement
      */
-    public function edit_settlement(Request $request, int $id, Settlement $settlement, ObjectManager $manager)
+    public function edit_settlement(Request $request, int $id, Settlement $settlement, EntityManagerInterface $manager)
     {
       $commande   = $settlement->getCommande();
       $commandeId = $commande->getId();
@@ -703,7 +702,7 @@ class AdminSellController extends AbstractController
       return $obj -> getAmount();
     }
 
-    public function generateInvoiceReference(ObjectManager $manager)
+    public function generateInvoiceReference(EntityManagerInterface $manager)
     {
       $lastNumber = $manager->getRepository(Settlement::class)->lastNumber();
       $reference = $lastNumber.'-'.(new \DateTime())->format("His-dmY");
@@ -764,7 +763,7 @@ class AdminSellController extends AbstractController
    * @Route("/delete-commande/{id}", name="delete_commande", methods="GET|POST", requirements={"id"="\d+"})
    * @param CustomerCommande $commande
    */
-  public function delete_commande(Request $request, ObjectManager $manager, CustomerCommande $commande, int $id)
+  public function delete_commande(Request $request, EntityManagerInterface $manager, CustomerCommande $commande, int $id)
   {
     $token = $request->get('_csrf_token');
     if($this->isCsrfTokenValid('delete_commande', $token))
@@ -810,7 +809,7 @@ class AdminSellController extends AbstractController
      * @param CustomerCommande $commande
      * @IsGranted("ROLE_VENTE")
      */
-    public function facture_client(int $id, int $settlementId, ObjectManager $manager, CustomerCommande $commande)
+    public function facture_client(int $id, int $settlementId, EntityManagerInterface $manager, CustomerCommande $commande)
     {
       $info = $manager->getRepository(Informations::class)->find(1);
       

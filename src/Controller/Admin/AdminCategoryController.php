@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Category;
 use App\Form\CategoryType;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +20,7 @@ class AdminCategoryController extends AbstractController
      * @Route("/", name="category")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function index(ObjectManager $manager)
+    public function index(EntityManagerInterface $manager)
     {
         $categories = $manager->getRepository(Category::class)->findAll();
         return $this->render('Admin/Category/index.html.twig', [
@@ -33,7 +33,7 @@ class AdminCategoryController extends AbstractController
      * @Route("/add", name="category.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, EntityManagerInterface $manager)
     {
         $category = new Category();
         $form = $this->createForm(CategoryType::class, $category);
@@ -67,7 +67,7 @@ class AdminCategoryController extends AbstractController
      * @IsGranted("ROLE_ADMIN")
      * @param Category $category
      */
-    public function edit(Request $request, ObjectManager $manager, Category $category)
+    public function edit(Request $request, EntityManagerInterface $manager, Category $category)
     {
       $form = $this->createForm(CategoryType::class, $category);
       $form->handleRequest($request);

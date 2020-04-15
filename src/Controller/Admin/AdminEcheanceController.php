@@ -6,7 +6,7 @@ use App\Entity\Echeance;
 use App\Entity\Settlement;
 use App\Entity\CustomerCommande;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -21,7 +21,7 @@ class AdminEcheanceController extends AbstractController
     /**
      * @Route("/", name="echeances")
      */
-    public function index(ObjectManager $manager)
+    public function index(EntityManagerInterface $manager)
     {
         $echeances = $manager->getRepository(Echeance::class)->toutesLesEcheances();
         $dates = $manager->getRepository(Echeance::class)->differentesDatesEcheances();
@@ -37,7 +37,7 @@ class AdminEcheanceController extends AbstractController
      * @Route("/add/{id}", name="echeance_add", requirements={"id"="\d+"})
      * @param CustomerCommande $commande
      */
-    public function add(Request $request, ObjectManager $manager, CustomerCommande $commande, int $id)
+    public function add(Request $request, EntityManagerInterface $manager, CustomerCommande $commande, int $id)
     {
       if(null === $commande->getCustomer())
       {
@@ -90,7 +90,7 @@ class AdminEcheanceController extends AbstractController
      * @Route("/edit/{id}", name="echeance_edit", requirements={"id"="\d+"})
      * @param Echeance $echeance
      */
-    public function edit(Request $request, ObjectManager $manager, Echeance $echeance, int $id)
+    public function edit(Request $request, EntityManagerInterface $manager, Echeance $echeance, int $id)
     {
       // dump($echeance);
       if($request->isMethod('post'))
@@ -128,7 +128,7 @@ class AdminEcheanceController extends AbstractController
      * @Route("/enregistrer-un-versement-echeance/{id}", name="payer_echeance", requirements={"id"="\d+"})
      * @param Echeance $echeance
      */
-    public function enregistrer_un_versement(Request $request, ObjectManager $manager, Echeance $echeance)
+    public function enregistrer_un_versement(Request $request, EntityManagerInterface $manager, Echeance $echeance)
     {
       if (setlocale(LC_TIME, 'fr_FR') == '') {
         $format_jour = '%#d';

@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Country;
 use App\Form\CountryType;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +20,7 @@ class AdminCountryController extends AbstractController
      * @Route("/", name="country")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function index(ObjectManager $manager)
+    public function index(EntityManagerInterface $manager)
     {
         $countries = $manager->getRepository(Country::class)->findAll();
         return $this->render('Admin/Country/index.html.twig', [
@@ -33,7 +33,7 @@ class AdminCountryController extends AbstractController
      * @Route("/add", name="country.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, EntityManagerInterface $manager)
     {
         $country = new Country();
         $form = $this->createForm(CountryType::class, $country);
@@ -67,7 +67,7 @@ class AdminCountryController extends AbstractController
      * @IsGranted("ROLE_ADMIN")
      * @param Country $country
      */
-    public function edit(Request $request, ObjectManager $manager, Country $country)
+    public function edit(Request $request, EntityManagerInterface $manager, Country $country)
     {
       $form = $this->createForm(CountryType::class, $country);
       $form->handleRequest($request);

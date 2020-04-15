@@ -8,7 +8,7 @@ use App\Entity\TypeDepense;
 use App\Entity\ReturnedProduct;
 use App\Entity\CustomerCommande;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +23,7 @@ class AdminResetSellController extends AbstractController
      * @Route("/{id}", name="reset_sell", requirements={"id"="\d+"})
      * @param CustomerCommande $commande
      */
-    public function retour_de_marchandises(Request $request, ObjectManager $manager, CustomerCommande $commande, int $id)
+    public function retour_de_marchandises(Request $request, EntityManagerInterface $manager, CustomerCommande $commande, int $id)
     {
         if($request->isMethod('post'))
         {

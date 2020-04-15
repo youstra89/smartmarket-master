@@ -13,7 +13,7 @@ use App\Form\ProductSearchType;
 use App\Controller\FonctionsController;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 // Include Dompdf required namespaces
 use Symfony\Component\HttpFoundation\Response;
@@ -31,7 +31,7 @@ class AdminProductController extends AbstractController
      * @Route("/", name="product")
      * @IsGranted("ROLE_USER")
      */
-    public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+    public function index(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
     {
       $search = new ProductSearch();
       $form = $this->createForm(ProductSearchType::class, $search);
@@ -55,7 +55,7 @@ class AdminProductController extends AbstractController
      * @Route("/add", name="product.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager, FonctionsController $fonctions)
+    public function add(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions)
     {
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
@@ -124,7 +124,7 @@ class AdminProductController extends AbstractController
      * @IsGranted("ROLE_ADMIN")
      * @param Product $product
      */
-    public function edit(Request $request, ObjectManager $manager, Product $product)
+    public function edit(Request $request, EntityManagerInterface $manager, Product $product)
     {
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
@@ -184,7 +184,7 @@ class AdminProductController extends AbstractController
      * @Route("/edit-unit-prices", name="edit.product.unit.price")
      * @IsGranted("ROLE_SUPER_ADMIN")
      */
-    public function edit_unit_price(Request $request, ObjectManager $manager)
+    public function edit_unit_price(Request $request, EntityManagerInterface $manager)
     {
       $repoProduct = $manager->getRepository(Product::class);
       $products = $repoProduct->findAll();
@@ -246,7 +246,7 @@ class AdminProductController extends AbstractController
     /**
      * @Route("/impression-de-inventaire-de-stock-de-produits", name="impression_inventaire")
      */
-    public function inventaire_de_stock_de_produits(ObjectManager $manager)
+    public function inventaire_de_stock_de_produits(EntityManagerInterface $manager)
     {
       $products = $manager->getRepository(Product::class)->findAll();
       if(empty($products)){
@@ -286,7 +286,7 @@ class AdminProductController extends AbstractController
     /**
      * @Route("/cout-total-des-produits-en-stock", name="cout_total_en_stock")
      */
-    public function cout_total_des_produits_en_stock(ObjectManager $manager)
+    public function cout_total_des_produits_en_stock(EntityManagerInterface $manager)
     {
         $products = $manager->getRepository(Product::class)->findAll();
         if(empty($products)){
@@ -303,7 +303,7 @@ class AdminProductController extends AbstractController
     /**
      * @Route("/impression-du-cout-total-des-produits-en-stock", name="impression_cout_total_en_stock")
      */
-    public function impression_cout_total_des_produits_en_stock(ObjectManager $manager)
+    public function impression_cout_total_des_produits_en_stock(EntityManagerInterface $manager)
     {
         $products = $manager->getRepository(Product::class)->findAll();
         if(empty($products)){
@@ -343,7 +343,7 @@ class AdminProductController extends AbstractController
     /**
      * @Route("/impression-de-catalogue-de-produits", name="imprimer_catalogue")
      */
-    public function imprimer_catalogue(ObjectManager $manager)
+    public function imprimer_catalogue(EntityManagerInterface $manager)
     {
         $idsProducts = $this->get('session')->get('idProductsProviderOrder');
         
@@ -404,7 +404,7 @@ class AdminProductController extends AbstractController
     /**
      * @Route("/constitution-de-catalogue-de-produits", name="contitution_catalogue")
      */
-    public function constitution_de_catalogue_de_produits(Request $request, ObjectManager $manager)
+    public function constitution_de_catalogue_de_produits(Request $request, EntityManagerInterface $manager)
     {
         $products   = $manager->getRepository(Product::class)->allProductsByCategory();
         $categories = $manager->getRepository(Category::class)->distinctCategories();

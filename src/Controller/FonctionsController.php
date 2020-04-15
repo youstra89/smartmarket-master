@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Customer;
 use App\Entity\Provider;
 use App\Entity\Product;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 

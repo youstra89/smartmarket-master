@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Mark;
 use App\Form\MarkType;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +20,7 @@ class AdminMarkController extends AbstractController
      * @Route("/", name="mark")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function index(ObjectManager $manager)
+    public function index(EntityManagerInterface $manager)
     {
         $marks = $manager->getRepository(Mark::class)->findAll();
         return $this->render('Admin/Mark/index.html.twig', [
@@ -33,7 +33,7 @@ class AdminMarkController extends AbstractController
      * @Route("/add", name="mark.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, EntityManagerInterface $manager)
     {
         $mark = new Mark();
         $form = $this->createForm(MarkType::class, $mark);
@@ -63,7 +63,7 @@ class AdminMarkController extends AbstractController
      * @IsGranted("ROLE_ADMIN")
      * @param Mark $mark
      */
-    public function edit(Request $request, ObjectManager $manager, Mark $mark)
+    public function edit(Request $request, EntityManagerInterface $manager, Mark $mark)
     {
       $form = $this->createForm(MarkType::class, $mark);
       $form->handleRequest($request);

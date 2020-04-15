@@ -5,7 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Informations;
 use App\Form\InformationsType;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 // Include Dompdf required namespaces
@@ -23,7 +23,7 @@ class AdminInformationsController extends AbstractController
      * @Route("/", name="informations")
      * @IsGranted("ROLE_SUPER_ADMIN")
      */
-    public function index(ObjectManager $manager)
+    public function index(EntityManagerInterface $manager)
     {
       $info = $manager->getRepository(Informations::class)->find(1);
 
@@ -37,7 +37,7 @@ class AdminInformationsController extends AbstractController
      * @Route("/add", name="add_informations")
      * @IsGranted("ROLE_SUPER_ADMIN")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, EntityManagerInterface $manager)
     {
         $info = new Informations();
         $form = $this->createForm(InformationsType::class, $info);
@@ -91,7 +91,7 @@ class AdminInformationsController extends AbstractController
      * @Route("/edit", name="edit_informations")
      * @IsGranted("ROLE_SUPER_ADMIN")
      */
-    public function edit(Request $request, ObjectManager $manager)
+    public function edit(Request $request, EntityManagerInterface $manager)
     {
         $info = $manager->getRepository(Informations::class)->find(1);
         $form = $this->createForm(InformationsType::class, $info);

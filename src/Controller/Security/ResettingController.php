@@ -3,7 +3,7 @@
 namespace App\Controller\Security;
 
 use App\Entity\User;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,7 +19,7 @@ class ResettingController extends AbstractController
     /**
      * @Route("/resetting", name="resetting")
      */
-    public function resetting(Request $request, ObjectManager $em, \Swift_Mailer $mailer)
+    public function resetting(Request $request, EntityManagerInterface $em, \Swift_Mailer $mailer)
     {
       $form = $this->createFormBuilder()
         ->add('email', EmailType::class, ['required' => true, 'label' => 'Entrer votre email'])

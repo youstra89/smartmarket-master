@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\TypeDepense;
 use App\Form\TypeDepenseType;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -19,7 +19,7 @@ class AdminTypeDepenseController extends AbstractController
      * @Route("/", name="typedepenses")
      * @IsGranted("ROLE_COMPTABLE")
      */
-    public function index(ObjectManager $manager)
+    public function index(EntityManagerInterface $manager)
     {
         $typedepenses = $manager->getRepository(TypeDepense::class)->findAll();
         return $this->render('Admin/TypeDepense/index.html.twig', [
@@ -32,7 +32,7 @@ class AdminTypeDepenseController extends AbstractController
      * @Route("/add", name="typedepense.add")
      * @IsGranted("ROLE_COMPTABLE")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, EntityManagerInterface $manager)
     {
         $typedepense = new TypeDepense();
         $form = $this->createForm(TypeDepenseType::class, $typedepense);
@@ -63,7 +63,7 @@ class AdminTypeDepenseController extends AbstractController
      * @IsGranted("ROLE_COMPTABLE")
      * @param TypeDepense $typedepense
      */
-    public function edit(Request $request, ObjectManager $manager, TypeDepense $typedepense)
+    public function edit(Request $request, EntityManagerInterface $manager, TypeDepense $typedepense)
     {
       $form = $this->createForm(TypeDepenseType::class, $typedepense);
       $form->handleRequest($request);

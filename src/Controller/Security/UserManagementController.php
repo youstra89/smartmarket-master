@@ -4,7 +4,7 @@ namespace App\Controller\Security;
 
 use App\Entity\User;
 use App\Form\UserType;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,7 +21,7 @@ class UserManagementController extends AbstractController
   /**
    * @Route("/", name="users", requirements={"userId" = "\d+"})
    */
-    public function index(Request $request, ObjectManager $manager)
+    public function index(Request $request, EntityManagerInterface $manager)
     {
       $repoUser = $manager->getRepository(User::class);
       $users = $repoUser->findAll();
@@ -37,7 +37,7 @@ class UserManagementController extends AbstractController
    * @Route("/gestion-roles-utilisateur/{id}", name="user_roles", methods="GET|POST", requirements={"id" = "\d+"})
    * @param User $user
    */
-  public function gestion_des_roles_utilisateurs(Request $request, ObjectManager $manager, int $id, User $user)
+  public function gestion_des_roles_utilisateurs(Request $request, EntityManagerInterface $manager, int $id, User $user)
   {
     if ($request->isMethod('post')) {
       $token = $request->get('_csrf_token');
@@ -73,7 +73,7 @@ class UserManagementController extends AbstractController
    * @Route("/edition-utilisateur/{id}", name="edit_user", methods="GET|POST", requirements={"id" = "\d+"})
    * @param User $user
    */
-  public function editer_utilisateur(Request $request, ObjectManager $manager, int $id, User $user)
+  public function editer_utilisateur(Request $request, EntityManagerInterface $manager, int $id, User $user)
   {
     $form = $this->createForm(UserType::class, $user);
 
@@ -111,7 +111,7 @@ class UserManagementController extends AbstractController
    * @Route("/supprimer-utilisateur/{id}", name="delete_user", methods="GET|POST", requirements={"id"="\d+"})
    * @param User $user
    */
-  public function supprimer_utilisateur(Request $request, ObjectManager $manager, int $id, User $user)
+  public function supprimer_utilisateur(Request $request, EntityManagerInterface $manager, int $id, User $user)
   {
     $token = $request->get('_csrf_token');
     if($this->isCsrfTokenValid('delete_user', $token))
@@ -134,7 +134,7 @@ class UserManagementController extends AbstractController
    * @Route("/informations-utilisateur/{id}", name="user_info", requirements={"id" = "\d+"})
    * @param User $user
    */
-  public function user_informations(ObjectManager $manager, User $user)
+  public function user_informations(EntityManagerInterface $manager, User $user)
   {
       return $this->render('UserManagement/informations-utilisateur.html.twig', [
         'user' => $user,

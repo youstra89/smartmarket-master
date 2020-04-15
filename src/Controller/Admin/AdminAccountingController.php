@@ -12,7 +12,7 @@ use App\Entity\ProviderSettlement;
 use App\Service\CheckConnectedUser;
 use App\Entity\CustomerCommandeDetails;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +26,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/", name="accounting")
      */
-    public function index(ObjectManager $manager, CheckConnectedUser $checker)
+    public function index(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -39,7 +39,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/ventes-du-jour/{date}", name="ventes_du_jour")
      */
-    public function vente_du_jour(ObjectManager $manager, $date, CheckConnectedUser $checker)
+    public function vente_du_jour(EntityManagerInterface $manager, $date, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -63,7 +63,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/entrees-du-jour/{date}", name="entrees_du_jour")
      */
-    public function entrees_du_jour(ObjectManager $manager, $date, CheckConnectedUser $checker)
+    public function entrees_du_jour(EntityManagerInterface $manager, $date, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -86,7 +86,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/comptabilite-journaliere", name="dayly.accounting")
      */
-    public function comptabilite_journaliere(Request $request, ObjectManager $manager, CheckConnectedUser $checker)
+    public function comptabilite_journaliere(Request $request, EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -132,7 +132,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/comptabilite-mensuelle", name="monthly.accounting")
      */
-    public function comptabilite_mensuelle(ObjectManager $manager, CheckConnectedUser $checker)
+    public function comptabilite_mensuelle(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -205,9 +205,9 @@ class AdminAccountingController extends AbstractController
     }
 
     /**
-     * @Route("/comptabilite-clients-débiteurs", name="accounting.debtor")
+     * @Route("/comptabilite-clients-debiteurs", name="accounting.debtor")
      */
-    public function debits(ObjectManager $manager, CheckConnectedUser $checker)
+    public function debits(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -246,7 +246,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/comptabilite-fournisseurs-creanciers", name="accounting_creance")
      */
-    public function creances(ObjectManager $manager, CheckConnectedUser $checker)
+    public function creances(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
         if($checker->getAccess() == true)
           return $this->redirectToRoute('login');
@@ -284,7 +284,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/impression-des-dettes", name="print_dettes")
      */
-    public function impression_des_dettes(ObjectManager $manager)
+    public function impression_des_dettes(EntityManagerInterface $manager)
     {
         $info = $manager->getRepository(Informations::class)->find(1);
         $repoCustomerCommande = $manager->getRepository(CustomerCommande::class);
@@ -350,7 +350,7 @@ class AdminAccountingController extends AbstractController
     /**
      * @Route("/impression-des-creances", name="print_creances")
      */
-    public function impression_des_creances(ObjectManager $manager)
+    public function impression_des_creances(EntityManagerInterface $manager)
     {
         $info = $manager->getRepository(Informations::class)->find(1);
         $repoProviderCommande = $manager->getRepository(ProviderCommande::class);

@@ -30,9 +30,7 @@ class ExportDataController extends AbstractController
           // $table = $tables[0];
           $index++;
           $classeName = $table->getName();
-          $repository = "App\"Entity\"".ucwords($classeName);
-          $repository = addslashes($repository);
-          $repository = str_replace('"', "", $repository);
+          $repository = "App\\Entity\\".ucwords($classeName);
           $repository = $this->camelCase($repository);
           if(class_exists($repository))
           {

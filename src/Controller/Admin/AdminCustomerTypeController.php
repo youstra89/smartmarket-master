@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\CustomerType;
 use App\Form\CustomerTypeType;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -19,7 +19,7 @@ class AdminCustomerTypeController extends AbstractController
      * @Route("/", name="customertypes")
      * @IsGranted("ROLE_COMPTABLE")
      */
-    public function index(ObjectManager $manager)
+    public function index(EntityManagerInterface $manager)
     {
         $customertypes = $manager->getRepository(CustomerType::class)->findAll();
         return $this->render('Admin/CustomerType/index.html.twig', [
@@ -32,7 +32,7 @@ class AdminCustomerTypeController extends AbstractController
      * @Route("/add", name="customertype.add")
      * @IsGranted("ROLE_COMPTABLE")
      */
-    public function add(Request $request, ObjectManager $manager)
+    public function add(Request $request, EntityManagerInterface $manager)
     {
         $customertype = new CustomerType();
         $form = $this->createForm(CustomerTypeType::class, $customertype);
@@ -63,7 +63,7 @@ class AdminCustomerTypeController extends AbstractController
      * @IsGranted("ROLE_COMPTABLE")
      * @param CustomerType $customertype
      */
-    public function edit(Request $request, ObjectManager $manager, CustomerType $customertype)
+    public function edit(Request $request, EntityManagerInterface $manager, CustomerType $customertype)
     {
       $form = $this->createForm(CustomerTypeType::class, $customertype);
       $form->handleRequest($request);

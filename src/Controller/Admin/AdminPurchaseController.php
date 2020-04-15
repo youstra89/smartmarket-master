@@ -14,7 +14,7 @@ use App\Entity\ProviderCommandeDetails;
 use App\Form\ProviderCommandeSearchType;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -29,7 +29,7 @@ class AdminPurchaseController extends AbstractController
    * @Route("/", name="purchase")
    * @IsGranted("ROLE_APPROVISIONNEMENT")
    */
-   public function index(Request $request, ObjectManager $manager, PaginatorInterface $paginator)
+   public function index(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
    {
        $search = new ProviderCommandeSearch();
        $form = $this->createForm(ProviderCommandeSearchType::class, $search);
@@ -52,7 +52,7 @@ class AdminPurchaseController extends AbstractController
      * @Route("/unique-form-provider-order", name="unique_form_provider_order")
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      */
-    public function unique_form_provider_order(Request $request, ObjectManager $manager)
+    public function unique_form_provider_order(Request $request, EntityManagerInterface $manager)
     {
         $providerCommande = new ProviderCommande();
         $form = $this->createForm(ProviderCommandeType::class, $providerCommande);
@@ -160,7 +160,7 @@ class AdminPurchaseController extends AbstractController
      * @Route("/annuler-la-commande-en-cours/{id}", name="provider.commande.reset")
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      */
-    public function reset_commande(ObjectManager $manager, int $id)
+    public function reset_commande(EntityManagerInterface $manager, int $id)
     {
         $this->get('session')->remove('idProductsProviderOrder');
         $this->addFlash('success', 'La commande a été réinitialisée.');
@@ -172,7 +172,7 @@ class AdminPurchaseController extends AbstractController
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
-    public function save_provider_commande_details(Request $request, ObjectManager $manager, ProviderCommande $commande)
+    public function save_provider_commande_details(Request $request, EntityManagerInterface $manager, ProviderCommande $commande)
     {
         $ids = $this->get('session')->get('idProductsProviderOrder');
         $products = $manager->getRepository(Product::class)->findSelectedProducts($ids);
@@ -266,7 +266,7 @@ class AdminPurchaseController extends AbstractController
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
-    public function prix_de_revient(Request $request, ObjectManager $manager, ProviderCommande $commande)
+    public function prix_de_revient(Request $request, EntityManagerInterface $manager, ProviderCommande $commande)
     {
         // $products = $commande->getProviderCommandeDetails;
         if($request->isMethod('post'))
@@ -323,7 +323,7 @@ class AdminPurchaseController extends AbstractController
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProvidererCommande $commande
      */
-    public function provider_settlements(Request $request, int $id, ProviderCommande $commande, ObjectManager $manager)
+    public function provider_settlements(Request $request, int $id, ProviderCommande $commande, EntityManagerInterface $manager)
     {
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       $reglements = $commande->getSettlements();
@@ -410,7 +410,7 @@ class AdminPurchaseController extends AbstractController
      * @param ProviderCommande $commande
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      */
-    public function bon_de_commande(ObjectManager $manager, ProviderCommande $commande, int $id)
+    public function bon_de_commande(EntityManagerInterface $manager, ProviderCommande $commande, int $id)
     {
         $info = $manager->getRepository(Informations::class)->find(1);
         
