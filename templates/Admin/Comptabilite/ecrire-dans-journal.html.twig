@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enregistrement d'une écriture dans le journal de l'exercice de {{ exercice.label }}{% endblock %}
+
+
+{% block stylesheets %}
+  <style>
+    .big-icons{
+      font-size: 1.5em;
+    }
+  </style>
+  <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" /> -->
+  <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une écriture dans le journal de l'exercice de <strong>{{ exercice.label }}</strong></h2>
+  <form action="" method="post">
+    <div class="row">
+      <div class="col-md-2">
+        <div class="form-group">
+          <label for="reference">Numéro</label>
+          <input type="text" name="reference" id="reference" class="form-control" value="{{ reference }}" placeholder="">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" name="date" id="date" class="form-control" value="{{ 'now'|date('Y-m-d') }}" placeholder="">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="label">Libellé</label>
+          <input type="text" name="label" id="label" class="form-control" placeholder="">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="debit">Débit</label>
+          <select name="debit" id="debit" class="form-control mb-4 js-example-basic-single">
+            <option value="">Choisir le compte à débiter</option>
+            {% for item in comptes %}
+              <option value="{{ item.id }}">{{ item.compte.numero }} - {{ item.compte.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="credit">Crédit</label>
+          <select name="credit" id="credit" class="form-control mb-4 js-example-basic-single">
+            <option value="">Choisir le compte à créditer</option>
+            {% for item in comptes %}
+              <option value="{{ item.id }}">{{ item.compte.numero }} - {{ item.compte.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="montant">Montant</label>
+          <input type="number" name="montant" id="montant" class="form-control" placeholder="">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="tva">TVA</label>
+          <input type="number" name="tva" id="tva" class="form-control" placeholder="" value="0">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group">
+          <label for="">Remarque</label>
+          <input type="text" name="" id="" class="form-control" placeholder="Vous pouvez laisser un commentaire afin de vous souvenir des contours de l'écriture">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token('ecriture_comptable') }}"/>
+      <button class="btn-sm btn-primary">Enregistrer l'écriture</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script type="text/javascript">
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script> -->
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+  <script>
+    $(document).ready(function() {
+      $('.js-example-basic-single').select2();
+    });
+  </script>
+{% endblock %}

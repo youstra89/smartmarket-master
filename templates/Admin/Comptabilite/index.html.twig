@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Index Comptabilité{% endblock %}
+
+
+{% block stylesheets %}
+<style>
+  .big-icons{
+    font-size: 1.5em;
+  }
+</style>
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Comptabilité détaillée</h2>
+  <a href="{{ path('gestion_comptes') }}" class="btn-primary btn-sm">Gérer les comptes</a>
+  {% if exercices|length == 0 %}
+    <a href="{{ path('enregistrer_bilan_ouverture') }}" class="btn-primary btn-sm">Enregistrer le bilan d'ouverture</a><br><br>
+  {% endif %}
+  <div class="row">
+    <div class="table-responsive">
+      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th width="5%">#</th>
+            <th width="20%">Libellé</th>
+            <th width="">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% set i = 0 %}
+        {% for exercice in exercices %}
+          {% set i = i + 1 %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ exercice.label }}</td>
+            <td>
+              <div class="row big-icons">
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le bilan initial"><i class="icon-cloud-storage"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('journal', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le journal"><i class="icon-cog"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le grand livre"><i class="icon-book"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir la balance"><i class="icon-edit"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le résultat"><i class="icon-times"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('bilan_final', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le bilan final"><i class="icon-tick"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le résultat"><i class="icon-point-of-interest"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir les graphes"><i class="icon-chart-bar"></i></a></div>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

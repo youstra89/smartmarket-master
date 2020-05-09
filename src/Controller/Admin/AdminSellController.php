@@ -5,7 +5,6 @@ namespace App\Controller\Admin;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Product;
-use App\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\Settlement;
 use App\Entity\Informations;
@@ -13,14 +12,16 @@ use App\Entity\CustomerCommande;
 use App\Entity\CustomerCommandeSearch;
 use App\Entity\CustomerCommandeDetails;
 use App\Form\CustomerCommandeSearchType;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Collections\Collection;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Controller\FonctionsComptabiliteController;
+use App\Entity\ComptaExercice;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/ventes")
@@ -121,10 +122,11 @@ class AdminSellController extends AbstractController
      * @Route("/unique-form-for-selling", name="unique_form_for_selling")
      * @IsGranted("ROLE_VENTE")
      */
-    public function unique_form_for_selling(Request $request, EntityManagerInterface $manager)
+    public function unique_form_for_selling(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
-      $customers = $manager->getRepository(Customer::class)->findAll();
-      $products = $manager->getRepository(Product::class)->findAll();
+      $customers = $manager->getRepository(Customer      ::class)->findAll();
+      $products  = $manager->getRepository(Product       ::class)->findAll();
+      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
 
       if($request->isMethod('post'))
       {
@@ -140,7 +142,15 @@ class AdminSellController extends AbstractController
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
               return $this->redirectToRoute('unique_form_for_selling');
             }
-            elseif(empty($data["products"]))
+            else
+            {
+              $date = new \DateTime($data["date"]);
+              if($date < $exercice->getDateDebut() or $date > $exercice->getDateFin()){
+                $this->addFlash('danger', 'Impossible de continuer. La date saisie ne fait pas partie de la période d\'exercice en cours.');
+                return $this->redirectToRoute('unique_form_for_selling');
+              }
+            }
+            if(empty($data["products"]))
             {
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
               return $this->redirectToRoute('unique_form_for_selling');
@@ -148,6 +158,7 @@ class AdminSellController extends AbstractController
             else {
               $date       = new \DateTime($data["date"]);
               $prices     = $data["prices"];
+              $tva        = $data["tva"];
               $quantities = $data["quantities"];
               $seller = $this->getUser();
               $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
@@ -159,8 +170,10 @@ class AdminSellController extends AbstractController
                 $customerCommande->setCustomer($customer);
               }
               $customerCommande->setReference($reference);
+              $customerCommande->setExercice($exercice);
               $customerCommande->setSeller($seller);
               $customerCommande->setDate($date);
+              $customerCommande->setTva($tva);
               $customerCommande->setStatus("LIVREE");
               $customerCommande->setCreatedBy($this->getUser());
               $manager->persist($customerCommande);
@@ -211,11 +224,13 @@ class AdminSellController extends AbstractController
                 $product->setUpdatedAt(new \DateTime());
               }
               $customerCommande->setTotalAmount($commandeGlobalCost);
+              $customerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
 
               //On va maintenant enregistrer le règlement de la commande
               try{
                 $manager->flush();
-                $this->addFlash('success', '<li>Enregistrement de la vente du <strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                $this->addFlash('success', '<li>Enregistrement de la vente N°<strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                $fonctions->EcritureDeVenteDansLeJournalComptable($manager, $commandeGlobalCost, $tva, $exercice, $date, $customerCommande);
                 // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
                 return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
               } 
@@ -239,7 +254,7 @@ class AdminSellController extends AbstractController
      * @Route("/edit-sell/{id}", name="edit_sell")
      * @param CustomerCommande $commande
      */
-    public function edit_sell(Request $request, EntityManagerInterface $manager, int $id, CustomerCommande $commande)
+    public function edit_sell(Request $request, EntityManagerInterface $manager, int $id, CustomerCommande $commande, FonctionsComptabiliteController $fonctions)
     {
       if(count($commande->getSettlements()) > 1)
         return $this->redirectToRoute('customer.order.details', ["id" => $id]);
@@ -306,11 +321,21 @@ class AdminSellController extends AbstractController
 
             if($change === true)
             {
+              $tva = $commande->getTva();
+              $ancienTotal = $commande->getTotalAmount();
               $commande->setTotalAmount($total);
+              $commande->setMontantTtc($total + $total * ($tva/100));
               $commande->setUpdatedAt(new \DateTime());
               $commande->setUpdatedBy($this->getUser());
-              $manager->flush();
-              $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
+              try{
+                $manager->flush();
+                $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
+                $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+                return $this->redirectToRoute('edit_sell', ["id" => $id]);
+              }
             }
             return $this->redirectToRoute('sell');
           }
@@ -334,6 +359,7 @@ class AdminSellController extends AbstractController
     public function prepare_sell_for_customer(Request $request, EntityManagerInterface $manager, Customer $customer, int $id)
     {
       $products = $manager->getRepository(Product::class)->findAll();
+      $exercice = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
 
       if($request->isMethod('post'))
       {
@@ -351,15 +377,18 @@ class AdminSellController extends AbstractController
             }
             else {
               $date       = new \DateTime();
+              $tva        = $data["tva"];
               $prices     = $data["prices"];
               $quantities = $data["quantities"];
-              $seller = $this->getUser();
-              $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
+              $seller     = $this->getUser();
+              $reference  = $date->format('Ymd').'.'.(new \DateTime())->format('His');
               $customerCommande = new CustomerCommande();
               $customerCommande->setCustomer($customer);
               $customerCommande->setReference($reference);
+              $customerCommande->setExercice($exercice);
               $customerCommande->setSeller($seller);
               $customerCommande->setDate($date);
+              $customerCommande->setTva($tva);
               $customerCommande->setCreatedBy($this->getUser());
               $customerCommande->setStatus("ENREGISTREE");
               $manager->persist($customerCommande);
@@ -398,6 +427,7 @@ class AdminSellController extends AbstractController
                 $manager->persist($commandeProduit);
               }
               $customerCommande->setTotalAmount($commandeGlobalCost);
+              $customerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
 
               //On va maintenant enregistrer le règlement de la commande
               try{
@@ -509,12 +539,13 @@ class AdminSellController extends AbstractController
      * @IsGranted("ROLE_VENTE")
      * @param CustomerCommande $commande
      */
-    public function settlement(Request $request, int $id, CustomerCommande $commande, EntityManagerInterface $manager)
+    public function settlement(Request $request, int $id, CustomerCommande $commande, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
       if ($commande->getEnded() == true) {
         $this->addFlash('warning', 'Cette commande est déjà soldée.');
         return $this->redirectToRoute('sell');
       }
+      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       $reglements = $commande->getSettlements();
       // $total = array_sum(array_map('getValue', $reglements));
@@ -523,25 +554,34 @@ class AdminSellController extends AbstractController
         $total += $value->getAmount();
       }
       // dump($total);
-      $reste = $commande->getTotalAmount() - $total;
+      $reste = $commande->getMontantTtc() - $total;
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
         $token  = $data['token'];
         $date   = new \DateTime($data['date']);
-        $amount = $data['amount'];
+        $mode   = (int) $data['mode'];
+        $amount = (int) $data['amount'];
         $soldee = false;
         if($this->isCsrfTokenValid('token_reglement', $token)){
           if(empty($date)){
             $this->addFlash('danger', 'Saisir une valuer pour la date.');
             return $this->redirectToRoute('settlement', ['id' => $id]);
           }
+          else
+          {
+            $date = new \DateTime($data["date"]);
+            if($date < $exercice->getDateDebut() or $date > $exercice->getDateFin()){
+              $this->addFlash('danger', 'Impossible de continuer. La date saisie ne fait pas partie de la période d\'exercice en cours.');
+              return $this->redirectToRoute('settlement', ['id' => $id]);
+            }
+          }
           if(empty($amount) or $amount < 0){
             $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
             return $this->redirectToRoute('settlement', ['id' => $id]);
           }
           if (empty($commande->getCustomer())) {
-            if($amount != $commande->getTotalAmount()) {
+            if($amount != $commande->getMontantTtc()) {
               $this->addFlash('danger', 'Montant incorrect. La valeur saisie n\'est pas égale au montant total da la commande.');
               return $this->redirectToRoute('settlement', ['id' => $id]);
             }
@@ -558,16 +598,16 @@ class AdminSellController extends AbstractController
               $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
               return $this->redirectToRoute('settlement', ['id' => $id]);
             }
-            elseif($newTotal > $commande->getTotalAmount())
+            elseif($newTotal > $commande->getMontantTtc())
             {
               $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
               return $this->redirectToRoute('settlement', ['id' => $id]);
             }
-            elseif($newTotal < $commande->getTotalAmount())
+            elseif($newTotal < $commande->getMontantTtc())
             {
               $soldee = false;
             }
-            elseif ($newTotal == $commande->getTotalAmount()) {
+            elseif ($newTotal == $commande->getMontantTtc()) {
               $soldee = true;
               $commande->setEnded(true);
             }
@@ -579,6 +619,7 @@ class AdminSellController extends AbstractController
           $settlement = new Settlement();
           $settlement->setDate($date);
           $settlement->setReference($reference);
+          $settlement->setModePaiement($mode);
           $settlement->setAmount($amount);
           $settlement->setNumber($settlementNumber);
           $settlement->setReceiver($user);
@@ -592,6 +633,7 @@ class AdminSellController extends AbstractController
               $this->addFlash('success', 'Règlement bien enregistré. Cependant la commande n\'est pas soldée.');
             
             $manager->flush();
+            $fonctions->EcritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -661,16 +703,16 @@ class AdminSellController extends AbstractController
             $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
             return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
           }
-          elseif($newTotal > $commande->getTotalAmount())
+          elseif($newTotal > $commande->getMontantTtc())
           {
             $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
             return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
           }
-          elseif($newTotal < $commande->getTotalAmount())
+          elseif($newTotal < $commande->getMontantTtc())
           {
             $commande->setEnded(false);
           }
-          elseif ($newTotal == $commande->getTotalAmount()) {
+          elseif ($newTotal == $commande->getMontantTtc()) {
             $soldee = true;
             $commande->setEnded(true);
           }

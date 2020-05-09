@@ -112,6 +112,26 @@ class CustomerCommande
      */
     private $status;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $tva;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $montant_ttc;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\ComptaEcriture", mappedBy="vente", cascade={"persist", "remove"})
+     */
+    private $comptaEcriture;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaExercice", inversedBy="customerCommandes")
+     */
+    private $exercice;
+
     public function __construct()
     {
         $this->product          = new ArrayCollection();
@@ -439,5 +459,59 @@ class CustomerCommande
             }
         }
         return $this->total_amount - $total;
+    }
+
+    public function getTva(): ?int
+    {
+        return $this->tva;
+    }
+
+    public function setTva(int $tva): self
+    {
+        $this->tva = $tva;
+
+        return $this;
+    }
+
+    public function getMontantTtc(): ?int
+    {
+        return $this->montant_ttc;
+    }
+
+    public function setMontantTtc(int $montant_ttc): self
+    {
+        $this->montant_ttc = $montant_ttc;
+
+        return $this;
+    }
+
+    public function getComptaEcriture(): ?ComptaEcriture
+    {
+        return $this->comptaEcriture;
+    }
+
+    public function setComptaEcriture(?ComptaEcriture $comptaEcriture): self
+    {
+        $this->comptaEcriture = $comptaEcriture;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newVente = null === $comptaEcriture ? null : $this;
+        if ($comptaEcriture->getVente() !== $newVente) {
+            $comptaEcriture->setVente($newVente);
+        }
+
+        return $this;
+    }
+
+    public function getExercice(): ?ComptaExercice
+    {
+        return $this->exercice;
+    }
+
+    public function setExercice(?ComptaExercice $exercice): self
+    {
+        $this->exercice = $exercice;
+
+        return $this;
     }
 }

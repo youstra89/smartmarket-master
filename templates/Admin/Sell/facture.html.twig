@@ -179,8 +179,8 @@
                   <span>{{ commande.date|date('d-m-Y') }}</span><br>
                   <strong>N° de facture :</strong>
                   <span>{{ commande.reference }}</span><br>
-                  <strong>Montant total:</strong>
-                  <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
+                  <strong>Montant TTC:</strong>
+                  <span>{{ commande.montantTtc|number_format(0, ',', ' ') }} F</span><br>
                   </div>
                 </div>
                 <div class="info-customer" style="">
@@ -202,7 +202,7 @@
               {% set i = 0 %}
               <table class="table" cellspacing="0" border="0">
                 <thead>
-                  <tr>
+                  <tr align="left">
                     <th>Réf</th>
                     <th>Désignation</th>
                     <th>Quantité</th>
@@ -228,13 +228,26 @@
                       </tr>
                     </tbody>
                 {% endfor %}
-                <tfoot>
-                  <tr style="border: 1px solid black">
-                    <td colspan="3">TOTAL</td>
-                    <td colspan="2" bgcolor="#D3D3D3" style="align: center">{{ commande.totalAmount|number_format(0, ',', ' ') }} F</td>
-                  </tr>
-                </tfoot>
               </table>
+              <br>
+              <div style="border: 1px solid black; padding: 5px">
+                <table class="table" cellspacing="0" border="0">
+                  <tfoot>
+                    <tr style="border: 1px solid black">
+                      <td width="80%">Montant HT</td>
+                      <td width="20%" align="right" style="align: center">{{ commande.totalAmount|number_format(0, ',', ' ') }} F</td>
+                    </tr>
+                    <tr style="border: 1px solid black">
+                      <td width="80%">TVA</td>
+                      <td width="20%" align="right" style="align: center">{{ commande.tva }}%</td>
+                    </tr>
+                    <tr style="border: 1px solid black">
+                      <td width="80%">Montant TTC</td>
+                      <td width="20%" bgcolor="#D3D3D3" align="right" style="align: center">{{ commande.montantTtc|number_format(0, ',', ' ') }} F</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
             {# On va déterminer le montant total des règlements effectués #}
             {% set totalPaye = 0 %}
@@ -243,13 +256,13 @@
             {% endfor %}
 
             {# Ensuite, on détermine le reste à payer #}
-            {% set resteAPayer = commande.totalAmount - totalPaye %}
+            {% set resteAPayer = commande.montantTtc - totalPaye %}
 
             <h1>Détails règlements</h1>
             <div class="table-responsive">
               <table class="table settlement" cellspacing="0" border="0" style="font-size: 1.2em">
                 <tbody>
-                  <tr>
+                  <tr align="left">
                     <th width="20%">Montant</th>
                     <th width="20%">Date du réglement</th>
                     <th width="20%">Enregistré par</th>

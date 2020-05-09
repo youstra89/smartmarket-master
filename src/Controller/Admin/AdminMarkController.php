@@ -35,30 +35,30 @@ class AdminMarkController extends AbstractController
      */
     public function add(Request $request, EntityManagerInterface $manager)
     {
-        $mark = new Mark();
-        $form = $this->createForm(MarkType::class, $mark);
-        $form->handleRequest($request);
-        if($form->isSubmitted() && $form->isValid())
-        {
-          $mark->setCreatedBy($this->getUser());
-          $manager->persist($mark);
-          try{
-            $manager->flush();
-            $this->addFlash('success', 'Enregistrement de la catégorie <strong>'.$mark->getLabel().'</strong> réussie.');
-          } 
-          catch(\Exception $e){
-            $this->addFlash('danger', $e->getMessage());
-          } 
-            return $this->redirectToRoute('mark');
-          }
+      $mark = new Mark();
+      $form = $this->createForm(MarkType::class, $mark);
+      $form->handleRequest($request);
+      if($form->isSubmitted() && $form->isValid())
+      {
+        $mark->setCreatedBy($this->getUser());
+        $manager->persist($mark);
+        try{
+          $manager->flush();
+          $this->addFlash('success', 'Enregistrement de la catégorie <strong>'.$mark->getLabel().'</strong> réussie.');
+        } 
+        catch(\Exception $e){
+          $this->addFlash('danger', $e->getMessage());
+        } 
+          return $this->redirectToRoute('mark');
+      }
+        
+      return $this->render('Admin/Mark/mark-add.html.twig', [
+        'current' => 'products',
+        'form'    => $form->createView()
+      ]);
+    }
           
-          return $this->render('Admin/Mark/mark-add.html.twig', [
-            'current' => 'products',
-            'form'    => $form->createView()
-            ]);
-          }
-          
-          /**
+    /**
      * @Route("/edit/{id}", name="mark.edit")
      * @IsGranted("ROLE_ADMIN")
      * @param Mark $mark

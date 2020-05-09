@@ -92,16 +92,18 @@
       <div class="box-part text-center">      
         <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
         <div class="title">
-          <h4>Débiteurs</h4>
+          <h4>Echéances</h4>
         </div>        
         <div class="text">
-          <span>Voir la liste de toutes les dettes clients.</span>
-        </div>     
-        <a href="{{ path('accounting.debtor') }}" class="btn-primary btn-sm">
+          <span>Gestion des échéances de paiements de vos clients.</span>
+        </div>         
+        <a href="{{ path('echeances') }}" class="btn-primary btn-sm">
           Accéder
-        </a>         
-      </div>
+        </a>
+        </div>
     </div>
+  </div>
+  <div class="row">   
     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
       <div class="box-part text-center">      
         <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
@@ -120,15 +122,29 @@
       <div class="box-part text-center">      
         <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
         <div class="title">
-          <h4>Echéances</h4>
+          <h4>Débiteurs</h4>
         </div>        
         <div class="text">
-          <span>Gestion des échéances de paiements de vos clients.</span>
-        </div>         
-        <a href="{{ path('echeances') }}" class="btn-primary btn-sm">
+          <span>Voir la liste de toutes les dettes que doivent vos clients.</span>
+        </div>     
+        <a href="{{ path('accounting.debtor') }}" class="btn-primary btn-sm">
           Accéder
-        </a>
-        </div>
+        </a>         
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Comptabilité</h4>
+        </div>        
+        <div class="text">
+          <span>Voir l'état actuel de l'entreprise, le bilan et le résultat comptable.</span>
+        </div>     
+        <a href="{{ path('etat_entreprise') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>         
+      </div>
     </div>
   </div>		
 

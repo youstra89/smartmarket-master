@@ -6,6 +6,7 @@ use DateTime;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\Finder\Finder;
 // use App\Entity\Category;
 
 // Include PhpSpreadsheet required namespaces
@@ -15,6 +16,39 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ExportDataController extends AbstractController
 {
+    /**
+     * @Route("/export-products-images", name="export_images")
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function export_images()
+    {
+      $files = array();
+      $publicDirectory = $this->getParameter('kernel.project_dir') . '/public/uploads/images/';
+
+      $finder = new Finder();
+      $finder->files()->in($publicDirectory);
+
+      foreach ($finder as $file) {
+        // $files[] = $file->getRelativePathname();
+        $files[] = $file;//->getRealPath();
+      }
+      // dd($files);
+
+      $zip = new \ZipArchive();
+      $zipName = 'backup-products-images-'.time().".zip";
+      $zipName = 'backup-products-images-'.(new DateTime())->format("d-m-Y").".zip";
+      $zip->open($zipName,  \ZipArchive::CREATE);
+      foreach ($files as $f) {
+          $zip->addFromString(basename($f),  file_get_contents($f->getRealPath())); 
+      }
+      $zip->close();
+      header('Content-Type', 'application/zip');
+      header('Content-disposition: attachment; filename="' . $zipName . '"');
+      header('Content-Length: ' . filesize($zipName));
+      readfile($zipName);
+    }
+
+
     /**
      * @Route("/export-all-data", name="export_data")
      * @IsGranted("ROLE_ADMIN")
@@ -111,8 +145,6 @@ class ExportDataController extends AbstractController
         // $spreadsheet->addSheet($myWorkSheet, 0);
 
     }
-
-
 
     public function allGetters(array $tableColumns)
     {

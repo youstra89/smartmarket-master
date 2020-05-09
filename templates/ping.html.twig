@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Ping !{% endblock %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <h1 class="fh5co animate-box" data-animate-effect="fadeInLeft">Informations sur l'entreprise</h2>
+    <form action="" method="post">
+      <button class="btn btn-primary">Ping !</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    const eventSource = new EventSource('http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://monsite.com/ping'));
+    eventSource.onmessage = event => {
+        // Will be called every time an update is published by the server
+        console.log(JSON.parse(event.data));
+        document.querySelector('h1').inserAdjacentHTML('afterend', '<div class="alert alert-success">Ping !</div>');
+        window.setTimeout(() => {
+          const $alert = document.querySelector('.alert')
+          $alert.parentNode.removeChild($alert)
+        }, 2000)
+    }
+    // const url = new URL("http://localhost:3000/.well-known/mercure");
+    // url.searchParams.append('topic', 'http://monsite.com/ping');
+    // const enventSource = new EnventSource(url);
+
+    // enventSource.onmessage = e => {
+    //   document.querySelector('h1').inserAdjacentHTML('afterend', '<div class="alert alert-success">Ping !</div>');
+    //   window.setTimeout(() => {
+    //     const $alert = document.querySelector('.alert')
+    //     $alert.parentNode.removeChild($alert)
+    //   }, 2000)
+    // }
+  </script>
+{% endblock %}

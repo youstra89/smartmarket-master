@@ -1,0 +1,95 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Gestion des comptes | Smart Market{% endblock %}
+
+
+{% block stylesheets %}
+    <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <div class="fh5co-narrow-content">
+    <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Gestion des comptes</h2>
+    <a href="{{ path('add_compte') }}" class="btn-sm btn-primary">Ajouter une nouveau compte</a><br><br>
+    <div class="row row-bottom-padded-md">
+      <div class="table-responsive">
+        <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Numéro</th>
+              <th>Libellé</th>
+              <th>Catégorie</th>
+              <th>Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set i = 0 %}
+            {# {% for item in dates %} #}
+              {% for compte in comptes %}
+                {% set i = i + 1 %}
+                <tr>
+                  <td>{{ i }}</td>
+                  <td>{{ compte.numero }}</td>
+                  <td>{{ compte.label }}</td>
+                  <td>{{ compte.classe.label }}</td>
+                  <td>{{ compte.classe.type.label }}</td>
+                  <td>
+                    <a href="{{ path('edit_compte', {'id': compte.id}) }}" data-toggle="tooltip" data-placement="top" title="Editer le compte">
+                      <i class="icon-edit"></i>
+                    </a>&nbsp;&nbsp;
+                    {# <a href="{{ path('delete_user', {'id': compte.id, '_csrf_token': csrf_token('delete_user')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer l'échéance" onclick="return confirm('Etes-vous sûrs de supprimer cet utilisateur ?')">
+                      <i class="icon-trash"></i>
+                    </a>&nbsp;&nbsp; #}
+                    <a href="{{ path('payer_echeance', {'id': compte.id}) }}" data-toggle="tooltip" data-placement="top" title="Enregistrer le versement">
+                      <i class="icon-settings"></i>
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            {# {% endfor %} #}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/datatables-demo.js') }}"></script>
+{% endblock %}
+

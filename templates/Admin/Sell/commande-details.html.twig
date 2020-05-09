@@ -61,7 +61,7 @@
         <strong>Référence:</strong>
         <span>{{ commande.reference }}</span><br>
         <strong>Montant total:</strong>
-        <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
+        <span>{{ commande.montantTtc|number_format(0, ',', ' ') }} F</span><br>
         <strong>Vendu par:</strong>
         <span>{{ commande.createdBy.username }}</span><br>
         <strong>Vendu le:</strong>
@@ -142,7 +142,7 @@
               {% if commande.ended == true %}
                 <p>Soldée</p>
               {% else %}
-                {% set rest = commande.totalAmount - total - totalRetour %}
+                {% set rest = commande.montantTtc - total - totalRetour %}
                 <p>Reste à Payer : {{ rest|number_format(0, ',', ' ') }} F</p>
               {% endif %}
             {% endif %}

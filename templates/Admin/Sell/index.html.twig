@@ -88,7 +88,7 @@
                         ---
                       {% endif %}
                     </td>
-                    <td>{{ commande.totalAmount|number_format(0, ',', ' ') }} F CFA</td>
+                    <td>{{ commande.montantTtc|number_format(0, ',', ' ') }} F CFA</td>
                     <td>
                       <a href="{{ path('customer.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
                       {% if is_granted('ROLE_SUPER_ADMIN') %}

@@ -74,6 +74,16 @@ class ProviderSettlement
      */
     private $number;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\ComptaEcriture", mappedBy="regelement_fournisseur", cascade={"persist", "remove"})
+     */
+    private $comptaEcriture;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $mode_paiement;
+
     public function __construct()
     {
         $this->is_deleted = false;
@@ -225,6 +235,36 @@ class ProviderSettlement
     public function setNumber(int $number): self
     {
         $this->number = $number;
+
+        return $this;
+    }
+
+    public function getComptaEcriture(): ?ComptaEcriture
+    {
+        return $this->comptaEcriture;
+    }
+
+    public function setComptaEcriture(?ComptaEcriture $comptaEcriture): self
+    {
+        $this->comptaEcriture = $comptaEcriture;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newRegelement_fournisseur = null === $comptaEcriture ? null : $this;
+        if ($comptaEcriture->getRegelementFournisseur() !== $newRegelement_fournisseur) {
+            $comptaEcriture->setRegelementFournisseur($newRegelement_fournisseur);
+        }
+
+        return $this;
+    }
+
+    public function getModePaiement(): ?int
+    {
+        return $this->mode_paiement;
+    }
+
+    public function setModePaiement(int $mode_paiement): self
+    {
+        $this->mode_paiement = $mode_paiement;
 
         return $this;
     }

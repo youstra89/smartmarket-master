@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bilan initial de l'exercie de {{ exercice.label }}{% endblock %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+
+{% block notifications %}
+{% endblock %}
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Bilan initial de l'exercie de <strong>{{ exercice.label }}</strong></h2>
+  <div class="row">
+    <div class="">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th colspan="2" style="font-size: 1.5em; text-align: center">Actif</th>
+            <th colspan="2" style="font-size: 1.5em; text-align: center">Passif</th>
+          </tr>
+          <tr>
+            <th width="35%">Compte</th>
+            <th width="15%">Montant</th>
+            <th width="35%">Compte</th>
+            <th width="15%">Montant</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set totalActif = 0 %}
+          {% set totalPassif = 0 %}
+          {% for i in 0..2 %}  
+            {% set sousTotalActif = 0 %}
+            {% set sousTotalPassif = 0 %}
+            <tr>
+              <td colspan="2">
+                {% for item in comptesActifs if item.compte.classe == classesActifs[i] %}  
+                  <div class="row">
+                    <div class="col-md-1">{{ item.compte.numero }}</div>
+                    <div class="col-md-7">{{ item.compte.label }}</div>
+                    <div class="col-md-4">&nbsp;&nbsp;&nbsp;{{ item.montantInitial|number_format(0, ',', ' ') }} F</div>
+                  </div>
+                  {% set sousTotalActif = sousTotalActif + item.montantInitial %}
+                  {% set totalActif = totalActif + item.montantInitial %}
+                {% endfor %}
+              </td>
+              <td colspan="2">
+                {% for item in comptesPassifs if item.compte.classe == classesPassifs[i] %}  
+                  <div class="row">
+                    <div class="col-md-1">{{ item.compte.numero }}</div>
+                    <div class="col-md-7">{{ item.compte.label }}</div>
+                    <div class="col-md-4">&nbsp;&nbsp;&nbsp;{{ item.montantInitial|number_format(0, ',', ' ') }} F</div>
+                  </div>
+                  {% set sousTotalPassif = sousTotalPassif + item.montantInitial %}
+                  {% set totalPassif = totalPassif + item.montantInitial %}
+                {% endfor %}
+              </td>
+            <tr>
+              <td colspan="1" style="font-style: italic; font-weight: bold">{{ classesActifs[i].label }}</td>
+              <td>{{ sousTotalActif|number_format(0, ',', ' ') }} F</td>
+              <td colspan="1" style="font-style: italic; font-weight: bold">{{ classesPassifs[i].label }}</td>
+              <td>{{ sousTotalPassif|number_format(0, ',', ' ') }} F</td>
+            </tr>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Total</th>
+            <th>{{ totalActif|number_format(0, ',', ' ') }} F</th>
+            <th>Total</th>
+            <th>{{ totalPassif|number_format(0, ',', ' ') }} F</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>	
+</div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      $("#sms").on("click", function(e){
+        var totalActif = $("#totalActif").val()
+        var totalPassif = $("#totalPassif").val()
+        if(totalActif != totalPassif)
+        {
+          // console.log("Incorrect");
+          alert("Le total actif n'est pas égal au totap passif.");
+          e.preventDefault();
+        }
+        if(totalActif == 0 || 0 == totalPassif)
+        {
+          // console.log("Incorrect");
+          alert("Vous n'avez saisi aucune donnée.");
+          e.preventDefault();
+        }
+        else {
+          this.form.submit();
+        }
+      })
+
+
+      $(".comptesActifs").on("input", function(){
+        $("#totalActif").val($.fn.calculateTotalActif());
+      });
+
+      $.fn.calculateTotalActif = function()
+      {
+        var sousTotaux = $('.comptesActifs');
+        var total = 0;
+        for (let i = 0; i < sousTotaux.length; i++) {
+          const element = sousTotaux[i];
+          total += eval(element.value)
+        }
+
+        // console.log("Le total fait " + total);
+        return total;
+      }
+
+
+
+      $(".comptesPassifs").on("input", function(){
+        $("#totalPassif").val($.fn.calculateTotalPassif());
+      });
+
+      $.fn.calculateTotalPassif = function()
+      {
+        var sousTotaux = $('.comptesPassifs');
+        var total = 0;
+        for (let i = 0; i < sousTotaux.length; i++) {
+          const element = sousTotaux[i];
+          total += eval(element.value)
+        }
+
+        // console.log("Le total fait " + total);
+        return total;
+      }
+    })
+  </script>
+{% endblock %}

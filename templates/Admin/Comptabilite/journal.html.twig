@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Journal de l'exercice de {{ exercice.label }}{% endblock %}
+
+
+{% block stylesheets %}
+<style>
+  .big-icons{
+    font-size: 1.5em;
+  }
+</style>
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+<div class="fh5co-narrow-content">
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Journal de l'exercice de <strong>{{ exercice.label }}</strong></h2>
+  {% if exercice.acheve == 0 %}
+    <a href="{{ path('ecrire_dans_journal', {id: exercice.id}) }}" class="btn-primary btn-sm">Ecrire dans le journal</a>
+  {% endif %}
+  <div class="row">
+    <div class="table-responsive">
+      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            <th width="5%">#</th>
+            <th width="">Numéro</th>
+            <th width="">Date</th>
+            <th width="">Libellé</th>
+            <th width="">Débit</th>
+            <th width="">Crédit</th>
+            <th width="">TVA</th>
+            <th width="">Montant</th>
+            <th width="">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% set i = 0 %}
+        {% for ecriture in ecritures %}
+          {% set i = i + 1 %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ ecriture.numero }}</td>
+            <td>{{ ecriture.date|date('d-m-Y') }}</td>
+            <td>{{ ecriture.label }}</td>
+            <td>{{ ecriture.debit.compte.numero }} - {{ ecriture.debit.compte.label }}</td>
+            <td>{{ ecriture.credit.compte.numero }} - {{ ecriture.credit.compte.label }}</td>
+            <td>{{ ecriture.tva }}%</td>
+            <td>{{ ecriture.montant|number_format(0, ',', ' ') }} F</td>
+            <td>
+              <div class="row big-icons">
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: ecriture.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le bilan initial"><i class="icon-cloud-storage"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: ecriture.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le journal"><i class="icon-cog"></i></a></div>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

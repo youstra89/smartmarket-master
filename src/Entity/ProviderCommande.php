@@ -132,6 +132,11 @@ class ProviderCommande
      */
     private $echeances;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\ComptaEcriture", mappedBy="achat", cascade={"persist", "remove"})
+     */
+    private $comptaEcriture;
+
     public function __construct()
     {
         $this->ended       = false;
@@ -469,6 +474,24 @@ class ProviderCommande
             if ($echeance->getCommande() === $this) {
                 $echeance->setCommande(null);
             }
+        }
+
+        return $this;
+    }
+
+    public function getComptaEcriture(): ?ComptaEcriture
+    {
+        return $this->comptaEcriture;
+    }
+
+    public function setComptaEcriture(?ComptaEcriture $comptaEcriture): self
+    {
+        $this->comptaEcriture = $comptaEcriture;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newAchat = null === $comptaEcriture ? null : $this;
+        if ($comptaEcriture->getAchat() !== $newAchat) {
+            $comptaEcriture->setAchat($newAchat);
         }
 
         return $this;

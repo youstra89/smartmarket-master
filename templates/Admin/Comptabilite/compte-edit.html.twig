@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Ajout d'un compte{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+    <div class="fh5co-narrow-content">
+        <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+        <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ajout d'un nouveau compte <strong></strong> </h2>
+        <div class="row">
+            {{ form_start(form, {'attr': {'class': ''}}) }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.numero) }}
+                            {{ form_widget(form.numero, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        <div class="form-error">
+                            {{ form_errors(form.numero) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="">Classe</label>
+                            <input type="text" value="{{ compte.classe.label }}" class="form-control" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            {{ form_label(form.label) }}
+                            {{ form_widget(form.label, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-sm btn-info" onclick="submitForm(this);">{{ button|default('Appliquer') }}</button>
+            {{ form_end(form) }}
+        </div>
+        
+    </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

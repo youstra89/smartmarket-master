@@ -91,9 +91,13 @@
           </div>
         {# </div>
         <div class="row"> #}
-          <div class="form-group col-md-6">
+          <div class="form-group col-md-3">
             <label for="date">Date de la commande</label><br>
             <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}">
+          </div>
+          <div class="form-group col-md-3">
+            <label for="tva">TVA</label><br>
+            <input type="number" name="tva" id="tva" value="0">
           </div>
         </div>
         {% set i = 0 %}
@@ -116,8 +120,12 @@
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="4"><h4>Total de la commande</h4></td>
+                <td colspan="4"><h4>Total de la commande (HT)</h4></td>
                 <td><h4><input type="text" id="total" name="total" value="" readonly required></h4></td>
+              </tr>
+              <tr>
+                <td colspan="4"><h4>Valeur TVA</h4></td>
+                <td><h4><input type="text" id="ttc" name="ttc" value="" readonly required></h4></td>
               </tr>
             </tfoot>
           </table>
@@ -226,6 +234,10 @@
             $('#products option[value="'+ id +'"]').remove();
             $("#notif p").text('');
             $("#total").val($.fn.calculateTotal())
+            var t = eval($("#total").val())
+            var tva = eval($("#tva").val()) / 100
+            var taxe = eval(t * tva)
+            $("#ttc").val(taxe)
           }
           else{
             $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');
@@ -329,7 +341,13 @@
       });
 
       
-      $('#save').on('click', function(){
+      $('#save').on('click', function(e){
+        var client = $("#customer").val()
+        // alert(client);
+        if('' == client){
+          alert("Vous n'avez pas sélectionné de client pour cette vente");
+          e.preventDefault();
+        }
         $(this).attr('disabled', disabled);
       });
 
@@ -345,6 +363,15 @@
         console.log("Le total fait " + total);
         return total;
       }
+
+
+      // Si le taux de la tva change, il faut mettre à jour 
+      $("#tva").on("change paste input keyup", function(){
+        var t = eval($("#total").val())
+        var tva = eval($("#tva").val()) / 100
+        var taxe = eval(t * tva)
+        $("#ttc").val(taxe)
+      })
 
       $.fn.deleteProduct = function(id)
       {
@@ -372,7 +399,11 @@
         $('#tableLineId' + id).remove()
 
         // 4. On calcule à nouveau le total de la commande
-        $("#total").val($.fn.calculateTotal());
+        $("#total").val($.fn.calculateTotal())
+        var t = eval($("#total").val())
+        var tva = eval($("#tva").val()) / 100
+        var taxe = eval(t * tva)
+        $("#ttc").val(taxe)
       }
 
     });

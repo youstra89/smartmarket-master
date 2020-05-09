@@ -145,7 +145,7 @@
                   <strong>Date de commande:</strong>
                   <span>{{ commande.date|date('d-m-Y') }}</span><br>
                   <strong>Montant total:</strong>
-                  <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
+                  <span>{{ commande.montantTtc|number_format(0, ',', ' ') }} F</span><br>
                   </div>
                 </div>
                 <div class="info-provider" style="">
@@ -194,7 +194,7 @@
                 <tfoot>
                   <tr style="border: 1px solid black">
                     <td colspan="3">TOTAL</td>
-                    <td colspan="2" bgcolor="#D3D3D3" style="align: center">{{ commande.totalAmount|number_format(0, ',', ' ') }} F</td>
+                    <td colspan="2" bgcolor="#D3D3D3" style="align: center">{{ commande.montantTtc|number_format(0, ',', ' ') }} F</td>
                   </tr>
                 </tfoot>
               </table>
@@ -206,7 +206,7 @@
             {% endfor %}
 
             {# Ensuite, on détermine le reste à payer #}
-            {% set resteAPayer = commande.totalAmount - totalPaye %}
+            {% set resteAPayer = commande.montantTtc - totalPaye %}
 
             <h1>Détails règlements</h1>
             <div class="table-responsive">

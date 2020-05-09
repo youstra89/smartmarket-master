@@ -73,6 +73,11 @@ class Depense
      */
     private $amount;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\ComptaEcriture", mappedBy="depense", cascade={"persist", "remove"})
+     */
+    private $comptaEcriture;
+
 
     public function __construct()
     {
@@ -213,6 +218,24 @@ class Depense
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getComptaEcriture(): ?ComptaEcriture
+    {
+        return $this->comptaEcriture;
+    }
+
+    public function setComptaEcriture(?ComptaEcriture $comptaEcriture): self
+    {
+        $this->comptaEcriture = $comptaEcriture;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newDepense = null === $comptaEcriture ? null : $this;
+        if ($comptaEcriture->getDepense() !== $newDepense) {
+            $comptaEcriture->setDepense($newDepense);
+        }
 
         return $this;
     }
