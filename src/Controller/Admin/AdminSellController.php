@@ -570,7 +570,7 @@ class AdminSellController extends AbstractController
         $soldee = false;
         if($this->isCsrfTokenValid('token_reglement', $token)){
           if(empty($date)){
-            $this->addFlash('danger', 'Saisir une valuer pour la date.');
+            $this->addFlash('danger', 'Saisir une valeur pour la date.');
             return $this->redirectToRoute('settlement', ['id' => $id]);
           }
           else

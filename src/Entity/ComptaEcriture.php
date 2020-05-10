@@ -105,12 +105,12 @@ class ComptaEcriture
     private $is_editable;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\CustomerCommande", inversedBy="comptaEcriture", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\CustomerCommande", inversedBy="comptaEcriture", cascade={"persist", "remove"})
      */
     private $vente;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\ProviderCommande", inversedBy="comptaEcriture", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\ProviderCommande", inversedBy="comptaEcriture", cascade={"persist", "remove"})
      */
     private $achat;
 

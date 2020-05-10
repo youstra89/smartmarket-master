@@ -2,10 +2,14 @@
 
 namespace App\Controller;
 
-use App\Entity\ComptaEcriture;
-use App\Entity\ComptaCompteExercice;
-use App\Entity\CustomerCommande;
 use App\Entity\Settlement;
+use App\Entity\ComptaEcriture;
+use App\Entity\ComptaExercice;
+use App\Entity\CustomerCommande;
+use App\Entity\ComptaCompteExercice;
+use App\Entity\Depense;
+use App\Entity\ProviderCommande;
+use App\Entity\ProviderSettlement;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -34,19 +38,15 @@ class FonctionsComptabiliteController extends AbstractController
       $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
       $reference = $this->generateReferenceEcriture($derniereEcriture);
 
-      $ecriture = new ComptaEcriture();
-      $ecriture->setExercice($exercice);
-      $ecriture->setNumero($reference);
-      $ecriture->setVente($vente);
-      $ecriture->setDate($date);
-      $ecriture->setLabel("Vente de marchandises");
-      $ecriture->setDebit($compteClient);
-      $ecriture->setCredit($compteMarchandise);
-      $ecriture->setTva(0);
-      $ecriture->setMontant($totalMarchandises);
-      $ecriture->setRemarque(null);
-      // $ecriture->setIsEditable(true);
-      $ecriture->setCreatedBy($this->getUser());
+      $label           = "Vente de marchandises";
+      $tva             = 0;
+      $montant         = $totalMarchandises;
+      $remarque        = null;
+      $compteADebiter  = $compteClient;
+      $compteAcrediter = $compteMarchandise;
+      $ecriture_liee_a = $vente;
+      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+
       $manager->persist($ecriture);
 
 
@@ -60,20 +60,14 @@ class FonctionsComptabiliteController extends AbstractController
   
         // 3 - Troisième et dernière étape, on écrit dans le journal
         $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
-        $reference = $this->generateReferenceEcriture($derniereEcriture);
-
-        $ecriture = new ComptaEcriture();
-        $ecriture->setExercice($exercice);
-        $ecriture->setNumero($reference);
-        $ecriture->setDate($date);
-        $ecriture->setLabel("TVA collectée sur vente de marchandises");
-        $ecriture->setDebit($compteTVACollectee);
-        $ecriture->setCredit($compteClient);
-        $ecriture->setTva(0);
-        $ecriture->setMontant($montantTva);
-        $ecriture->setRemarque(null);
-        // $ecriture->setIsEditable(true);
-        $ecriture->setCreatedBy($this->getUser());
+        $reference        = $this->generateReferenceEcriture($derniereEcriture, 2);
+        $label            = "TVA collectée sur vente de marchandises";
+        $tva              = 0;
+        $montant          = $montantTva;
+        $remarque         = null;
+        $compteADebiter   = $compteTVACollectee;
+        $compteAcrediter  = $compteClient;
+        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
         $manager->persist($ecriture);
       }
 
@@ -107,19 +101,14 @@ class FonctionsComptabiliteController extends AbstractController
       $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
       $reference = $this->generateReferenceEcriture($derniereEcriture);
 
-      $ecriture = new ComptaEcriture();
-      $ecriture->setExercice($exercice);
-      $ecriture->setNumero($reference);
-      $ecriture->setReglementClient($settlement);
-      $ecriture->setDate($date);
-      $ecriture->setLabel("Règlement de la commande N°$referenceCommande");
-      $ecriture->setDebit($compteADebiter);
-      $ecriture->setCredit($compteClient);
-      $ecriture->setTva(0);
-      $ecriture->setMontant($montant);
-      $ecriture->setRemarque(null);
-      // $ecriture->setIsEditable(true);
-      $ecriture->setCreatedBy($this->getUser());
+      $label           = "Règlement de la commande N°$referenceCommande";
+      $tva             = 0;
+      $montant         = $montant;
+      $remarque        = null;
+      $compteADebiter  = $compteADebiter;
+      $compteAcrediter = $compteClient;
+      $ecriture_liee_a = $settlement;
+      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
       $manager->persist($ecriture);
 
       try{
@@ -149,6 +138,8 @@ class FonctionsComptabiliteController extends AbstractController
       {
         $montant = $nouveauMontant - $ancienMontant;
         $option  = "augmentation";
+        $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+        $reference = $this->generateReferenceEcriture($derniereEcriture);
 
         // 1 - On commence par créditer le compte marchandise
         $compteMarchandise = $manager->getRepository(ComptaCompteExercice::class)->findCompte(11, $exerciceId);
@@ -162,22 +153,15 @@ class FonctionsComptabiliteController extends AbstractController
         $compteVenteMarchandises = $manager->getRepository(ComptaCompteExercice::class)->findCompte(25, $exerciceId);
         $compteVenteMarchandises->setMontantFinal($compteVenteMarchandises->getMontantFinal() + $montant);
 
-        // 4 - Quatième et dernière étape, on écrit dans le journal
-        $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
-        $reference = $this->generateReferenceEcriture($derniereEcriture);
-
-        $ecriture = new ComptaEcriture();
-        $ecriture->setExercice($exercice);
-        $ecriture->setNumero($reference);
-        $ecriture->setVente($vente);
-        $ecriture->setDate(new \DateTime());
-        $ecriture->setLabel("Vente de marchandises (augmentation de la vente N°$referenceVente)");
-        $ecriture->setDebit($compteClient);
-        $ecriture->setCredit($compteMarchandise);
-        $ecriture->setTva(0);
-        $ecriture->setMontant($montant);
-        $ecriture->setRemarque(null);
-        $ecriture->setCreatedBy($this->getUser());
+        $label           = "Vente de marchandises (augmentation de la vente N°$referenceVente)";
+        $tva             = 0;
+        $date            = new \DateTime();
+        $montant         = $montant;
+        $remarque        = null;
+        $compteADebiter  = $compteClient;
+        $compteAcrediter = $compteMarchandise;
+        $ecriture_liee_a = $vente;
+        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
         $manager->persist($ecriture);
       }
 
@@ -202,22 +186,15 @@ class FonctionsComptabiliteController extends AbstractController
         $compteAchatMarchandises = $manager->getRepository(ComptaCompteExercice::class)->findCompte(25, $exerciceId);
         $compteAchatMarchandises->setMontantFinal($compteAchatMarchandises->getMontantFinal() + $montant);
 
-        // 4 - Quatième et dernière étape, on écrit dans le journal
-        $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
-        $reference = $this->generateReferenceEcriture($derniereEcriture);
-
-        $ecriture = new ComptaEcriture();
-        $ecriture->setExercice($exercice);
-        $ecriture->setNumero($reference);
-        $ecriture->setVente($vente);
-        $ecriture->setDate(new \DateTime());
-        $ecriture->setLabel("Retour de marchandises (diminution de la vente N°$referenceVente)");
-        $ecriture->setDebit($compteMarchandise);
-        $ecriture->setCredit($compteClient);
-        $ecriture->setTva(0);
-        $ecriture->setMontant($montant);
-        $ecriture->setRemarque(null);
-        $ecriture->setCreatedBy($this->getUser());
+        $label           = "Vente de marchandises (diminution de la vente N°$referenceVente)";
+        $tva             = 0;
+        $date            = new \DateTime();
+        $montant         = $montant;
+        $remarque        = null;
+        $compteADebiter  = $compteMarchandise;
+        $compteAcrediter = $compteClient;
+        $ecriture_liee_a = $vente;
+        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
         $manager->persist($ecriture);
       }
 
@@ -239,20 +216,17 @@ class FonctionsComptabiliteController extends AbstractController
   
         // 3 - Troisième et dernière étape, on écrit dans le journal
         $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
-        $reference = $this->generateReferenceEcriture($derniereEcriture);
+        $reference = $this->generateReferenceEcriture($derniereEcriture, 2);
 
-        $ecriture = new ComptaEcriture();
-        $ecriture->setExercice($exercice);
-        $ecriture->setNumero($reference);
-        $ecriture->setDate(new \DateTime());
-        $ecriture->setLabel($label);
-        $ecriture->setDebit($compteADebiter);
-        $ecriture->setCredit($compteAcrediter);
-        $ecriture->setTva(0);
-        $ecriture->setMontant($montantTva);
-        $ecriture->setRemarque(null);
-        // $ecriture->setIsEditable(true);
-        $ecriture->setCreatedBy($this->getUser());
+        $label           = "Vente de marchandises (diminution de la vente N°$referenceVente)";
+        $tva             = 0;
+        $date            = new \DateTime();
+        $montant         = $montant;
+        $remarque        = null;
+        $compteADebiter  = $compteMarchandise;
+        $compteAcrediter = $compteClient;
+        $ecriture_liee_a = $vente;
+        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
         $manager->persist($ecriture);
       }
 
@@ -265,7 +239,82 @@ class FonctionsComptabiliteController extends AbstractController
     }
 
 
-    public function generateReferenceEcriture(object $object = null)
+    public function EcritureDeReglementsFournisseursDansLeJournalComptable(EntityManagerInterface $manager, int $mode, int $montant, object $exercice, \DateTime $date, ProviderSettlement $settlement)
+    {
+      $exerciceId = $exercice->getId();
+      $referenceCommande = $settlement->getCommande()->getReference();
+
+      // 1 - On commence par débiter le compte fournisseur
+      $compteFournisseur = $manager->getRepository(ComptaCompteExercice::class)->findCompte(14, $exerciceId);
+      $compteADebiter    = $compteFournisseur->setMontantFinal($compteFournisseur->getMontantFinal() - $montant);
+       
+      // 2 - On crédite ensuite soit le compte caisse, soit le compte banque
+      if($mode == 1)
+        $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+      elseif($mode == 2)
+        $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+
+      $compteAcrediter->setMontantFinal($compteAcrediter->getMontantFinal() - $montant);
+
+      // 3 - Et enfin la dernière étape, on écrit dans le journal
+      $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+      $reference = $this->generateReferenceEcriture($derniereEcriture);
+
+      $label = "Règelement fournisseur commande N°$referenceCommande";
+      $tva = 0;
+      $remarque = null;
+      $ecriture_liee_a = $settlement;
+
+      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $manager->persist($ecriture);
+
+      try{
+        $manager->flush();
+      } 
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+      }
+    }
+
+
+    public function genererNouvelleEcritureDuJournal(ComptaExercice $exercice, string $reference, \DateTime $date, string $label, ComptaCompteExercice $compteADebiter, ComptaCompteExercice $compteAcrediter, int $tva, int $montant, string $remarque = null, $ecriture_liee_a = null)
+    {
+      /**
+       * Cette fonction permet de créer une nouvelle entité écriture. Vu qu'une écriture peut liée à une vente, 
+       * un achat, un règelement client ou fournisseur, il va falloir vérifier à chaque fois le paramètre $ecriture_liee_a
+       */ 
+      $ecriture = new ComptaEcriture();
+      $ecriture->setExercice($exercice);
+      $ecriture->setNumero($reference);
+      $ecriture->setDate($date);
+      $ecriture->setLabel($label);
+      $ecriture->setDebit($compteADebiter);
+      $ecriture->setCredit($compteAcrediter);
+      $ecriture->setTva($tva);
+      $ecriture->setMontant($montant);
+      $ecriture->setRemarque($remarque);
+      $ecriture->setCreatedBy($this->getUser());
+      if ($ecriture_liee_a instanceof Settlement) {
+        $ecriture->setReglementClient($ecriture_liee_a);
+      }
+      elseif ($ecriture_liee_a instanceof ProviderSettlement) {
+        $ecriture->setRegelementFournisseur($ecriture_liee_a);
+      }
+      elseif ($ecriture_liee_a instanceof CustomerCommande) {
+        $ecriture->setVente($ecriture_liee_a);
+      }
+      elseif ($ecriture_liee_a instanceof ProviderCommande) {
+        $ecriture->setAchat($ecriture_liee_a);
+      }
+      elseif ($ecriture_liee_a instanceof Depense) {
+        $ecriture->setDepense($ecriture_liee_a);
+      }
+
+      return $ecriture;
+    }
+
+
+    public function generateReferenceEcriture(object $object = null, int $increment = 1)
     {
       $prefix = "SM-";
       
@@ -273,7 +322,7 @@ class FonctionsComptabiliteController extends AbstractController
       {
         $zero = "";
         $number = (int) substr($object->getNumero(), 3);
-        $numero_ordre = $number + 1;
+        $numero_ordre = $number + $increment;
         if(strlen($numero_ordre) == 1){
           $zero = '00';
         } 

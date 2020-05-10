@@ -133,9 +133,19 @@ class ProviderCommande
     private $echeances;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\ComptaEcriture", mappedBy="achat", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="App\Entity\ComptaEcriture", mappedBy="achat", cascade={"persist", "remove"})
      */
     private $comptaEcriture;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $tva;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $montant_ttc;
 
     public function __construct()
     {
@@ -493,6 +503,30 @@ class ProviderCommande
         if ($comptaEcriture->getAchat() !== $newAchat) {
             $comptaEcriture->setAchat($newAchat);
         }
+
+        return $this;
+    }
+
+    public function getTva(): ?int
+    {
+        return $this->tva;
+    }
+
+    public function setTva(int $tva): self
+    {
+        $this->tva = $tva;
+
+        return $this;
+    }
+
+    public function getMontantTtc(): ?int
+    {
+        return $this->montant_ttc;
+    }
+
+    public function setMontantTtc(int $montant_ttc): self
+    {
+        $this->montant_ttc = $montant_ttc;
 
         return $this;
     }

@@ -123,7 +123,7 @@ class CustomerCommande
     private $montant_ttc;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\ComptaEcriture", mappedBy="vente", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="App\Entity\ComptaEcriture", mappedBy="vente", cascade={"persist", "remove"})
      */
     private $comptaEcriture;
 

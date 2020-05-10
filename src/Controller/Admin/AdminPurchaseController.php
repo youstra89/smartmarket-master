@@ -6,17 +6,20 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Product;
 use App\Entity\Informations;
+use App\Entity\ComptaExercice;
 use App\Entity\ProviderCommande;
 use App\Entity\ProviderSettlement;
 use App\Form\ProviderCommandeType;
+use App\Entity\ComptaCompteExercice;
 use App\Entity\ProviderCommandeSearch;
 use App\Entity\ProviderCommandeDetails;
 use App\Form\ProviderCommandeSearchType;
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Controller\FonctionsComptabiliteController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -325,7 +328,13 @@ class AdminPurchaseController extends AbstractController
      */
     public function provider_settlements(Request $request, int $id, ProviderCommande $commande, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
-      // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
+      if ($commande->getEnded() == true) {
+        $this->addFlash('warning', 'Cette commande est déjà soldée.');
+        return $this->redirectToRoute('purchase');
+      }
+      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $exerciceId = $exercice->getId();
+
       $reglements = $commande->getSettlements();
       // $total = array_sum(array_map('getValue', $reglements));
       $total = 0;
@@ -339,17 +348,50 @@ class AdminPurchaseController extends AbstractController
         $data = $request->request->all();
         $token  = $data['token'];
         $date   = new \DateTime($data['date']);
+        $mode   = $data['mode'];
         $amount = $data['amount'];
         $commandeId = $commande->getId();
         // return new Response(var_dump($data));
         if($this->isCsrfTokenValid('token_reglement_fournisseur', $token)){
           if(empty($date)){
-            $this->addFlash('danger', 'Saisir une valuer pour la date.');
+            $this->addFlash('danger', 'Saisir une valeur pour la date.');
             return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+          }
+          else
+          {
+            $date = new \DateTime($data["date"]);
+            if($date < $exercice->getDateDebut() or $date > $exercice->getDateFin()){
+              $this->addFlash('danger', 'Impossible de continuer. La date saisie ne fait pas partie de la période d\'exercice en cours.');
+              return $this->redirectToRoute('settlement', ['id' => $id]);
+            }
           }
           if(empty($amount) or $amount < 0){
             $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
             // return new Response("Montant nul ou négatif");
+            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+          }
+
+          /**
+           * On va faire une certaine vérification. Le but est de savoir si le compte qui est sélectionné pour le règlement a
+           * un solde débiteur et s'il peut satisfaire le règlement.
+           * 
+           * On selectionne donc ce compte qui est soit la banque, soit la caisse. Si le solde du compte en question est supérieur 
+           * ou égal au montant du règlement, alors on peut continuer le règlement. Sinon, on renvoie une erreur à l'utilisateur
+           */
+          if($mode == 1){
+            $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+            $montantDuCompte = $compteAcrediter->getMontantFinal();
+            $compte = "Caisse";
+          }
+          elseif($mode == 2){
+            $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+            $montantDuCompte = $compteAcrediter->getMontantFinal();
+            $compte = "Banque";
+          }
+          
+          if($compteAcrediter->getMontantFinal() < $amount)
+          {
+            $this->addFlash('danger', 'Le solde du compte <strong>'.$compte.' ('.number_format($montantDuCompte, 0, ',', ' ').' F</strong>) est inféreur au montant saisie qui est de <strong>'.number_format($amount, 0, ',', ' ').' F</strong>');
             return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
           }
           $newTotal = $amount + $total;
@@ -382,13 +424,14 @@ class AdminPurchaseController extends AbstractController
           $settlement = new ProviderSettlement();
           $settlement->setDate($date);
           $settlement->setAmount($amount);
+          $settlement->setModePaiement($mode);
           $settlement->setNumber($settlementNumber);
           $settlement->setCreatedBy($this->getUser());
           $settlement->setCommande($commande);
           $manager->persist($settlement);
           try{
             $manager->flush();
-            $fonctions->EcritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
+            $fonctions->EcritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -397,6 +440,9 @@ class AdminPurchaseController extends AbstractController
             return $this->redirectToRoute('purchase');
           else
             return $this->redirectToRoute('accounting_creance');
+        }
+        else{
+          $this->addFlash('danger', 'Jéton de sécurité invalide. Vous avez certement mis trop de temps sur cette page.');
         }
       }
       return $this->render('Admin/Purchase/settlement.html.twig', [

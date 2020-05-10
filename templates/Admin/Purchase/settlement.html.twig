@@ -121,6 +121,15 @@
             <h3>Nouveau règlement</h3>
             <form class="" action="" method="post">
               <div class="row">
+                <div class="col-md-12">
+                  <label for="mode">Mode de paiement</label>
+                  <select name="mode" id="mode" class="form-control" required>
+                    <option value="1">Espèce</option>
+                    <option value="2">Virement</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
                 <div class="col-md-6">
                   <label for="date">Date de règlement</label>
                   <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="form-control" required>
