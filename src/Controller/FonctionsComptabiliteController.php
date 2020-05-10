@@ -16,13 +16,13 @@ class FonctionsComptabiliteController extends AbstractController
     public function EcritureDeVenteDansLeJournalComptable(EntityManagerInterface $manager, int $totalMarchandises, int $tva, object $exercice, \DateTime $date, CustomerCommande $vente)
     {
       $exerciceId = $exercice->getId();
-      $tva = ($totalMarchandises * $tva) / 100;
+      $montantTva = ($totalMarchandises * $tva) / 100;
 
-      // 1 - On commence par débiter le compte marchandise
+      // 1 - On commence par créditer le compte marchandise
       $compteMarchandise = $manager->getRepository(ComptaCompteExercice::class)->findCompte(11, $exerciceId);
       $compteMarchandise->setMontantFinal($compteMarchandise->getMontantFinal() - $totalMarchandises);
 
-      // 2 - On crédite enfin le compte client
+      // 2 - On débite enfin le compte client
       $compteClient = $manager->getRepository(ComptaCompteExercice::class)->findCompte(9, $exerciceId);
       $compteClient->setMontantFinal($compteClient->getMontantFinal() + $totalMarchandises);
 
@@ -40,8 +40,8 @@ class FonctionsComptabiliteController extends AbstractController
       $ecriture->setVente($vente);
       $ecriture->setDate($date);
       $ecriture->setLabel("Vente de marchandises");
-      $ecriture->setDebit($compteMarchandise);
-      $ecriture->setCredit($compteClient);
+      $ecriture->setDebit($compteClient);
+      $ecriture->setCredit($compteMarchandise);
       $ecriture->setTva(0);
       $ecriture->setMontant($totalMarchandises);
       $ecriture->setRemarque(null);
@@ -50,14 +50,13 @@ class FonctionsComptabiliteController extends AbstractController
       $manager->persist($ecriture);
 
 
-      if($tva != 0){
-        // 1 - On débite le compte TVA du montant de la TVA si et seulement si la TVA n'est pas nulle
+      if($montantTva != 0){
+        // 1 - On créditer le compte TVA du montant de la TVA si et seulement si la TVA n'est pas nulle
         $compteTVACollectee = $manager->getRepository(ComptaCompteExercice::class)->findCompte(17, $exerciceId);
-        $compteTVACollectee->setMontantFinal($compteTVACollectee->getMontantFinal() + $tva);
+        $compteTVACollectee->setMontantFinal($compteTVACollectee->getMontantFinal() + $montantTva);
   
-        // 2 - On crédite enfin le compte client
-        // $compteClient = $manager->getRepository(ComptaCompteExercice::class)->findCompte(9, $exerciceId);
-        $compteClient->setMontantFinal($compteClient->getMontantFinal() + $tva);
+        // 2 - On débiter enfin le compte client
+        $compteClient->setMontantFinal($compteClient->getMontantFinal() + $montantTva);
   
         // 3 - Troisième et dernière étape, on écrit dans le journal
         $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
@@ -71,7 +70,7 @@ class FonctionsComptabiliteController extends AbstractController
         $ecriture->setDebit($compteTVACollectee);
         $ecriture->setCredit($compteClient);
         $ecriture->setTva(0);
-        $ecriture->setMontant($tva);
+        $ecriture->setMontant($montantTva);
         $ecriture->setRemarque(null);
         // $ecriture->setIsEditable(true);
         $ecriture->setCreatedBy($this->getUser());
@@ -92,17 +91,17 @@ class FonctionsComptabiliteController extends AbstractController
       $exerciceId = $exercice->getId();
       $referenceCommande = $settlement->getCommande()->getReference();
 
-      // 1 - On commence par débiter le compte client
+      // 1 - On commence par crediter le compte client
       $compteClient = $manager->getRepository(ComptaCompteExercice::class)->findCompte(9, $exerciceId);
       $compteClient->setMontantFinal($compteClient->getMontantFinal() - $montant);
       
-      // 2 - On crédite ensuite soit le compte caisse, soit le compte banque
+      // 2 - On débiter ensuite soit le compte caisse, soit le compte banque
       if($mode == 1)
-        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+        $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
       elseif($mode == 2)
-        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+        $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
 
-      $compteACrediter->setMontantFinal($compteACrediter->getMontantFinal() + $montant);
+      $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() + $montant);
 
       // 3 - Et enfin la dernière étape, on écrit dans le journal
       $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
@@ -114,8 +113,8 @@ class FonctionsComptabiliteController extends AbstractController
       $ecriture->setReglementClient($settlement);
       $ecriture->setDate($date);
       $ecriture->setLabel("Règlement de la commande N°$referenceCommande");
-      $ecriture->setDebit($compteClient);
-      $ecriture->setCredit($compteACrediter);
+      $ecriture->setDebit($compteADebiter);
+      $ecriture->setCredit($compteClient);
       $ecriture->setTva(0);
       $ecriture->setMontant($montant);
       $ecriture->setRemarque(null);
@@ -134,10 +133,13 @@ class FonctionsComptabiliteController extends AbstractController
 
     public function ecritureDeModificationDeVente(EntityManagerInterface $manager, CustomerCommande $vente, int $ancienMontant)
     {
+      $tva            = $vente->getTva();
       $nouveauMontant = $vente->getTotalAmount();
       $referenceVente = $vente->getReference();
       $exercice       = $vente->getExercice();
       $exerciceId     = $exercice->getId();
+      $montant        = 0;
+      $option         = "";
 
       /**
        * Si le nouveau montant de le vente est supérieur à l'ancien, alors il y a eu augmentation de la vente.
@@ -146,12 +148,13 @@ class FonctionsComptabiliteController extends AbstractController
       if($nouveauMontant > $ancienMontant)
       {
         $montant = $nouveauMontant - $ancienMontant;
+        $option  = "augmentation";
 
-        // 1 - On commence par débiter le compte marchandise
+        // 1 - On commence par créditer le compte marchandise
         $compteMarchandise = $manager->getRepository(ComptaCompteExercice::class)->findCompte(11, $exerciceId);
         $compteMarchandise->setMontantFinal($compteMarchandise->getMontantFinal() - $montant);
 
-        // 2 - On crédite enfin le compte client
+        // 2 - On débite enfin le compte client
         $compteClient = $manager->getRepository(ComptaCompteExercice::class)->findCompte(9, $exerciceId);
         $compteClient->setMontantFinal($compteClient->getMontantFinal() + $montant);
 
@@ -169,8 +172,8 @@ class FonctionsComptabiliteController extends AbstractController
         $ecriture->setVente($vente);
         $ecriture->setDate(new \DateTime());
         $ecriture->setLabel("Vente de marchandises (augmentation de la vente N°$referenceVente)");
-        $ecriture->setDebit($compteMarchandise);
-        $ecriture->setCredit($compteClient);
+        $ecriture->setDebit($compteClient);
+        $ecriture->setCredit($compteMarchandise);
         $ecriture->setTva(0);
         $ecriture->setMontant($montant);
         $ecriture->setRemarque(null);
@@ -185,6 +188,7 @@ class FonctionsComptabiliteController extends AbstractController
       if($ancienMontant > $nouveauMontant)
       {
         $montant = $ancienMontant - $nouveauMontant;
+        $option  = "diminution";
 
         // 1 - On commence par débiter le compte marchandise
         $compteMarchandise = $manager->getRepository(ComptaCompteExercice::class)->findCompte(11, $exerciceId);
@@ -208,11 +212,46 @@ class FonctionsComptabiliteController extends AbstractController
         $ecriture->setVente($vente);
         $ecriture->setDate(new \DateTime());
         $ecriture->setLabel("Retour de marchandises (diminution de la vente N°$referenceVente)");
-        $ecriture->setDebit($compteClient);
-        $ecriture->setCredit($compteMarchandise);
+        $ecriture->setDebit($compteMarchandise);
+        $ecriture->setCredit($compteClient);
         $ecriture->setTva(0);
         $ecriture->setMontant($montant);
         $ecriture->setRemarque(null);
+        $ecriture->setCreatedBy($this->getUser());
+        $manager->persist($ecriture);
+      }
+
+      if($tva != 0){
+        $montant    = abs($montant);
+        $montantTva = ($montant * $tva) / 100;
+        $compteTVACollectee = $manager->getRepository(ComptaCompteExercice::class)->findCompte(17, $exerciceId);
+        if($option == "augmentation"){
+          $label = "TVA collectée sur vente de marchandises (augmentation de marchandises)";
+          // En cas d'augmentation, on crédite le compte TVA collectée et on débite enfin le compte client
+          $compteAcrediter = $compteTVACollectee->setMontantFinal($compteTVACollectee->getMontantFinal() + $tva);
+          $compteADebiter  = $compteClient->setMontantFinal($compteClient->getMontantFinal() + $tva);
+        }
+        elseif ($option == "diminution") {
+          $label = "Débit du compte TVA collectée (diminution de marchandises)";
+          $compteADebiter  = $compteTVACollectee->setMontantFinal($compteTVACollectee->getMontantFinal() - $tva);
+          $compteAcrediter = $compteClient->setMontantFinal($compteClient->getMontantFinal() - $tva);
+        }
+  
+        // 3 - Troisième et dernière étape, on écrit dans le journal
+        $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+        $reference = $this->generateReferenceEcriture($derniereEcriture);
+
+        $ecriture = new ComptaEcriture();
+        $ecriture->setExercice($exercice);
+        $ecriture->setNumero($reference);
+        $ecriture->setDate(new \DateTime());
+        $ecriture->setLabel($label);
+        $ecriture->setDebit($compteADebiter);
+        $ecriture->setCredit($compteAcrediter);
+        $ecriture->setTva(0);
+        $ecriture->setMontant($montantTva);
+        $ecriture->setRemarque(null);
+        // $ecriture->setIsEditable(true);
         $ecriture->setCreatedBy($this->getUser());
         $manager->persist($ecriture);
       }

@@ -150,6 +150,11 @@ class AdminSellController extends AbstractController
                 return $this->redirectToRoute('unique_form_for_selling');
               }
             }
+            if(empty($data["customer"]))
+            {
+              $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans client.');
+              return $this->redirectToRoute('unique_form_for_selling');
+            }
             if(empty($data["products"]))
             {
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');

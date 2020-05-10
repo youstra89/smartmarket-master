@@ -97,7 +97,11 @@
           </div>
           <div class="form-group col-md-3">
             <label for="tva">TVA</label><br>
-            <input type="number" name="tva" id="tva" value="0">
+            <select name="tva" id="tva" required>
+              <option value="">Sélectionner un taux</option>
+              <option value="0" selected>0%</option>
+              <option value="18">18%</option>
+            </select>
           </div>
         </div>
         {% set i = 0 %}
@@ -120,12 +124,16 @@
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="4"><h4>Total de la commande (HT)</h4></td>
-                <td><h4><input type="text" id="total" name="total" value="" readonly required></h4></td>
+                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Total de la commande (HT)</span></td>
+                <td><input type="text" id="total" name="total" value="" readonly required></td>
               </tr>
               <tr>
-                <td colspan="4"><h4>Valeur TVA</h4></td>
-                <td><h4><input type="text" id="ttc" name="ttc" value="" readonly required></h4></td>
+                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Valeur TVA</span></td>
+                <td><input type="text" id="montantTva" name="montantTva" value="" readonly required></td>
+              </tr>
+              <tr>
+                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Montant TTC</span></td>
+                <td><input type="text" id="ttc" name="ttc" value="" readonly required></td>
               </tr>
             </tfoot>
           </table>
@@ -237,13 +245,14 @@
             var t = eval($("#total").val())
             var tva = eval($("#tva").val()) / 100
             var taxe = eval(t * tva)
-            $("#ttc").val(taxe)
+            $("#montantTva").val(taxe)
+            $("#ttc").val(t + taxe)
           }
           else{
             $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');
           }
         }
-        e.preventDefault();
+        return false;
       });
 
 
@@ -341,12 +350,12 @@
       });
 
       
-      $('#save').on('click', function(e){
+      $('#save').on('click', function(){
         var client = $("#customer").val()
         // alert(client);
-        if('' == client){
+        if('' == client || null == client || undefined == client){
           alert("Vous n'avez pas sélectionné de client pour cette vente");
-          e.preventDefault();
+          return false;
         }
         $(this).attr('disabled', disabled);
       });
@@ -366,11 +375,12 @@
 
 
       // Si le taux de la tva change, il faut mettre à jour 
-      $("#tva").on("change paste input keyup", function(){
+      $("#tva").on("change", function(){
         var t = eval($("#total").val())
-        var tva = eval($("#tva").val()) / 100
+        var tva = parseInt($("#tva").val()) / 100
         var taxe = eval(t * tva)
-        $("#ttc").val(taxe)
+        $("#montantTva").val(taxe)
+        $("#ttc").val(t + taxe)
       })
 
       $.fn.deleteProduct = function(id)
@@ -403,7 +413,8 @@
         var t = eval($("#total").val())
         var tva = eval($("#tva").val()) / 100
         var taxe = eval(t * tva)
-        $("#ttc").val(taxe)
+        $("#montantTva").val(taxe)
+        $("#ttc").val(t + taxe)
       }
 
     });

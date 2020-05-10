@@ -142,13 +142,13 @@
         {
           // console.log("Incorrect");
           alert("Le total actif n'est pas égal au totap passif.");
-          e.preventDefault();
+          return false;
         }
         if(totalActif == 0 || 0 == totalPassif)
         {
           // console.log("Incorrect");
           alert("Vous n'avez saisi aucune donnée.");
-          e.preventDefault();
+          return false;
         }
         else {
           this.form.submit();
@@ -156,17 +156,22 @@
       })
 
 
-      $(".comptesActifs").on("input", function(){
+      $(".comptesActifs").on("input change paste keyup", function(){
         $("#totalActif").val($.fn.calculateTotalActif());
       });
 
       $.fn.calculateTotalActif = function()
       {
-        var sousTotaux = $('.comptesActifs');
+        var montant = $('.comptesActifs');
         var total = 0;
-        for (let i = 0; i < sousTotaux.length; i++) {
-          const element = sousTotaux[i];
-          total += eval(element.value)
+        for (let i = 0; i < montant.length; i++) {
+          var element = montant[i].value;
+          var mt = 0;
+          if(element == 0 || element == null || element == undefined)
+            mt = 0;
+          else
+            mt = parseInt(element);
+          total += mt
         }
 
         // console.log("Le total fait " + total);
@@ -175,17 +180,22 @@
 
 
 
-      $(".comptesPassifs").on("input", function(){
+      $(".comptesPassifs").on("input change paste keyup", function(){
         $("#totalPassif").val($.fn.calculateTotalPassif());
       });
 
       $.fn.calculateTotalPassif = function()
       {
-        var sousTotaux = $('.comptesPassifs');
+        var montant = $('.comptesPassifs');
         var total = 0;
-        for (let i = 0; i < sousTotaux.length; i++) {
-          const element = sousTotaux[i];
-          total += eval(element.value)
+        for (let i = 0; i < montant.length; i++) {
+          var element = montant[i].value;
+          var mt = 0;
+          if(element == 0 || element == null || element == undefined)
+            mt = 0;
+          else
+            mt = parseInt(element);
+          total += mt
         }
 
         // console.log("Le total fait " + total);

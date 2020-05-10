@@ -323,7 +323,7 @@ class AdminPurchaseController extends AbstractController
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProvidererCommande $commande
      */
-    public function provider_settlements(Request $request, int $id, ProviderCommande $commande, EntityManagerInterface $manager)
+    public function provider_settlements(Request $request, int $id, ProviderCommande $commande, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       $reglements = $commande->getSettlements();
@@ -388,6 +388,7 @@ class AdminPurchaseController extends AbstractController
           $manager->persist($settlement);
           try{
             $manager->flush();
+            $fonctions->EcritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
