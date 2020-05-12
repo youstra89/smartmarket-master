@@ -128,7 +128,7 @@ class Provider
         $total = 0;
         foreach ($this->getProviderCommandes() as $key => $value) {
             if($value->getEnded() === false and $value->getIsDeleted() === false)
-                $total = $total + $value->getTotalAmount();
+                $total = $total + $value->getMontantTtc();
         }
         return $total;
     }

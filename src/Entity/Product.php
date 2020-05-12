@@ -110,6 +110,11 @@ class Product
      */
     private $last_seller;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $average_purchase_price;
+
 
     public function __construct()
     {
@@ -330,6 +335,18 @@ class Product
     public function setLastSeller(?User $last_seller): self
     {
         $this->last_seller = $last_seller;
+
+        return $this;
+    }
+
+    public function getAveragePurchasePrice(): ?int
+    {
+        return $this->average_purchase_price;
+    }
+
+    public function setAveragePurchasePrice(int $average_purchase_price): self
+    {
+        $this->average_purchase_price = $average_purchase_price;
 
         return $this;
     }

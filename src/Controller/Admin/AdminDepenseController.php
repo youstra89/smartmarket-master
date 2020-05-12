@@ -8,12 +8,14 @@ use App\Entity\Depense;
 use App\Form\DepenseType;
 use App\Entity\Settlement;
 use App\Entity\Informations;
+use App\Entity\ComptaExercice;
 use App\Entity\CustomerCommande;
 use App\Service\CheckConnectedUser;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Controller\FonctionsComptabiliteController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -39,9 +41,10 @@ class AdminDepenseController extends AbstractController
     /**
      * @Route("/add", name="depenses_add")
      */
-    public function add(Request $request, EntityManagerInterface $manager)
+    public function add(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
         $depense = new Depense();
+        $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
         $form = $this->createForm(DepenseType::class, $depense);
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
@@ -50,6 +53,7 @@ class AdminDepenseController extends AbstractController
           if(isset($data['date']))
           {
             $date = new \DateTime($data['date']);
+            $mode = (int) $data['mode'];
             $mois = $date->format("Y-m");
             $depense->setDateDepense($date);
             $depense->setCreatedAt(new \DateTime());
@@ -57,6 +61,7 @@ class AdminDepenseController extends AbstractController
             $manager->persist($depense);
             try{
               $manager->flush();
+              $fonctions->ecritureDeDepensesDansLeJournalComptable($manager, $depense->getAmount(), $mode, $depense, $depense->getDescription(), $exercice);
               $this->addFlash('success', 'Enregistrement de dépense <strong>'.$depense->getDescription().'</strong> réussie.');
               return $this->redirectToRoute('depenses_du_mois', ["mois" => $mois]);
             } 

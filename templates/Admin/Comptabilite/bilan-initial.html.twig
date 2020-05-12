@@ -42,7 +42,7 @@
                   <div class="row">
                     <div class="col-md-1">{{ item.compte.numero }}</div>
                     <div class="col-md-7">{{ item.compte.label }}</div>
-                    <div class="col-md-4">&nbsp;&nbsp;&nbsp;{{ item.montantInitial|number_format(0, ',', ' ') }} F</div>
+                    <div class="col-md-4" style="text-align: right">{{ item.montantInitial|number_format(2, ',', ' ') }} F</div>
                   </div>
                   {% set sousTotalActif = sousTotalActif + item.montantInitial %}
                   {% set totalActif = totalActif + item.montantInitial %}
@@ -53,7 +53,7 @@
                   <div class="row">
                     <div class="col-md-1">{{ item.compte.numero }}</div>
                     <div class="col-md-7">{{ item.compte.label }}</div>
-                    <div class="col-md-4">&nbsp;&nbsp;&nbsp;{{ item.montantInitial|number_format(0, ',', ' ') }} F</div>
+                    <div class="col-md-4" style="text-align: right">{{ item.montantInitial|number_format(2, ',', ' ') }} F</div>
                   </div>
                   {% set sousTotalPassif = sousTotalPassif + item.montantInitial %}
                   {% set totalPassif = totalPassif + item.montantInitial %}
@@ -61,9 +61,9 @@
               </td>
             <tr>
               <td colspan="1" style="font-style: italic; font-weight: bold">{{ classesActifs[i].label }}</td>
-              <td>{{ sousTotalActif|number_format(0, ',', ' ') }} F</td>
+              <td align="right">{{ sousTotalActif|number_format(2, ',', ' ') }} F</td>
               <td colspan="1" style="font-style: italic; font-weight: bold">{{ classesPassifs[i].label }}</td>
-              <td>{{ sousTotalPassif|number_format(0, ',', ' ') }} F</td>
+              <td align="right">{{ sousTotalPassif|number_format(2, ',', ' ') }} F</td>
             </tr>
             </tr>
           {% endfor %}
@@ -71,9 +71,9 @@
         <tfoot>
           <tr>
             <th>Total</th>
-            <th>{{ totalActif|number_format(0, ',', ' ') }} F</th>
+            <th style="text-align: right">{{ totalActif|number_format(2, ',', ' ') }} F</th>
             <th>Total</th>
-            <th>{{ totalPassif|number_format(0, ',', ' ') }} F</th>
+            <th style="text-align: right">{{ totalPassif|number_format(2, ',', ' ') }} F</th>
           </tr>
         </tfoot>
       </table>

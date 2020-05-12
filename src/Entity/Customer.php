@@ -313,7 +313,7 @@ class Customer
         $total = 0;
         foreach ($this->getCustomerCommandes() as $key => $value) {
             if($value->getEnded() === false and $value->getIsDeleted() === false)
-                $total = $total + $value->getTotalAmount();
+                $total = $total + $value->getMontantTtc();
         }
         return $total;
     }

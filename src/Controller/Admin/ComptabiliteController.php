@@ -4,6 +4,9 @@ namespace App\Controller\Admin;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\Product;
+use App\Entity\Customer;
+use App\Entity\Provider;
 use App\Entity\ComptaClasse;
 use App\Entity\ComptaCompte;
 use App\Entity\Informations;
@@ -29,15 +32,51 @@ class ComptabiliteController extends AbstractController
     /**
      * @Route("/etat-de-l-entreprise", name="etat_entreprise")
      */
-    public function etat_entreprise(EntityManagerInterface $manager, CheckConnectedUser  $checker)
+    public function etat_entreprise(EntityManagerInterface $manager, CheckConnectedUser $checker, FonctionsComptabiliteController $fonctions)
     {
-        if($checker->getAccess() == true)
+        if($checker->getAccess() == true){
           return $this->redirectToRoute('login');
+        }
+        $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+        $creancesClients    = 0;
+        $dettesFournisseurs = 0;
+        $stockMarchandises  = 0;
+        $products = $manager->getRepository(Product::class)->findAll();
+        foreach ($products as $item) {
+          if ($item->getIsDeleted() == 0) {
+            $stockMarchandises = $stockMarchandises + $item->getStock() * $item->getAveragePurchasePrice();
+          }
+        }
+
+        $customers = $manager->getRepository(Customer::class)->findAll();
+        foreach ($customers as $item) {
+          if ($item->getIsDeleted() == 0) {
+            $totalCommandes = $item->getMontantTotalCommandeNonSoldees();
+            $totalReglements = $item->getMontantTotalReglementCommandeNonSoldees();
+            $creance = $totalCommandes - $totalReglements;
+            $creancesClients = $creancesClients + $creance;
+          }
+        }
+
+        $providers = $manager->getRepository(Provider::class)->findAll();
+        foreach ($providers as $item) {
+          if ($item->getIsDeleted() == 0) {
+            $totalCommandes = $item->getMontantTotalCommandeNonSoldees();
+            $totalReglements = $item->getMontantTotalReglementCommandeNonSoldees();
+            $dette = $totalCommandes - $totalReglements;
+            $dettesFournisseurs = $dettesFournisseurs + $dette;
+          }
+        }
+        // $resultat = $fonctions->determinationDuResultatDeLExercice($exercice);
+        // dd($resultat);
 
         $exercices = $manager->getRepository(ComptaExercice::class)->findAll();
         return $this->render('Admin/Comptabilite/index.html.twig', [
-          'current'   => 'accounting',
-          'exercices' => $exercices,
+          'current'            => 'accounting',
+          'exercices'          => $exercices,
+          'creancesClients'    => $creancesClients,
+          'dettesFournisseurs' => $dettesFournisseurs,
+          'stockMarchandises'  => $stockMarchandises,
         ]);
     }
 
@@ -142,19 +181,23 @@ class ComptabiliteController extends AbstractController
       $comptesPassifs = $manager->getRepository(ComptaCompte::class)->comptesDuBilanOuDuResultat("bilan", "passif");
       $classesActifs  = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "actif");
       $classesPassifs = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "passif");
-      // dump($classesPassifs);
+      // $date = (new \DateTime())->format("Y-m-d");
+      // $tab = [$date, date('01-m-Y', strtotime($date)), date('t-m-Y', strtotime($date))];
+      // dump($tab);
       if($request->isMethod('post'))
       {
         $token = $request->get('_csrf_token');
         if($this->isCsrfTokenValid('bilan_ouverture', $token))
         {
           $data           = $request->request->all();
-          $date           = new \DateTime($data["date"]);
+          $dateDebut      = new \DateTime($data["date"]);
+          $dateFin        = new \DateTime(date('t-m-Y', strtotime($data["date"])));
           $totalActif     = (int) $data["totalActif"];
           $totalPassif    = (int) $data["totalPassif"];
           $comptesActifs  = $data["comptesActifs"];
           $comptesPassifs = $data["comptesPassifs"];
-          // dd($data);
+          $labelExercice  = $this->dateEnFrancais($dateDebut, false);
+          // dd($labelExercice);
           if($totalActif !== $totalPassif){
             $this->addFlash('danger', "Impossible de continuer. Total actif différent de total passif");
             return $this->redirectToRoute('enregistrer_bilan_ouverture');    
@@ -162,9 +205,9 @@ class ComptabiliteController extends AbstractController
 
           // On commence par enregistrer le tout premier exercice de l'entreprise
           $exercice = new ComptaExercice();
-          $exercice->setDateDebut($date);
-          $exercice->setDateFin($date);
-          $exercice->setLabel("Exercie");
+          $exercice->setDateDebut($dateDebut);
+          $exercice->setDateFin($dateFin);
+          $exercice->setLabel($labelExercice);
           $exercice->setCreatedBy($this->getUser());
           $manager->persist($exercice);
 
@@ -256,6 +299,9 @@ class ComptabiliteController extends AbstractController
       $comptesPassifs = $manager->getRepository(ComptaCompteExercice::class)->comptesDuBilanOuDuResultat("bilan", "passif", $id);
       $classesActifs  = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "actif");
       $classesPassifs = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "passif");
+      $sommeCharges   = $manager->getRepository(ComptaCompteExercice::class)->sommeDesComptesResultatExercice(1, $id);
+      $sommeProduits  = $manager->getRepository(ComptaCompteExercice::class)->sommeDesComptesResultatExercice(2, $id);
+      // dump($sommeCharges);
 
       return $this->render('Admin/Comptabilite/bilan-final.html.twig', [
         'current'        => 'accounting',
@@ -264,6 +310,26 @@ class ComptabiliteController extends AbstractController
         'comptesPassifs' => $comptesPassifs,
         'classesActifs'  => $classesActifs,
         'classesPassifs' => $classesPassifs,
+      ]);
+    }
+
+    /**
+     * @Route("/resultat-d-un-exercice/{id}", name="resultat_d_un_exercice")
+     */
+    public function resultat_d_un_exercice(ComptaExercice $exercice, int $id, EntityManagerInterface $manager)
+    {
+      $comptesCharges  = $manager->getRepository(ComptaCompteExercice::class)->comptesDuBilanOuDuResultat("resultat", "charges", $id);
+      $comptesProduits = $manager->getRepository(ComptaCompteExercice::class)->comptesDuBilanOuDuResultat("resultat", "produits", $id);
+      $classesCharges  = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("resultat", "charges");
+      $classesProduits = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("resultat", "produits");
+
+      return $this->render('Admin/Comptabilite/resultat-exercice.html.twig', [
+        'current'         => 'accounting',
+        'exercice'        => $exercice,
+        'comptesCharges'  => $comptesCharges,
+        'comptesProduits' => $comptesProduits,
+        'classesCharges'  => $classesCharges,
+        'classesProduits' => $classesProduits,
       ]);
     }
 
@@ -385,11 +451,12 @@ class ComptabiliteController extends AbstractController
 
       if($jour == true)
       {
-        $date = $date instanceof DateTime ? $date->format("Y-m-d") : $date;
+        $date = $date instanceof \DateTime ? $date->format("Y-m-d") : $date;
         $date = utf8_encode(strftime("%A $format_jour %B %Y", strtotime($date)));
         $dateEnFrancais = ucwords($date);
       }
       else{
+        $date = $date instanceof \DateTime ? $date->format("Y-m-d") : $date;
         $mois = utf8_encode(strftime("$format_jour %B %Y", strtotime($date)));
         $dateEnFrancais = ucfirst(substr($mois, 3));
       }

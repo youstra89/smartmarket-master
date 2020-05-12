@@ -51,9 +51,10 @@ class ComptaCompteExerciceRepository extends ServiceEntityRepository
             ->join('c.compte', 'cpt')
             ->join('cpt.classe', 'cl')
             ->join('cl.type', 't')
-            ->andWhere('t.id IN (:ids) AND e.id = :id')
+            ->andWhere('t.id IN (:ids) AND e.id = :id AND c.is_deleted = :status')
             ->setParameter('id', $id)
             ->setParameter('ids', $ids)
+            ->setParameter('status', false)
             ->orderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult()
@@ -67,13 +68,35 @@ class ComptaCompteExerciceRepository extends ServiceEntityRepository
             ->join('c.compte', 'cpt')
             ->join('cpt.classe', 'cl')
             ->join('cl.type', 't')
-            ->andWhere('cpt.id = :compteId AND e.id = :exerciceId')
+            ->andWhere('cpt.id = :compteId AND e.id = :exerciceId AND c.is_deleted = :status')
             ->setParameter('compteId', $compteId)
             ->setParameter('exerciceId', $exerciceId)
+            ->setParameter('status', false)
             ->orderBy('c.id', 'ASC')
             ->getQuery()
             ->getOneOrNullResult()
         ;
+    }
+
+    public function sommeDesComptesResultatExercice(int $compte, int $exerciceId)
+    {
+        $ids = $compte == 1 ? [3] : [4];
+        $query = $this->createQueryBuilder('c')
+            ->select('SUM(c.montant_final)')
+            ->join('c.exercice', 'e')
+            ->join('c.compte', 'cpt')
+            ->join('cpt.classe', 'cl')
+            ->join('cl.type', 't')
+            ->andWhere('t.id IN (:ids) AND e.id = :exerciceId AND c.is_deleted = :status')
+            ->setParameter('exerciceId', $exerciceId)
+            ->setParameter('ids', $ids)
+            ->setParameter('status', false)
+            ->groupBy('t.id')
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+
+        return $query[1];
     }
 
     // /**

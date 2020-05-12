@@ -147,6 +147,11 @@ class ProviderCommande
      */
     private $montant_ttc;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaExercice", inversedBy="providerCommandes")
+     */
+    private $exercice;
+
     public function __construct()
     {
         $this->ended       = false;
@@ -527,6 +532,18 @@ class ProviderCommande
     public function setMontantTtc(int $montant_ttc): self
     {
         $this->montant_ttc = $montant_ttc;
+
+        return $this;
+    }
+
+    public function getExercice(): ?ComptaExercice
+    {
+        return $this->exercice;
+    }
+
+    public function setExercice(?ComptaExercice $exercice): self
+    {
+        $this->exercice = $exercice;
 
         return $this;
     }

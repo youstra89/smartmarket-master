@@ -55,45 +55,51 @@ class AdminPurchaseController extends AbstractController
      * @Route("/unique-form-provider-order", name="unique_form_provider_order")
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      */
-    public function unique_form_provider_order(Request $request, EntityManagerInterface $manager)
+    public function unique_form_provider_order(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
         $providerCommande = new ProviderCommande();
         $form = $this->createForm(ProviderCommandeType::class, $providerCommande);
         $products = $manager->getRepository(Product::class)->findAll();
+        $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
             $data = $request->request->all();
-            if(empty($data['date']))
-            {
-              $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
-              return $this->redirectToRoute('unique_form_provider_order');
-            }
-            else {
+            $token = $data['token'];
+            if($this->isCsrfTokenValid('achat', $token)){
+              if(empty($data['date']))
+              {
+                $this->addFlash('danger', 'Impossible d\'enregistrer une commande sans la date.');
+                return $this->redirectToRoute('unique_form_provider_order');
+              }
+  
               $date        = new \DateTime($data['date']);
               $reference   = $date->format('Ymd').'.'.(new \DateTime())->format('His');
               $prices      = $data["prices"];
+              $tva         = $data["tva"];
+              // $mode        = $data["mode"];
               $quantities  = $data["quantities"];
               $totalCharge = $providerCommande->getAdditionalFees() + $providerCommande->getTransport() + $providerCommande->getDedouanement() + $providerCommande->getCurrencyCost() + $providerCommande->getForwardingCost();
               $providerCommande->setReference($reference);
+              $providerCommande->setExercice($exercice);
               $providerCommande->setDate($date);
               $providerCommande->setCreatedBy($this->getUser());
               $providerCommande->setTotalFees($totalCharge);
               $manager->persist($providerCommande);
-
+  
               // On va enregistrer les détails de la commande
               // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
               $totalCommande = 0;
               foreach ($data['sousTotal'] as $key => $value) {
                 $totalCommande += $value;
               }
-
+  
               $commandeGlobalCost = 0;
               foreach ($prices as $key => $value) {
                 $product  = $manager->getRepository(Product::class)->find($key);
                 $quantity = $quantities[$key];
                 $subtotal = $value * $quantity;
-
+  
                 if($quantity <= 0)
                 {
                   $this->addFlash('danger', 'Quantité de <strong>'.$product->label().'</strong> incorrecte.');
@@ -121,7 +127,7 @@ class AdminPurchaseController extends AbstractController
                 // On divise maintenant cette somme ($chargeProduit) par le nombre de
                 // produit de la commande.
                 $chargeUnitaire = $chargeProduit / $quantity;
-
+  
                 // On enregistre d'abord les détails de commande
                 $commandeProduit = new ProviderCommandeDetails();
                 $commandeProduit->setCommande($providerCommande);
@@ -132,23 +138,50 @@ class AdminPurchaseController extends AbstractController
                 $commandeProduit->setMinimumSellingPrice($value + $chargeUnitaire);
                 $commandeGlobalCost += $subtotal;
                 $manager->persist($commandeProduit);
-                // Ensuite, on met à jour le stock
                 $stockQte = $product->getStock() + $quantity;
+                /**
+                 * On va aussi déterminer le prix d'achat moyen. En effet, un même produit peut se retrouver en stock avec différent prix d'achat.
+                 * Il faut alors qu'on détermine le prix moyen d'achat. Cela nous permettra de savoir lors d'une vente quelle est la marge bénéficiaire.
+                 * 
+                 * 1 - Pour calculer ce prix moyenne, on va multiplier le nombre de produits en stock par le prix moyen d'achat courant.
+                 * 2 - Puis on multiplie le nombre de produits nouvellement achéter par le prix d'achat lors l'achat en cours d'enregistrement
+                 * 3 - Et enfin, on fait la somme de ces deux produits qu'on va diviser par le nombre total de produits.
+                 */
+                $produit1  = $product->getStock() * $product->getAveragePurchasePrice();
+                $produit2  = $quantity * $value;
+                $prixMoyen = ($produit1 + $produit2) / $stockQte;
+                $prixMoyen = (int) round($prixMoyen);
+                // Ensuite, on met à jour le stock
                 $product->setStock($stockQte);
+                // dd($prixMoyen);
+                $product->setAveragePurchasePrice($prixMoyen);
                 $product->setUpdatedAt(new \DateTime());
               }
               $providerCommande->setTotalAmount($commandeGlobalCost);
               $providerCommande->setGlobalTotal($commandeGlobalCost + $totalCharge);
-              // dd($providerCommande);
-
+              $providerCommande->setTva($tva);
+              $providerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
+              
+              $transport       = $providerCommande->getTransport();
+              $dedouanement    = $providerCommande->getDedouanement();
+              $currency_cost   = $providerCommande->getCurrencyCost();
+              $forwarding_cost = $providerCommande->getForwardingCost();
+              $additional_fees = $providerCommande->getAdditionalFees();
+  
               try{
                 $manager->flush();
+                $fonctions->ecritureDAchatDansLeJournalComptable($manager, $commandeGlobalCost, $tva, $exercice, $date, $providerCommande);
+                $fonctions->ecritureDesChargesDUnAchatDansLeJournalComptable($manager, $transport, $dedouanement, $currency_cost, $forwarding_cost, $additional_fees, $providerCommande, $exercice);
                 $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               } 
               catch(\Exception $e){
                 $this->addFlash('danger', $e->getMessage());
               } 
               return $this->redirectToRoute('purchase.selling.price', ['id' => $providerCommande->getId()]);
+            }
+            else{
+              $this->addFlash('danger', 'Jéton de sécurité invalide. Vous avez certement mis trop de temps sur cette page.');
+              return $this->redirectToRoute('unique_form_provider_order');
             }
         }
         return $this->render('Admin/Purchase/purchase-add-unique-form.html.twig', [
@@ -322,7 +355,7 @@ class AdminPurchaseController extends AbstractController
 
 
     /**
-     * @Route("/reglement-de-vente/{id}", name="provider_settlement", requirements={"id"="\d+"})
+     * @Route("/reglement-de-l-achat/{id}", name="provider_settlement", requirements={"id"="\d+"})
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProvidererCommande $commande
      */
@@ -342,7 +375,7 @@ class AdminPurchaseController extends AbstractController
         $total += $value->getAmount();
       }
       // dump($total);
-      $reste = $commande->getTotalAmount() - $total;
+      $reste = $commande->getMontantTtc() - $total;
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
@@ -407,16 +440,16 @@ class AdminPurchaseController extends AbstractController
             $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
             return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
           }
-          elseif($newTotal > $commande->getTotalAmount())
+          elseif($newTotal > $commande->getMontantTtc())
           {
             $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
             return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
           }
-          elseif($newTotal < $commande->getTotalAmount())
+          elseif($newTotal < $commande->getMontantTtc())
           {
             $this->addFlash('success', 'Règlement fournisseur bien enregistré. Cependant la commande n\'est pas soldée.');
           }
-          elseif ($newTotal == $commande->getTotalAmount()) {
+          elseif ($newTotal == $commande->getMontantTtc()) {
             $this->addFlash('success', 'Règlement fournisseur enregistré avec succès. Commande soldée.');
             $commande->setEnded(true);
           }
@@ -431,7 +464,7 @@ class AdminPurchaseController extends AbstractController
           $manager->persist($settlement);
           try{
             $manager->flush();
-            $fonctions->EcritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
+            $fonctions->ecritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());

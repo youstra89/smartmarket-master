@@ -88,6 +88,11 @@ class ComptaExercice
      */
     private $customerCommandes;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ProviderCommande", mappedBy="exercice")
+     */
+    private $providerCommandes;
+
     public function __construct()
     {
         $this->acheve         = false;
@@ -96,6 +101,7 @@ class ComptaExercice
         $this->comptaJournals = new ArrayCollection();
         $this->comptaCompteExercices = new ArrayCollection();
         $this->customerCommandes = new ArrayCollection();
+        $this->providerCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -322,6 +328,37 @@ class ComptaExercice
             // set the owning side to null (unless already changed)
             if ($customerCommande->getExercice() === $this) {
                 $customerCommande->setExercice(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProviderCommande[]
+     */
+    public function getProviderCommandes(): Collection
+    {
+        return $this->providerCommandes;
+    }
+
+    public function addProviderCommande(ProviderCommande $providerCommande): self
+    {
+        if (!$this->providerCommandes->contains($providerCommande)) {
+            $this->providerCommandes[] = $providerCommande;
+            $providerCommande->setExercice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProviderCommande(ProviderCommande $providerCommande): self
+    {
+        if ($this->providerCommandes->contains($providerCommande)) {
+            $this->providerCommandes->removeElement($providerCommande);
+            // set the owning side to null (unless already changed)
+            if ($providerCommande->getExercice() === $this) {
+                $providerCommande->setExercice(null);
             }
         }
 

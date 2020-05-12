@@ -4,6 +4,15 @@
 {% block title %}Enregistrement d'une commande{% endblock %}
 
 
+{% block stylesheets %}
+  <style>
+    label.required:before{
+      content: "* ";
+    }
+  </style>
+{% endblock %}
+
+
 {% block notifications %}
   {% for message in app.flashes('success') %}
     <div class="alert alert-success fade in">
@@ -37,13 +46,13 @@
       <div class="row">
           <div class="col-md-6">
             <div class="form-group">
-              <label for="">{{ form_label(form.provider) }}</label>
+              {{ form_label(form.provider) }}
               {{ form_widget(form.provider, {'attr': {'class': 'form-control'}}) }}
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              <label for="">Date de la commande</label>
+              <label for="date" class="required">Date de la commande</label>
               <input type="date" name="date" value="" class="form-control" required>
             </div>
           </div>
@@ -51,19 +60,19 @@
       <div class="row">
           <div class="col-md-4">
             <div class="form-group">
-              <label for="">{{ form_label(form.transport) }}</label>
+              {{ form_label(form.transport) }}
               {{ form_widget(form.transport, {'attr': {'class': 'form-control', 'value': '0'}}) }}
             </div>
           </div>
           <div class="col-md-4">
               <div class="form-group">
-                  <label for="">{{ form_label(form.dedouanement) }}</label>
+                  {{ form_label(form.dedouanement) }}
                   {{ form_widget(form.dedouanement, {'attr': {'class': 'form-control', 'value': '0'}}) }}
               </div>
           </div>
           <div class="col-md-4">
               <div class="form-group">
-                  <label for="">{{ form_label(form.currency_cost) }}</label>
+                  {{ form_label(form.currency_cost) }}
                   {{ form_widget(form.currency_cost, {'attr': {'class': 'form-control', 'value': '0'}}) }}
               </div>
           </div>
@@ -71,14 +80,23 @@
       <div class="row">
           <div class="col-md-4">
             <div class="form-group">
-              <label for="">{{ form_label(form.forwarding_cost) }}</label>
+              {{ form_label(form.forwarding_cost) }}
               {{ form_widget(form.forwarding_cost, {'attr': {'class': 'form-control', 'value': '0'}}) }}
             </div>
           </div>
           <div class="col-md-4">
               <div class="form-group">
-                  <label for="">{{ form_label(form.additional_fees) }}</label>
+                  {{ form_label(form.additional_fees) }}
                   {{ form_widget(form.additional_fees, {'attr': {'class': 'form-control', 'value': '0'}}) }}
+              </div>
+          </div>
+          <div class="col-md-4">
+              <div class="form-group">
+                  <label for="tva"  class="required">TVA</label>
+                  <select name="tva" id="tva" class="form-control" required>
+                    <option value="0">0%</option>
+                    <option value="18">18%</option>
+                  </select>
               </div>
           </div>
       </div>
@@ -103,12 +121,20 @@
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="4"><h4>Total de la commande</h4></td>
-              <td><h4><input type="text" id="total" name="total" value="" readonly required></h4></td>
+              <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Total de la commande (HT)</span></td>
+              <td><input type="text" id="total" name="total" value="" readonly required></td>
             </tr>
+            <tr>
+              <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Valeur TVA</span></td>
+              <td><input type="text" id="montantTva" name="montantTva" value="" readonly required></td>
+            </tr>
+            <tr>
+              <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Montant TTC</span></td>
+              <td><input type="text" id="ttc" name="ttc" value="" readonly required></td>
+              </tr>
           </tfoot>
         </table>
-        <input type="hidden" name="token" value="{{ csrf_token('vente') }}"/>
+        <input type="hidden" name="token" value="{{ csrf_token('achat') }}"/>
         <input type="submit" class="btn-default btn-lg" id="save" value="Enregistrer" onclick="submitForm(this);"><br><br>
       {# </form> #}
     </section>
@@ -257,6 +283,11 @@
           $("#quantity").val(1);
           $('#products option[value="'+ id +'"]').remove();
           $("#notif p").text('');
+          var t = eval($("#total").val())
+          var tva = eval($("#tva").val()) / 100
+          var taxe = eval(t * tva)
+          $("#montantTva").val(taxe)
+          $("#ttc").val(t + taxe)
         }
         e.preventDefault()
       });
@@ -301,6 +332,16 @@
         }
         total.value = tt;
      });
+
+
+    // Si le taux de la tva change, il faut mettre à jour 
+    $("#tva").on("change", function(){
+      var t = eval($("#total").val())
+      var tva = parseInt($("#tva").val()) / 100
+      var taxe = eval(t * tva)
+      $("#montantTva").val(taxe)
+      $("#ttc").val(t + taxe)
+    })
      
 
       $('.icon-trash').on("click", function(){

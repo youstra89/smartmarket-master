@@ -107,7 +107,7 @@
                   <td>{{ product.label }}</td>
                   <td>{{ product.stock }}</td>
                   <td>{{ product.purchasingPrice|number_format(0, ',', ' ') }} F</td>
-                  {% set sousTotal = product.stock * product.purchasingPrice %}
+                  {% set sousTotal = product.stock * product.getAveragePurchasePrice %}
                   <td>{{ sousTotal|number_format(0, ',', ' ') }} F</td>
                   {% set total = total + sousTotal %}
                 </tr>

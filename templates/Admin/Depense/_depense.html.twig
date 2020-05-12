@@ -1,28 +1,35 @@
 {{ form_start(form, {'attr': {'class': ''}}) }}
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="form-group">
-                <label for="date">Date</label>
+                <label for="date" class="required">Date</label>
                 <input type="date" name="date" id="date" class="form-control" value="{{ 'now'|date('Y-m-d') }}" required>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="form-group">
-                <label for="">{{ form_label(form.type) }}</label>
+                {{ form_label(form.type) }}
                 {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="form-group">
-                <label for="">{{ form_label(form.amount) }}</label>
+                {{ form_label(form.amount) }}
                 {{ form_widget(form.amount, {'attr': {'class': 'form-control'}}) }}
             </div>
+        </div>
+        <div class="col-md-3">
+            <label for="mode" class="required">Mode de paiement</label>
+            <select name="mode" id="mode" class="form-control" required>
+                <option value="1">Espèce</option>
+                <option value="2">Virement</option>
+            </select>
         </div>
     </div>
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                <label for="">{{ form_label(form.description) }}</label>
+                {{ form_label(form.description) }}
                 {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>

@@ -185,6 +185,12 @@ class AdminSellController extends AbstractController
 
               // On va enregistrer les détails de la commande
               // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
+              /**
+               * Il faudra aussi déterminer le bénéfice. Pour se faire, on va calculer le prix d'achat global et le prix de vente global
+               * 1 - Le prix d'achat global = prix moyen d'achat * la quantité
+               * 2 - Le prix de vente global est $commandeGlobalCost
+               */
+              $prixDAchatGlobal = 0;
               $commandeGlobalCost = 0;
               foreach ($prices as $key => $value) {
                 $product   = $manager->getRepository(Product::class)->find($key);
@@ -220,6 +226,7 @@ class AdminSellController extends AbstractController
                 $commandeProduit->setUnitPrice($value);
                 $commandeProduit->setSubtotal($subtotal);
                 $commandeProduit->setCreatedBy($this->getUser());
+                $prixDAchatGlobal = $product->getAveragePurchasePrice() * $quantity;
                 $commandeGlobalCost += $subtotal;
                 $manager->persist($commandeProduit);
 
@@ -228,6 +235,8 @@ class AdminSellController extends AbstractController
                 $product->setLastSeller($seller);
                 $product->setUpdatedAt(new \DateTime());
               }
+              $resultat = $commandeGlobalCost - $prixDAchatGlobal;
+              // dd($commandeGlobalCost, $prixDAchatGlobal, $resultat);
               $customerCommande->setTotalAmount($commandeGlobalCost);
               $customerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
 
@@ -235,7 +244,8 @@ class AdminSellController extends AbstractController
               try{
                 $manager->flush();
                 $this->addFlash('success', '<li>Enregistrement de la vente N°<strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
-                $fonctions->EcritureDeVenteDansLeJournalComptable($manager, $commandeGlobalCost, $tva, $exercice, $date, $customerCommande);
+                $fonctions->ecritureDeVenteDansLeJournalComptable($manager, $prixDAchatGlobal, $resultat, $tva, $exercice, $date, $customerCommande);
+                $fonctions->ecritureDuResultatDeVenteJournalComptable($manager, $resultat, $exercice, $date, $customerCommande);
                 // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
                 return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
               } 
@@ -244,6 +254,10 @@ class AdminSellController extends AbstractController
                 return $this->redirectToRoute('unique_form_for_selling');
               }
             }
+          }
+          else{
+            $this->addFlash('danger', 'Jéton de sécurité invalide. Vous avez certement mis trop de temps sur cette page.');
+            // return $this->redirectToRoute('unique_form_for_selling');
           }
         }
       }
@@ -334,7 +348,6 @@ class AdminSellController extends AbstractController
               $commande->setUpdatedBy($this->getUser());
               try{
                 $manager->flush();
-                $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
                 $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
               } 
               catch(\Exception $e){
@@ -638,7 +651,7 @@ class AdminSellController extends AbstractController
               $this->addFlash('success', 'Règlement bien enregistré. Cependant la commande n\'est pas soldée.');
             
             $manager->flush();
-            $fonctions->EcritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
+            $fonctions->ecritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -647,6 +660,10 @@ class AdminSellController extends AbstractController
           // if(empty($data['from']))
           // else
           //   return $this->redirectToRoute('accounting.debtor');
+        }
+        else{
+          $this->addFlash('danger', 'Jéton de sécurité invalide. Vous avez certement mis trop de temps sur cette page.');
+          // return $this->redirectToRoute('unique_form_for_selling');
         }
       }
       return $this->render('Admin/Sell/settlement.html.twig', [

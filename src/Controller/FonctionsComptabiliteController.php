@@ -17,7 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class FonctionsComptabiliteController extends AbstractController
 {
     // Cette fonction permet de mouvementer les comptes lors d'une achat de marchandises
-    public function EcritureDeVenteDansLeJournalComptable(EntityManagerInterface $manager, int $totalMarchandises, int $tva, object $exercice, \DateTime $date, CustomerCommande $vente)
+    public function ecritureDeVenteDansLeJournalComptable(EntityManagerInterface $manager, int $totalMarchandises, int $resultat, int $tva, object $exercice, \DateTime $date, CustomerCommande $vente)
     {
       $exerciceId = $exercice->getId();
       $montantTva = ($totalMarchandises * $tva) / 100;
@@ -32,9 +32,12 @@ class FonctionsComptabiliteController extends AbstractController
 
       // 3 - On va maintenant créditer le compte Vente de marchandises
       $compteVenteMarchandises = $manager->getRepository(ComptaCompteExercice::class)->findCompte(25, $exerciceId);
-      $compteVenteMarchandises->setMontantFinal($compteVenteMarchandises->getMontantFinal() + $totalMarchandises);
+      $compteVenteMarchandises->setMontantFinal($compteVenteMarchandises->getMontantFinal() + $resultat);
 
-      // 4 - Quatième et dernière étape, on écrit dans le journal
+      // 4 - On met à jour le compte résultat
+      // $this->determinationDuResultatDeLExercice($manager, $exercice);
+      
+      // 5 - En cinquième et dernière étape, on écrit dans le journal
       $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
       $reference = $this->generateReferenceEcriture($derniereEcriture);
 
@@ -46,7 +49,6 @@ class FonctionsComptabiliteController extends AbstractController
       $compteAcrediter = $compteMarchandise;
       $ecriture_liee_a = $vente;
       $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
-
       $manager->persist($ecriture);
 
 
@@ -65,8 +67,8 @@ class FonctionsComptabiliteController extends AbstractController
         $tva              = 0;
         $montant          = $montantTva;
         $remarque         = null;
-        $compteADebiter   = $compteTVACollectee;
-        $compteAcrediter  = $compteClient;
+        $compteADebiter   = $compteClient;
+        $compteAcrediter  = $compteTVACollectee;
         $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
         $manager->persist($ecriture);
       }
@@ -80,7 +82,39 @@ class FonctionsComptabiliteController extends AbstractController
     }
 
 
-    public function EcritureDeReglementsClientsDansLeJournalComptable(EntityManagerInterface $manager, int $mode, int $montant, object $exercice, \DateTime $date, Settlement $settlement)
+    public function ecritureDuResultatDeVenteJournalComptable(EntityManagerInterface $manager, int $resultat, object $exercice, \DateTime $date, CustomerCommande $vente)
+    {
+      $exerciceId = $exercice->getId();
+      $compteResultat = $manager->getRepository(ComptaCompteExercice::class)->findCompte(7, $exerciceId);
+      $compteResultat->setMontantFinal($compteResultat->getMontantFinal() + $resultat);
+      $compteClient = $manager->getRepository(ComptaCompteExercice::class)->findCompte(9, $exerciceId);
+      $compteClient->setMontantFinal($compteClient->getMontantFinal() + $resultat);
+
+      
+      // 5 - En cinquième et dernière étape, on écrit dans le journal
+      $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+      $reference = $this->generateReferenceEcriture($derniereEcriture);
+
+      $label           = $resultat > 0 ? "Bénéfice sur vente de marchandises" : "Perte sur vente de marchandises";
+      $tva             = 0;
+      $montant         = $resultat;
+      $remarque        = null;
+      $compteADebiter  = $compteClient;
+      $compteAcrediter = $compteResultat;
+      $ecriture_liee_a = $vente;
+      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $manager->persist($ecriture);
+
+      try{
+        $manager->flush();
+      } 
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+      }
+    }
+
+
+    public function ecritureDeReglementsClientsDansLeJournalComptable(EntityManagerInterface $manager, int $mode, int $montant, object $exercice, \DateTime $date, Settlement $settlement)
     {
       $exerciceId = $exercice->getId();
       $referenceCommande = $settlement->getCommande()->getReference();
@@ -239,7 +273,70 @@ class FonctionsComptabiliteController extends AbstractController
     }
 
 
-    public function EcritureDeReglementsFournisseursDansLeJournalComptable(EntityManagerInterface $manager, int $mode, int $montant, object $exercice, \DateTime $date, ProviderSettlement $settlement)
+    public function ecritureDAchatDansLeJournalComptable(EntityManagerInterface $manager, int $totalMarchandises, int $tva, object $exercice, \DateTime $date, ProviderCommande $achat)
+    {
+      $exerciceId = $exercice->getId();
+      $montantTva = ($totalMarchandises * $tva) / 100;
+
+      // 1 - On commence par débiter le compte marchandise
+      $compteMarchandise = $manager->getRepository(ComptaCompteExercice::class)->findCompte(11, $exerciceId);
+      $compteMarchandise->setMontantFinal($compteMarchandise->getMontantFinal() + $totalMarchandises);
+
+      // 2 - On crédite enfin le compte client
+      $compteFournisseur = $manager->getRepository(ComptaCompteExercice::class)->findCompte(14, $exerciceId);
+      $compteFournisseur->setMontantFinal($compteFournisseur->getMontantFinal() + $totalMarchandises);
+
+      // // 3 - On va maintenant créditer le compte Achat de marchandises
+      // $compteAchatMarchandises = $manager->getRepository(ComptaCompteExercice::class)->findCompte(18, $exerciceId);
+      // $compteAchatMarchandises->setMontantFinal($compteAchatMarchandises->getMontantFinal() + $totalMarchandises);
+
+      // 4 - Quatième et dernière étape, on écrit dans le journal
+      $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+      $reference = $this->generateReferenceEcriture($derniereEcriture);
+
+      $label           = "Achat de marchandises";
+      $tva             = 0;
+      $montant         = $totalMarchandises;
+      $remarque        = null;
+      $compteADebiter  = $compteMarchandise;
+      $compteAcrediter = $compteFournisseur;
+      $ecriture_liee_a = $achat;
+      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+
+      $manager->persist($ecriture);
+
+
+      if($montantTva != 0){
+        // 1 - On debite le compte TVA du montant de la TVA si et seulement si la TVA n'est pas nulle
+        $compteTVADeductible = $manager->getRepository(ComptaCompteExercice::class)->findCompte(10, $exerciceId);
+        $compteTVADeductible->setMontantFinal($compteTVADeductible->getMontantFinal() + $montantTva);
+  
+        // 2 - On créditer enfin le compte fournisseur
+        $compteFournisseur->setMontantFinal($compteFournisseur->getMontantFinal() + $montantTva);
+  
+        // 3 - Troisième et dernière étape, on écrit dans le journal
+        $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+        $reference        = $this->generateReferenceEcriture($derniereEcriture, 2);
+        $label            = "TVA à récupérer sur achat de marchandises";
+        $tva              = 0;
+        $montant          = $montantTva;
+        $remarque         = null;
+        $compteADebiter   = $compteTVADeductible;
+        $compteAcrediter  = $compteFournisseur;
+        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
+        $manager->persist($ecriture);
+      }
+
+      try{
+        $manager->flush();
+      } 
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+      }
+    }
+
+
+    public function ecritureDeReglementsFournisseursDansLeJournalComptable(EntityManagerInterface $manager, int $mode, int $montant, object $exercice, \DateTime $date, ProviderSettlement $settlement)
     {
       $exerciceId = $exercice->getId();
       $referenceCommande = $settlement->getCommande()->getReference();
@@ -274,6 +371,131 @@ class FonctionsComptabiliteController extends AbstractController
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
       }
+    }
+
+
+    public function ecritureDesChargesDUnAchatDansLeJournalComptable(EntityManagerInterface $manager, int $transport, int $dedouanement, int $currency_cost, int $forwarding_cost, int $additional_fees, ProviderCommande $providerCommande, ComptaExercice $exercice)
+    {
+      /**
+       * Pour chaque depense, on va créditer la caisse et débiter le compte autres charges
+       *
+       * @param ComptaExercice $exercice
+       * @param string $reference
+       * @param \DateTime $date
+       * @param string $label
+       * @param ComptaCompteExercice $compteADebiter
+       * @param ComptaCompteExercice $compteAcrediter
+       * @param integer $tva
+       * @param integer $montant
+       * @param string $remarque
+       * @param [type] $ecriture_liee_a
+       * @return void
+       */
+      // 1 Pour le transport
+      $exerciceId = $exercice->getId();
+      $totalCharges = $transport + $dedouanement + $currency_cost + $forwarding_cost + $additional_fees;
+
+      $compteCaisse   = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+      $compteResultat = $manager->getRepository(ComptaCompteExercice::class)->findCompte(7, $exerciceId);
+
+      $compteCaisse->setMontantFinal($compteCaisse->getMontantFinal() - $totalCharges);
+      $compteResultat->setMontantFinal($compteResultat->getMontantFinal() - $totalCharges);
+
+      // 3 - On va maintenant créditer le compte Charges HAO
+      $compteChargesHAO = $manager->getRepository(ComptaCompteExercice::class)->findCompte(23, $exerciceId);
+      $compteChargesHAO->setMontantFinal($compteChargesHAO->getMontantFinal() + $totalCharges);
+
+      // 4 - Quatième et dernière étape, on écrit dans le journal
+      $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+      $reference = $this->generateReferenceEcriture($derniereEcriture);
+
+      $label           = "Vente de marchandises";
+      $tva             = 0;
+      $date            = new \DateTime();
+      $montant         = $totalCharges;
+      $remarque        = null;
+      $compteADebiter  = $compteResultat;
+      $compteAcrediter = $compteCaisse;
+      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
+      $manager->persist($ecriture);
+
+      try{
+        $manager->flush();
+      } 
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+      }
+
+    }
+
+
+    public function ecritureDeDepensesDansLeJournalComptable(EntityManagerInterface $manager, int $montant, int $mode, Depense $depense, $label, ComptaExercice $exercice)
+    {
+      $exerciceId = $exercice->getId();
+
+      // $compteAutresCharges = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
+      $compteResultat = $manager->getRepository(ComptaCompteExercice::class)->findCompte(7, $exerciceId);
+      $compteResultat->setMontantFinal($compteResultat->getMontantFinal() - $montant);
+
+      // 2 - On débiter ensuite soit le compte caisse, soit le compte banque
+      if($mode == 1)
+        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+      elseif($mode == 2)
+        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+
+      $compteACrediter->setMontantFinal($compteACrediter->getMontantFinal() - $montant);
+
+      // 3 - On va maintenant créditer le compte Charges HAO
+      $compteChargesHAO = $manager->getRepository(ComptaCompteExercice::class)->findCompte(23, $exerciceId);
+      $compteChargesHAO->setMontantFinal($compteChargesHAO->getMontantFinal() + $montant);
+
+
+
+      // 5 - Et la dernière étape pour finir, on écrit dans le journal
+      $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+      $reference = $this->generateReferenceEcriture($derniereEcriture);
+
+      $tva             = 0;
+      $date            = new \DateTime();
+      $remarque        = null;
+      $compteADebiter  = $compteResultat;
+      $compteAcrediter = $compteACrediter;
+      $ecriture_liee_a = $depense;
+      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $manager->persist($ecriture);
+
+      try{
+        $manager->flush();
+      } 
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+      }
+
+    }
+
+
+    public function determinationDuResultatDeLExercice(EntityManagerInterface $manager, ComptaExercice $exercice)
+    {
+      // On va sélectionner tous les comptes de l'actif et tous les comptes des produits
+      // Ensuite, on sélectionne tous les comptes du passif sauf le compte résultat et tous les comptes des charges
+      $exerciceId = $exercice->getId();
+      $comptes = $exercice->getComptaCompteExercices();
+      $sommesActifs  = 0;
+      $sommesPassifs = 0;
+      foreach ($comptes as $compte) {
+        $typeCompteId = $compte->getCompte()->getClasse()->getType()->getId();
+        if($typeCompteId == 4 and ($compte->getCompte()->getIsDeleted() == 0 and $compte->getIsDeleted() == 0)){
+          $sommesActifs = $sommesActifs + $compte->getMontantFinal();
+        }
+
+        if($typeCompteId == 3 and $compte->getCompte()->getId() != 7 and ($compte->getCompte()->getIsDeleted() == 0 and $compte->getIsDeleted() == 0)){
+          $sommesPassifs = $sommesPassifs + $compte->getMontantFinal();
+        }
+      }
+
+      $resultat = $sommesActifs - $sommesPassifs;
+      $compteREsultat = $manager->getRepository(ComptaCompteExercice::class)->findCompte(7, $exerciceId);
+      $compteREsultat->setMontantFinal($resultat);
     }
 
 
