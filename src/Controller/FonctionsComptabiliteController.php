@@ -117,11 +117,11 @@ class FonctionsComptabiliteController extends AbstractController
       $referenceCommande = $settlement->getCommande()->getReference();
 
       /**
-       * Le client peut règler une facture avec son acompte. Dans ce cas, on va créditer "Clients - Acomptes et avances reçu" et débiter la caisse
+       * Le client peut règler une facture avec son acompte. Dans ce cas, on va débiter "Clients - Acomptes et avances reçues" et créditer le compte "Client"
        */
       if($mode == 3){
-        $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
-        $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() + $montant);
+        $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(9, $exerciceId);
+        $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() - $montant);
 
         $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
         $compteAcrediter->setMontantFinal($compteAcrediter->getMontantFinal() - $montant);  
@@ -148,7 +148,7 @@ class FonctionsComptabiliteController extends AbstractController
       // 3 - Et enfin la dernière étape, on écrit dans le journal
       $reference = $this->generateReferenceEcriture($manager);
 
-      $label           = $mode == 3 ?"Règlement de la commande N°$referenceCommande avec les avances versées" : "Règlement de la commande N°$referenceCommande";
+      $label           = $mode == 3 ?"Règlement de la commande N°$referenceCommande avec les avances/acomptes reçus" : "Règlement de la commande N°$referenceCommande";
       $tva             = 0;
       $montant         = $montant;
       $remarque        = null;
@@ -350,22 +350,37 @@ class FonctionsComptabiliteController extends AbstractController
       $exerciceId = $exercice->getId();
       $referenceCommande = $settlement->getCommande()->getReference();
 
-      // 1 - On commence par débiter le compte fournisseur
-      $compteFournisseur = $manager->getRepository(ComptaCompteExercice::class)->findCompte(14, $exerciceId);
-      $compteADebiter    = $compteFournisseur->setMontantFinal($compteFournisseur->getMontantFinal() - $montant);
-       
-      // 2 - On crédite ensuite soit le compte caisse, soit le compte banque
-      if($mode == 1)
-        $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
-      elseif($mode == 2)
-        $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+      /**
+       * Le client peut règler une facture avec son acompte. Dans ce cas, on va débiter le compte "Fournisseur" puis créditer "Fournisseur - Acomptes et avances versées"
+       */
+      if($mode == 3){
+        $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(14, $exerciceId);
+        $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() - $montant);
 
-      $compteAcrediter->setMontantFinal($compteAcrediter->getMontantFinal() - $montant);
+        $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(28, $exerciceId);
+        $compteAcrediter->setMontantFinal($compteAcrediter->getMontantFinal() - $montant);  
+
+        // Il ne faut pas oublier de retirer le montant de l'acompte du client
+        $settlement->getCommande()->getProvider()->setAcompte($settlement->getCommande()->getProvider()->getAcompte() - $montant);
+      }
+      else{
+        // 1 - On commence par débiter le compte fournisseur
+        $compteFournisseur = $manager->getRepository(ComptaCompteExercice::class)->findCompte(14, $exerciceId);
+        $compteADebiter    = $compteFournisseur->setMontantFinal($compteFournisseur->getMontantFinal() - $montant);
+         
+        // 2 - On crédite ensuite soit le compte caisse, soit le compte banque
+        if($mode == 1)
+          $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+        elseif($mode == 2)
+          $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+  
+        $compteAcrediter->setMontantFinal($compteAcrediter->getMontantFinal() - $montant);
+      }
 
       // 3 - Et enfin la dernière étape, on écrit dans le journal
       $reference = $this->generateReferenceEcriture($manager);
 
-      $label = "Règelement fournisseur commande N°$referenceCommande";
+      $label = $mode = 3 ? "Règelement fournisseur commande N°$referenceCommande avec les avances/acomptes versés" : "Règelement fournisseur commande N°$referenceCommande";
       $tva = 0;
       $remarque = null;
       $ecriture_liee_a = $settlement;

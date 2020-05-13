@@ -83,7 +83,7 @@
                         ---
                       {% endif %}
                     </td>
-                    <td>{{ commande.montantTtc|number_format(0, ',', ' ') }} F</td>
+                    <td>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</td>
                     <td>
                       <a href="{{ path('customer_commande_details', {id: commande.id}) }}" data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
                       &nbsp;&nbsp;&nbsp;

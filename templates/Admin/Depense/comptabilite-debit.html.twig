@@ -41,13 +41,13 @@
                     {{ vente.customer.firstname }} {{ vente.customer.lastname }} ({{ vente.customer.phoneNumber }})
                   {% endif %}
                 </td>
-                <td>{{ vente.commande.montantTtc|number_format(0, ',', ' ') }} F CFA</td>
+                <td>{{ vente.commande.netAPayer|number_format(0, ',', ' ') }} F CFA</td>
                 <td>
                   {% set total = 0 %}
                   {% for item in vente.commande.settlements %}
                     {% set total = total + item.amount %}
                   {% endfor %}
-                  {{ (vente.commande.montantTtc - total)|number_format(0, ',', ' ') }} F CFA</td>
+                  {{ (vente.commande.netAPayer - total)|number_format(0, ',', ' ') }} F CFA</td>
                 <td>
                   <a href="{{ path('customer.order.details', {'id': vente.id}) }}" class=" circle arrow small">Plus de détails</a>
                   {% if vente.commande.ended == false %}

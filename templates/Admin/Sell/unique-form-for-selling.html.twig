@@ -92,17 +92,21 @@
           </div>
         {# </div>
         <div class="row"> #}
-          <div class="form-group col-md-3">
+          <div class="form-group col-md-2">
             <label for="date">Date de la commande</label><br>
-            <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}">
+            <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}" required>
           </div>
-          <div class="form-group col-md-3">
+          <div class="form-group col-md-2">
             <label for="tva">TVA</label><br>
             <select name="tva" id="tva" required>
               <option value="">Sélectionner un taux</option>
               <option value="0" selected>0%</option>
               <option value="18">18%</option>
             </select>
+          </div>
+          <div class="form-group col-md-2">
+            <label for="remise">Remise</label><br>
+            <input type="number" name="remise" id="remise" value="0" required>
           </div>
         </div>
         {% set i = 0 %}
@@ -135,6 +139,10 @@
               <tr>
                 <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Montant TTC</span></td>
                 <td><input type="text" id="ttc" name="ttc" value="" readonly required></td>
+              </tr>
+              <tr>
+                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Net à payer</span></td>
+                <td><input type="text" id="net" name="net" value="" readonly required></td>
               </tr>
             </tfoot>
           </table>
@@ -254,8 +262,10 @@
             var t = eval($("#total").val())
             var tva = eval($("#tva").val()) / 100
             var taxe = eval(t * tva)
+            var remise = parseInt($("#remise").val())
             $("#montantTva").val(taxe)
             $("#ttc").val(t + taxe)
+            $("#net").val(t + taxe - remise)
           }
           else{
             $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');
@@ -388,10 +398,26 @@
       // Si le taux de la tva change, il faut mettre à jour 
       $("#tva").on("change", function(){
         var t = eval($("#total").val())
-        var tva = parseInt($("#tva").val()) / 100
+        var tva = eval($("#tva").val()) / 100
         var taxe = eval(t * tva)
+        var remise = parseInt($("#remise").val())
         $("#montantTva").val(taxe)
         $("#ttc").val(t + taxe)
+        $("#net").val(t + taxe - remise)
+      })
+
+      // A chaque fois que la remise change, il faut mettre à jour 
+      $("#remise").on("change input keyup paste", function(){
+        var t = eval($("#total").val())
+        var tva = eval($("#tva").val()) / 100
+        var taxe = eval(t * tva)
+        var remise = eval(this.value)
+        if(remise == undefined || remise == null || remise == 0){
+          remise = 0;
+        }
+        $("#montantTva").val(taxe)
+        $("#ttc").val(t + taxe)
+        $("#net").val(t + taxe - remise)
       })
 
       $.fn.deleteProduct = function(id)
@@ -424,8 +450,10 @@
         var t = eval($("#total").val())
         var tva = eval($("#tva").val()) / 100
         var taxe = eval(t * tva)
+        var remise = parseInt($("#remise").val())
         $("#montantTva").val(taxe)
         $("#ttc").val(t + taxe)
+        $("#net").val(t + taxe - remise)
       }
 
     });

@@ -61,7 +61,7 @@
         <strong>Référence:</strong>
         <span>{{ commande.reference }}</span><br>
         <strong>Montant TTC:</strong>
-        <span>{{ commande.montantTtc|number_format(0, ',', ' ') }} F</span><br>
+        <span>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</span><br>
       </div>
       {% set totalRetour = 0 %}
       {% if commande.returnedProducts is not empty %}

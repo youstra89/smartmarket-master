@@ -111,9 +111,9 @@ class AcomptesController extends AbstractController
       {
         $data = $request->request->all();
         // return new Response(var_dump($data));
-        if(!empty($data['a']))
+        if(!empty($data['token']))
         {
-          $token = $data['a'];
+          $token = $data['token'];
           if($this->isCsrfTokenValid('acompte_fournisseur', $token)){
             $data = $request->request->all();
             if(empty($data['date'])){

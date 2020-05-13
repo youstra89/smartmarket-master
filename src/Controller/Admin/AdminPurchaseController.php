@@ -75,14 +75,15 @@ class AdminPurchaseController extends AbstractController
   
               $date        = new \DateTime($data['date']);
               $reference   = $date->format('Ymd').'.'.(new \DateTime())->format('His');
-              $prices      = $data["prices"];
-              $tva         = $data["tva"];
-              // $mode        = $data["mode"];
-              $quantities  = $data["quantities"];
+              $prices      = (int) $data["prices"];
+              $tva         = (int) $data["tva"];
+              $remise      = (int) $data["remise"];
+              $quantities  = (int) $data["quantities"];
               $totalCharge = $providerCommande->getAdditionalFees() + $providerCommande->getTransport() + $providerCommande->getDedouanement() + $providerCommande->getCurrencyCost() + $providerCommande->getForwardingCost();
               $providerCommande->setReference($reference);
               $providerCommande->setExercice($exercice);
               $providerCommande->setDate($date);
+              $providerCommande->setRemise($remise);
               $providerCommande->setCreatedBy($this->getUser());
               $providerCommande->setTotalFees($totalCharge);
               $manager->persist($providerCommande);
@@ -161,6 +162,8 @@ class AdminPurchaseController extends AbstractController
               $providerCommande->setGlobalTotal($commandeGlobalCost + $totalCharge);
               $providerCommande->setTva($tva);
               $providerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
+              $netAPayer = $providerCommande->getMontantTtc() - $remise;
+              $providerCommande->setNetAPayer($netAPayer);
               
               $transport       = $providerCommande->getTransport();
               $dedouanement    = $providerCommande->getDedouanement();
@@ -170,7 +173,7 @@ class AdminPurchaseController extends AbstractController
   
               try{
                 $manager->flush();
-                $fonctions->ecritureDAchatDansLeJournalComptable($manager, $commandeGlobalCost, $tva, $exercice, $date, $providerCommande);
+                $fonctions->ecritureDAchatDansLeJournalComptable($manager, $netAPayer, $tva, $exercice, $date, $providerCommande);
                 $fonctions->ecritureDesChargesDUnAchatDansLeJournalComptable($manager, $transport, $dedouanement, $currency_cost, $forwarding_cost, $additional_fees, $providerCommande, $exercice);
                 $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               } 
@@ -375,7 +378,7 @@ class AdminPurchaseController extends AbstractController
         $total += $value->getAmount();
       }
       // dump($total);
-      $reste = $commande->getMontantTtc() - $total;
+      $reste = $commande->getNetAPayer() - $total;
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
@@ -421,15 +424,20 @@ class AdminPurchaseController extends AbstractController
             $montantDuCompte = $compteAcrediter->getMontantFinal();
             $compte = "Banque";
           }
+          elseif($mode == 3){
+            $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(28, $exerciceId);
+            $montantDuCompte = $commande->getProvider()->getAcompte();
+            $compte = "Fournisseur - Acomptes et avances versées";
+          }
           
-          if($compteAcrediter->getMontantFinal() < $amount)
+          if($montantDuCompte < $amount)
           {
             $this->addFlash('danger', 'Le solde du compte <strong>'.$compte.' ('.number_format($montantDuCompte, 0, ',', ' ').' F</strong>) est inféreur au montant saisie qui est de <strong>'.number_format($amount, 0, ',', ' ').' F</strong>');
             return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
           }
           $newTotal = $amount + $total;
           $reglementMemeDate = $manager->getRepository(ProviderSettlement::class)->reglementMemeDate($id, $date->format('Y-m-d'));
-          $dernierVersement = $manager->getRepository(ProviderSettlement::class)->lastSettlement($id);
+          $dernierVersement  = $manager->getRepository(ProviderSettlement::class)->lastSettlement($id);
           if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
           {
             $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
@@ -440,16 +448,16 @@ class AdminPurchaseController extends AbstractController
             $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
             return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
           }
-          elseif($newTotal > $commande->getMontantTtc())
+          elseif($newTotal > $commande->getNetAPayer())
           {
             $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
             return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
           }
-          elseif($newTotal < $commande->getMontantTtc())
+          elseif($newTotal < $commande->getNetAPayer())
           {
             $this->addFlash('success', 'Règlement fournisseur bien enregistré. Cependant la commande n\'est pas soldée.');
           }
-          elseif ($newTotal == $commande->getMontantTtc()) {
+          elseif ($newTotal == $commande->getNetAPayer()) {
             $this->addFlash('success', 'Règlement fournisseur enregistré avec succès. Commande soldée.');
             $commande->setEnded(true);
           }

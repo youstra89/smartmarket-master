@@ -30,7 +30,7 @@
           <tr>
             <td>{{ i }}</td>
             <td>{{ item.commande.date|date('d-m-Y') }}</td>
-            <td>{{ item.commande.montantTtc|number_format(0, ',', ' ') }} F CFA</td>
+            <td>{{ item.commande.netAPayer|number_format(0, ',', ' ') }} F CFA</td>
             <td>
               <a href="{{ path('customer.order.details', {id: item.id}) }}" class=" circle arrow small">Plus de détails</a>
             </td>

@@ -180,7 +180,7 @@
                   <strong>N° de facture :</strong>
                   <span>{{ commande.reference }}</span><br>
                   <strong>Montant TTC:</strong>
-                  <span>{{ commande.montantTtc|number_format(0, ',', ' ') }} F</span><br>
+                  <span>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</span><br>
                   </div>
                 </div>
                 <div class="info-customer" style="">
@@ -243,7 +243,7 @@
                     </tr>
                     <tr style="border: 1px solid black">
                       <td width="80%">Montant TTC</td>
-                      <td width="20%" bgcolor="#D3D3D3" align="right" style="align: center">{{ commande.montantTtc|number_format(0, ',', ' ') }} F</td>
+                      <td width="20%" bgcolor="#D3D3D3" align="right" style="align: center">{{ commande.netAPayer|number_format(0, ',', ' ') }} F</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -256,7 +256,7 @@
             {% endfor %}
 
             {# Ensuite, on détermine le reste à payer #}
-            {% set resteAPayer = commande.montantTtc - totalPaye %}
+            {% set resteAPayer = commande.netAPayer - totalPaye %}
 
             <h1>Détails règlements</h1>
             <div class="table-responsive">

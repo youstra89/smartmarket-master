@@ -155,7 +155,7 @@ class AdminEcheanceController extends AbstractController
       }
       $amount = $echeance->getAmount();
       $newTotal = $amount + $total;
-      if($newTotal > $echeance->getCommande->getMontantTtc())
+      if($newTotal > $echeance->getCommande->getNetAPayer())
       {
         $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande. Vous devez modifier le montant de l\'échéance pour pouvoir continuer.');
         return $this->redirectToRoute('echeances');

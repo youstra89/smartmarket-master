@@ -90,7 +90,7 @@
                   {{ form_widget(form.additional_fees, {'attr': {'class': 'form-control', 'value': '0'}}) }}
               </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-2">
               <div class="form-group">
                   <label for="tva"  class="required">TVA</label>
                   <select name="tva" id="tva" class="form-control" required>
@@ -98,6 +98,12 @@
                     <option value="18">18%</option>
                   </select>
               </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group ">
+              <label for="remise">Remise</label><br>
+              <input type="number" name="remise" id="remise" value="0" class="form-control" required>
+            </div>
           </div>
       </div>
       <button type="button" class="btn-lg btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Ajouter un produit</button>
@@ -131,7 +137,11 @@
             <tr>
               <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Montant TTC</span></td>
               <td><input type="text" id="ttc" name="ttc" value="" readonly required></td>
-              </tr>
+            </tr>
+            <tr>
+              <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Net à payer</span></td>
+              <td><input type="text" id="net" name="net" value="" readonly required></td>
+            </tr>
           </tfoot>
         </table>
         <input type="hidden" name="token" value="{{ csrf_token('achat') }}"/>
@@ -295,8 +305,10 @@
           var t = eval($("#total").val())
           var tva = eval($("#tva").val()) / 100
           var taxe = eval(t * tva)
+          var remise = parseInt($("#remise").val())
           $("#montantTva").val(taxe)
           $("#ttc").val(t + taxe)
+          $("#net").val(t + taxe - remise)
         }
         e.preventDefault()
       });
@@ -348,15 +360,32 @@
       var t = eval($("#total").val())
       var tva = parseInt($("#tva").val()) / 100
       var taxe = eval(t * tva)
+      var remise = parseInt($("#remise").val())
       $("#montantTva").val(taxe)
       $("#ttc").val(t + taxe)
+      $("#net").val(t + taxe - remise)
+    })
+
+
+    // A chaque fois que la remise change, il faut mettre à jour 
+    $("#remise").on("change input keyup paste", function(){
+      var t = eval($("#total").val())
+      var tva = eval($("#tva").val()) / 100
+      var taxe = eval(t * tva)
+      var remise = eval(this.value)
+      if(remise == undefined || remise == null || remise == 0){
+        remise = 0;
+      }
+      $("#montantTva").val(taxe)
+      $("#ttc").val(t + taxe)
+      $("#net").val(t + taxe - remise)
     })
      
 
-      $('.icon-trash').on("click", function(){
-        var id = $(this).parent();
-        console.log(id);
-      });
+    $('.icon-trash').on("click", function(){
+      var id = $(this).parent();
+      console.log(id);
+    });
     });
 
     function submitForm(btn) {

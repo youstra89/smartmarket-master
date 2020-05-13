@@ -132,6 +132,16 @@ class CustomerCommande
      */
     private $exercice;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $remise;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $net_a_payer;
+
     public function __construct()
     {
         $this->product          = new ArrayCollection();
@@ -511,6 +521,30 @@ class CustomerCommande
     public function setExercice(?ComptaExercice $exercice): self
     {
         $this->exercice = $exercice;
+
+        return $this;
+    }
+
+    public function getRemise(): ?int
+    {
+        return $this->remise;
+    }
+
+    public function setRemise(int $remise): self
+    {
+        $this->remise = $remise;
+
+        return $this;
+    }
+
+    public function getNetAPayer(): ?int
+    {
+        return $this->net_a_payer;
+    }
+
+    public function setNetAPayer(int $net_a_payer): self
+    {
+        $this->net_a_payer = $net_a_payer;
 
         return $this;
     }

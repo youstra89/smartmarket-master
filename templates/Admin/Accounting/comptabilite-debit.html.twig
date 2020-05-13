@@ -54,13 +54,13 @@
                     {% set reste = vente.customer.getMontantTotalCommandeNonSoldees - vente.customer.getMontantTotalReglementCommandeNonSoldees %}
                     <td style="vertical-align: middle" rowspan="{{ customer.nbrCommandes }}">{{ reste|number_format(0, ',', ' ') }} F</td>
                     <td>{{ vente.date|date('d-m-Y') }}</td>
-                    <td>{{ vente.montantTtc|number_format(0, ',', ' ') }} F</td>
+                    <td>{{ vente.netAPayer|number_format(0, ',', ' ') }} F</td>
                     <td>
                       {% set total = 0 %}
                       {% for item in vente.settlements %}
                         {% set total = total + item.amount %}
                       {% endfor %}
-                      {% set dette = vente.montantTtc - total %}
+                      {% set dette = vente.netAPayer - total %}
                       {% set totalGeneral = totalGeneral + dette %}
                       {{ dette|number_format(0, ',', ' ') }} F</td>
                     <td>
@@ -73,13 +73,13 @@
                 {% else %}
                   <tr>
                     <td>{{ vente.date|date('d-m-Y') }}</td>
-                    <td>{{ vente.montantTtc|number_format(0, ',', ' ') }} F</td>
+                    <td>{{ vente.netAPayer|number_format(0, ',', ' ') }} F</td>
                     <td>
                       {% set total = 0 %}
                       {% for item in vente.settlements %}
                         {% set total = total + item.amount %}
                       {% endfor %}
-                      {% set dette = vente.montantTtc - total %}
+                      {% set dette = vente.netAPayer - total %}
                       {% set totalGeneral = totalGeneral + dette %}
                       {{ dette|number_format(0, ',', ' ') }} F</td>
                     <td>

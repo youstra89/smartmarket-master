@@ -162,9 +162,10 @@ class AdminSellController extends AbstractController
             }
             else {
               $date       = new \DateTime($data["date"]);
-              $prices     = $data["prices"];
-              $tva        = $data["tva"];
-              $quantities = $data["quantities"];
+              $prices     = (int) $data["prices"];
+              $remise     = (int) $data["remise"];
+              $tva        = (int) $data["tva"];
+              $quantities = (int) $data["quantities"];
               $seller = $this->getUser();
               $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
               $customerCommande = new CustomerCommande();
@@ -177,6 +178,7 @@ class AdminSellController extends AbstractController
               $customerCommande->setReference($reference);
               $customerCommande->setExercice($exercice);
               $customerCommande->setSeller($seller);
+              $customerCommande->setRemise($remise);
               $customerCommande->setDate($date);
               $customerCommande->setTva($tva);
               $customerCommande->setStatus("LIVREE");
@@ -196,7 +198,7 @@ class AdminSellController extends AbstractController
                 $product   = $manager->getRepository(Product::class)->find($key);
                 $quantity = $quantities[$key];
                 $subtotal = $value * $quantity;
-                $stockQte  = $product->getStock() - $quantity;
+                $stockQte = $product->getStock() - $quantity;
 
                 if($quantity <= 0)
                 {
@@ -235,10 +237,12 @@ class AdminSellController extends AbstractController
                 $product->setLastSeller($seller);
                 $product->setUpdatedAt(new \DateTime());
               }
-              $resultat = $commandeGlobalCost - $prixDAchatGlobal;
+              $resultat = $commandeGlobalCost - $prixDAchatGlobal - $remise;
               // dd($commandeGlobalCost, $prixDAchatGlobal, $resultat);
               $customerCommande->setTotalAmount($commandeGlobalCost);
               $customerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
+              $netAPayer = $customerCommande->getMontantTtc() - $remise;
+              $customerCommande->setNetAPayer($netAPayer);
 
               //On va maintenant enregistrer le règlement de la commande
               try{
@@ -572,7 +576,7 @@ class AdminSellController extends AbstractController
         $total += $value->getAmount();
       }
       // dump($total);
-      $reste = $commande->getMontantTtc() - $total;
+      $reste = $commande->getNetAPayer() - $total;
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
@@ -599,7 +603,7 @@ class AdminSellController extends AbstractController
             return $this->redirectToRoute('settlement', ['id' => $id]);
           }
           if (empty($commande->getCustomer())) {
-            if($amount != $commande->getMontantTtc()) {
+            if($amount != $commande->getNetAPayer()) {
               $this->addFlash('danger', 'Montant incorrect. La valeur saisie n\'est pas égale au montant total da la commande.');
               return $this->redirectToRoute('settlement', ['id' => $id]);
             }
@@ -616,16 +620,16 @@ class AdminSellController extends AbstractController
               $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
               return $this->redirectToRoute('settlement', ['id' => $id]);
             }
-            elseif($newTotal > $commande->getMontantTtc())
+            elseif($newTotal > $commande->getNetAPayer())
             {
               $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
               return $this->redirectToRoute('settlement', ['id' => $id]);
             }
-            elseif($newTotal < $commande->getMontantTtc())
+            elseif($newTotal < $commande->getNetAPayer())
             {
               $soldee = false;
             }
-            elseif ($newTotal == $commande->getMontantTtc()) {
+            elseif ($newTotal == $commande->getNetAPayer()) {
               $soldee = true;
               $commande->setEnded(true);
             }
@@ -725,16 +729,16 @@ class AdminSellController extends AbstractController
             $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
             return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
           }
-          elseif($newTotal > $commande->getMontantTtc())
+          elseif($newTotal > $commande->getNetAPayer())
           {
             $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
             return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
           }
-          elseif($newTotal < $commande->getMontantTtc())
+          elseif($newTotal < $commande->getNetAPayer())
           {
             $commande->setEnded(false);
           }
-          elseif ($newTotal == $commande->getMontantTtc()) {
+          elseif ($newTotal == $commande->getNetAPayer()) {
             $soldee = true;
             $commande->setEnded(true);
           }
