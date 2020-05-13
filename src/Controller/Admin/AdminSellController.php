@@ -88,8 +88,9 @@ class AdminSellController extends AbstractController
         "reference"        => $product->getReference(),
         "label"            => $product->label(),
         "stock"            => $product->getStock(),
+        "unite"            => $product->getUnite(),
         "unit_price"       => $product->getUnitPrice(),
-        "purchasing_price" => $product->getPurchasingPrice(),
+        "purchasing_price" => $product->getPurchasingPrice() * $product[0]->getUnite(),
       ];
 
       return new JsonResponse($data);
@@ -110,8 +111,9 @@ class AdminSellController extends AbstractController
           "reference"        => $product[0]->getReference(),
           "label"            => $product[0]->label(),
           "stock"            => $product[0]->getStock(),
+          "unite"            => $product[0]->getUnite(),
           "unit_price"       => $product[0]->getUnitPrice(),
-          "purchasing_price" => $product[0]->getPurchasingPrice(),
+          "purchasing_price" => $product[0]->getPurchasingPrice() * $product[0]->getUnite(),
         ];
       }
 
@@ -124,8 +126,8 @@ class AdminSellController extends AbstractController
      */
     public function unique_form_for_selling(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
-      $customers = $manager->getRepository(Customer      ::class)->findAll();
-      $products  = $manager->getRepository(Product       ::class)->findAll();
+      $customers = $manager->getRepository(Customer::class)->findAll();
+      $products  = $manager->getRepository(Product::class)->findAll();
       $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
 
       if($request->isMethod('post'))
@@ -162,10 +164,12 @@ class AdminSellController extends AbstractController
             }
             else {
               $date       = new \DateTime($data["date"]);
-              $prices     = (int) $data["prices"];
+              $prices     = $data["prices"];
               $remise     = (int) $data["remise"];
               $tva        = (int) $data["tva"];
-              $quantities = (int) $data["quantities"];
+              $venduPar   = $data["ventePar"];
+              $quantities = $data["quantities"];
+              // dd($venduPar);
               $seller = $this->getUser();
               $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
               $customerCommande = new CustomerCommande();
@@ -195,8 +199,16 @@ class AdminSellController extends AbstractController
               $prixDAchatGlobal = 0;
               $commandeGlobalCost = 0;
               foreach ($prices as $key => $value) {
-                $product   = $manager->getRepository(Product::class)->find($key);
+                $product  = $manager->getRepository(Product::class)->find($key);
+                $unite    = $product->getUnite();
+                $ventePar = $venduPar[$key];
                 $quantity = $quantities[$key];
+
+                // Si la vente est faite par carton, il faudra bien gérer les quantités
+                if($ventePar == 2){
+                  $quantity = $quantities[$key] * $unite;
+                  $value = $value / $unite;
+                }
                 $subtotal = $value * $quantity;
                 $stockQte = $product->getStock() - $quantity;
 
@@ -227,29 +239,34 @@ class AdminSellController extends AbstractController
                 $commandeProduit->setQuantity($quantity);
                 $commandeProduit->setUnitPrice($value);
                 $commandeProduit->setSubtotal($subtotal);
+                $commandeProduit->setSoldBy($ventePar);
                 $commandeProduit->setCreatedBy($this->getUser());
                 $prixDAchatGlobal = $product->getAveragePurchasePrice() * $quantity;
                 $commandeGlobalCost += $subtotal;
                 $manager->persist($commandeProduit);
-
+                
                 // Ensuite, on met à jour le stock
                 $product->setStock($stockQte);
                 $product->setLastSeller($seller);
                 $product->setUpdatedAt(new \DateTime());
+                $tab[] = $product->getStockUnite();
               }
+              // dd($tab);
               $resultat = $commandeGlobalCost - $prixDAchatGlobal - $remise;
               // dd($commandeGlobalCost, $prixDAchatGlobal, $resultat);
               $customerCommande->setTotalAmount($commandeGlobalCost);
               $customerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
               $netAPayer = $customerCommande->getMontantTtc() - $remise;
               $customerCommande->setNetAPayer($netAPayer);
+              // dd($customerCommande);
 
               //On va maintenant enregistrer le règlement de la commande
               try{
                 $manager->flush();
-                $this->addFlash('success', '<li>Enregistrement de la vente N°<strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
-                $fonctions->ecritureDeVenteDansLeJournalComptable($manager, $prixDAchatGlobal, $resultat, $tva, $exercice, $date, $customerCommande);
-                $fonctions->ecritureDuResultatDeVenteJournalComptable($manager, $resultat, $exercice, $date, $customerCommande);
+                // $this->addFlash('success', '<li>Enregistrement de la vente N°<strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                $res1 = $fonctions->ecritureDeVenteDansLeJournalComptable($manager, $prixDAchatGlobal, $resultat, $tva, $exercice, $date, $customerCommande);
+                $res2 = $fonctions->ecritureDuResultatDeVenteJournalComptable($manager, $resultat, $exercice, $date, $customerCommande);
+                // dd($res1, $res2);
                 // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
                 return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
               } 

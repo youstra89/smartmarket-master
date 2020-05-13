@@ -38,7 +38,7 @@ class FonctionsComptabiliteController extends AbstractController
       // $this->determinationDuResultatDeLExercice($manager, $exercice);
       
       // 5 - En cinquième et dernière étape, on écrit dans le journal
-      $reference = $this->generateReferenceEcriture($$manager);
+      $reference = $this->generateReferenceEcriture($manager);
 
       $label           = "Vente de marchandises";
       $tva             = 0;
@@ -73,10 +73,14 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = false;
       }
+
+      return $response;
     }
 
 
@@ -104,10 +108,13 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = true;
       }
+      return $response;
     }
 
 
@@ -160,10 +167,14 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = false;
       }
+
+      return $response;
     }
 
 
@@ -277,10 +288,13 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = true;
       }
+      return $response;
     }
 
 
@@ -338,10 +352,14 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = false;
       }
+
+      return $response;
     }
 
 
@@ -390,10 +408,14 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = true;
       }
+      
+      return $response;
     }
 
 
@@ -443,11 +465,14 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = true;
       }
-
+        
+      return $response;
     }
 
 
@@ -487,11 +512,14 @@ class FonctionsComptabiliteController extends AbstractController
 
       try{
         $manager->flush();
+        $response = true;
       } 
       catch(\Exception $e){
         $this->addFlash('danger', $e->getMessage());
+        $response = true;
       }
-
+        
+      return $response;
     }
 
 

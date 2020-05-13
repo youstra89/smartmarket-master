@@ -39,7 +39,7 @@
           <th>Mois</th>
           <th>Total des ventes</th>
           <th>Total des entrées</th>
-          <th>Bénéfice mensuel probable</th>
+          {# <th>Bénéfice mensuel probable</th> #}
           <th>Actions</th>
         </tr>
       </thead>
@@ -52,7 +52,7 @@
             <td>{{ m.nomFr }}</td>
             <td>{{ gains[m.date]|number_format(0, ',', ' ') }} F</td>
             <td>{{ entrees[m.date]|number_format(0, ',', ' ') }} F</td>
-            <td>{{ benefices[m.date]['benefice']|number_format(0, ',', ' ') }} F</td>
+            {# <td>{{ benefices[m.date]['benefice']|number_format(0, ',', ' ') }} F</td> #}
             <td>
               <a href="{{ path('dayly.accounting', {mois: m['date']}) }}" class=" circle arrow small">Plus de détails</a>
             </td>

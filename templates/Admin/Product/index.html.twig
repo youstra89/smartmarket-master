@@ -104,7 +104,7 @@
                 <td>{{ product.category.name }}</td>
                 <td>{% if product.mark %} {{ product.mark.label }} {% endif %}</td>
                 <td>{{ product.description }}</td>
-                <td>{{ product.stock }}</td>
+                <td>{{ product.stockUnite }}</td>
                 <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F</td>
                 <td>
                   <a href="{{ path('product.edit', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-edit"></i></a>

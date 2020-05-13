@@ -57,7 +57,7 @@
           <th>Date</th>
           <th>Total des ventes</th>
           <th>Total des entrées</th>
-          <th>Marge bénéficiare probable</th>
+          {# <th>Marge bénéficiare probable</th> #}
           <th>Actions</th>
         </tr>
       </thead>
@@ -87,12 +87,12 @@
                 {% endif %}
               {% endfor %}
             </td>
-            <td>
+            {# <td>
               {% for item in benefices if item.date == date %}
                 {% set totalBenefices = totalBenefices + item.benefice %}
                 {{ item.benefice|number_format(0, ',', ' ') }} F
               {% endfor %}
-            </td>
+            </td> #}
             <td>
               <a href="{{ path('ventes_du_jour', {date: date|date('Y-m-d')}) }}" data-toggle="tooltip" title="Voir les ventes du jour" class="btn-primary btn-circle btn-sm"><i class="icon-paperplane"></i></a>
               <a href="{{ path('entrees_du_jour', {date: date|date('Y-m-d')}) }}" data-toggle="tooltip" title="Voir les versements du jour" class="btn-info btn-circle btn-sm"><i class="icon-params"></i></a>
@@ -105,7 +105,7 @@
           <td colspan="2">Totaux</td>
           <td>{{ totalVentes|number_format(0, ',', ' ') }} F</td>
           <td>{{ totalEntrees|number_format(0, ',', ' ') }} F</td>
-          <td>{{ totalBenefices|number_format(0, ',', ' ') }} F</td>
+          {# <td>{{ totalBenefices|number_format(0, ',', ' ') }} F</td> #}
           <td></td>
         </tr>
       </tfoot>

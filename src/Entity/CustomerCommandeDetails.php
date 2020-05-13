@@ -78,9 +78,15 @@ class CustomerCommandeDetails
      */
     private $deleted_by;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $sold_by;
+
 
     public function __construct()
     {
+        $this->sold_by    = 1;
         $this->is_deleted = false;
         $this->created_at = new \DateTime();
     }
@@ -230,6 +236,18 @@ class CustomerCommandeDetails
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getSoldBy(): ?int
+    {
+        return $this->sold_by;
+    }
+
+    public function setSoldBy(int $sold_by): self
+    {
+        $this->sold_by = $sold_by;
 
         return $this;
     }

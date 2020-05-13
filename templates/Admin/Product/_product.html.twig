@@ -50,6 +50,14 @@
         </div>
         <div class="col-md-4">
             <div class="form-group">
+                {{ form_label(form.unite) }}
+                {{ form_widget(form.unite, {'attr': {'class': 'form-control', 'value': '1'}}) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
                 {{ form_label(form.image) }}
                 {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
             </div>

@@ -101,6 +101,9 @@ class AdminProductController extends AbstractController
               // instead of its contents
               $product->setImage($newFilename);
           }
+          $product->setAveragePurchasePrice(0);
+          $product->setAverageSellingPrice(0);
+          $product->setAveragePackageSellingPrice(0);
 
           $manager->persist($product);
           try{

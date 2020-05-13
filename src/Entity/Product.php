@@ -115,6 +115,21 @@ class Product
      */
     private $average_purchase_price;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $unite;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $average_selling_price;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $average_package_selling_price;
+
 
     public function __construct()
     {
@@ -205,6 +220,27 @@ class Product
         $this->mark = $mark;
 
         return $this;
+    }
+
+    public function getStockUnite()
+    {
+        $stock = $this->stock;
+        // On va personnaliser cette méthode.
+        // Si le produit peut être décomposé en unité, alors on va donner le stock en tenant compte des unités.
+        if ($this->unite !== 1 and $this->stock != 0){
+            $nbrProduit = intdiv($this->stock, $this->unite);
+            $nbrUnite = $this->stock % $this->unite;
+            if($nbrProduit == 0 and $nbrUnite == 0)
+                $stock = 0;
+            elseif($nbrProduit == 0 and $nbrUnite != 0)
+                $stock = $nbrUnite." unités";
+            elseif($nbrProduit != 0 and $nbrUnite == 0)
+                $stock = $nbrProduit;
+            else
+                $stock = $nbrProduit."/".$nbrUnite." unités";
+
+        }
+        return $stock;
     }
 
     public function getStock(): ?int
@@ -347,6 +383,42 @@ class Product
     public function setAveragePurchasePrice(int $average_purchase_price): self
     {
         $this->average_purchase_price = $average_purchase_price;
+
+        return $this;
+    }
+
+    public function getUnite(): ?int
+    {
+        return $this->unite;
+    }
+
+    public function setUnite(int $unite): self
+    {
+        $this->unite = $unite;
+
+        return $this;
+    }
+
+    public function getAverageSellingPrice(): ?int
+    {
+        return $this->average_selling_price;
+    }
+
+    public function setAverageSellingPrice(int $average_selling_price): self
+    {
+        $this->average_selling_price = $average_selling_price;
+
+        return $this;
+    }
+
+    public function getAveragePackageSellingPrice(): ?int
+    {
+        return $this->average_package_selling_price;
+    }
+
+    public function setAveragePackageSellingPrice(int $average_package_selling_price): self
+    {
+        $this->average_package_selling_price = $average_package_selling_price;
 
         return $this;
     }

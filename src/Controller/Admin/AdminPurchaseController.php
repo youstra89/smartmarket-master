@@ -75,10 +75,11 @@ class AdminPurchaseController extends AbstractController
   
               $date        = new \DateTime($data['date']);
               $reference   = $date->format('Ymd').'.'.(new \DateTime())->format('His');
-              $prices      = (int) $data["prices"];
+              $prices      = $data["prices"];
               $tva         = (int) $data["tva"];
               $remise      = (int) $data["remise"];
-              $quantities  = (int) $data["quantities"];
+              $quantities  = $data["quantities"];
+              // dd($prices);
               $totalCharge = $providerCommande->getAdditionalFees() + $providerCommande->getTransport() + $providerCommande->getDedouanement() + $providerCommande->getCurrencyCost() + $providerCommande->getForwardingCost();
               $providerCommande->setReference($reference);
               $providerCommande->setExercice($exercice);
@@ -98,7 +99,8 @@ class AdminPurchaseController extends AbstractController
               $commandeGlobalCost = 0;
               foreach ($prices as $key => $value) {
                 $product  = $manager->getRepository(Product::class)->find($key);
-                $quantity = $quantities[$key];
+                $value = $value / $product->getUnite();
+                $quantity = $quantities[$key] * $product->getUnite();
                 $subtotal = $value * $quantity;
   
                 if($quantity <= 0)
@@ -116,7 +118,6 @@ class AdminPurchaseController extends AbstractController
                 }
                 
                 $part = 0;
-                $product = $manager->getRepository(Product::class)->find($key);
                 // On va commencer par calculer le prix de revient de chaque marchandise
                 /* Pour se faire, on déternime d'abord le pourcentage du prix total de chaque
                   * article (marchandise, ou encore produit) dans le prix total de la commande
@@ -138,6 +139,7 @@ class AdminPurchaseController extends AbstractController
                 $commandeProduit->setSubtotal($subtotal);
                 $commandeProduit->setMinimumSellingPrice($value + $chargeUnitaire);
                 $commandeGlobalCost += $subtotal;
+                // dd($commandeProduit);
                 $manager->persist($commandeProduit);
                 $stockQte = $product->getStock() + $quantity;
                 /**
@@ -158,6 +160,7 @@ class AdminPurchaseController extends AbstractController
                 $product->setAveragePurchasePrice($prixMoyen);
                 $product->setUpdatedAt(new \DateTime());
               }
+              // dd($product);
               $providerCommande->setTotalAmount($commandeGlobalCost);
               $providerCommande->setGlobalTotal($commandeGlobalCost + $totalCharge);
               $providerCommande->setTva($tva);

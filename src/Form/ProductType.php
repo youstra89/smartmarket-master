@@ -25,6 +25,7 @@ class ProductType extends AbstractType
             ->add('description', TextType::class, ['label' => 'Description', 'required' => true])
             ->add('unit_price', TextType::class, ['label' => 'Prix de vente unitaire', 'required' => true])
             ->add('purchasing_price', TextType::class, ['label' => 'Prix d\'achat', 'required' => true])
+            ->add('unite', TextType::class, ['label' => 'Unités/produit', 'required' => true])
             ->add('security_stock', NumberType::class, ['label' => 'Stock de sécurité', 'required' => true])
             ->add('image', FileType::class, [
                 'label' => 'Sélectionner une image',
@@ -78,8 +79,7 @@ class ProductType extends AbstractType
                     'label'    => 'Marque',
                     'multiple' => false,
                     'placeholder' => 'Sélectionner un élément'
-                ])
-                ;
+                ]);
             }
             else{
             }
