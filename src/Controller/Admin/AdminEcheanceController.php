@@ -4,11 +4,13 @@ namespace App\Controller\Admin;
 
 use App\Entity\Echeance;
 use App\Entity\Settlement;
+use App\Entity\ComptaExercice;
 use App\Entity\CustomerCommande;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Controller\FonctionsComptabiliteController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -128,7 +130,7 @@ class AdminEcheanceController extends AbstractController
      * @Route("/enregistrer-un-versement-echeance/{id}", name="payer_echeance", requirements={"id"="\d+"})
      * @param Echeance $echeance
      */
-    public function enregistrer_un_versement(Request $request, EntityManagerInterface $manager, Echeance $echeance)
+    public function enregistrer_un_versement(Request $request, EntityManagerInterface $manager, Echeance $echeance, FonctionsComptabiliteController $fonctions)
     {
       if (setlocale(LC_TIME, 'fr_FR') == '') {
         $format_jour = '%#d';
@@ -140,8 +142,22 @@ class AdminEcheanceController extends AbstractController
       $commandeId = $echeance->getCommande()->getId();
       $datePrevue = ucwords(strftime("%A $format_jour %B %Y", strtotime($echeance->getDateEcheance()->format("Y-m-d"))));
 
+      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
       if ($echeance->getAmount() == 0) {
         $this->addFlash('danger', 'Montant d\'écheance incorrect. Le montant doit être supérieur à 0');
+        return $this->redirectToRoute('echeances');
+      }
+
+      $total = 0;
+      $reglements = $echeance->getCommande->getSettlements();
+      foreach ($reglements as $key => $value) {
+        $total += $value->getAmount();
+      }
+      $amount = $echeance->getAmount();
+      $newTotal = $amount + $total;
+      if($newTotal > $echeance->getCommande->getMontantTtc())
+      {
+        $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande. Vous devez modifier le montant de l\'échéance pour pouvoir continuer.');
         return $this->redirectToRoute('echeances');
       }
 
@@ -153,6 +169,8 @@ class AdminEcheanceController extends AbstractController
         // return new Response(var_dump($data["dates"]));
         if($this->isCsrfTokenValid('token_payer_echeance', $token)){
           $date    = new \DateTime($data["date"]);
+          $mode    = (int) $data["mode"];
+          $montant = $echeance->getAmount();
           // return new Response(var_dump($this->respectEcheance($date, $echeance)));
           $echeance->setEcheanceRespectee($this->respectEcheance($date, $echeance));
           $echeance->setIsPaid(true);
@@ -166,6 +184,7 @@ class AdminEcheanceController extends AbstractController
           $settlementNumber = AdminSellController::generateSettlementNumber(empty($dernierVersement) ? null : $dernierVersement);
           $settlement = new Settlement();
           $settlement->setDate($date);
+          $settlement->setModePaiement($mode);
           $settlement->setReference($reference);
           $settlement->setAmount($echeance->getAmount());
           $settlement->setNumber($settlementNumber);
@@ -176,6 +195,7 @@ class AdminEcheanceController extends AbstractController
 
           try{
             $manager->flush();
+            $fonctions->ecritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $montant, $exercice, $date, $settlement);
             $this->addFlash('success', 'Enregistrement du paiement de l\'échéance de la commande <strong>'.$echeance->getCommande()->getReference().'</strong> réussie.');
           } 
           catch(\Exception $e){

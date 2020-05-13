@@ -165,6 +165,11 @@ class Customer
      */
     private $nationalite;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $acompte;
+
 
     public function __construct()
     {
@@ -181,6 +186,11 @@ class Customer
     public function getSexeType(): string
     {
       return empty($this->sexe) ? 'Indéfini' : self::SEXE[$this->sexe];
+    }
+
+    public function getNom()
+    {
+        return $this->firstname.' '.$this->lastname;
     }
 
     public function getFirstname(): ?string
@@ -565,6 +575,18 @@ class Customer
     public function setNationalite(?string $nationalite): self
     {
         $this->nationalite = $nationalite;
+
+        return $this;
+    }
+
+    public function getAcompte(): ?int
+    {
+        return $this->acompte;
+    }
+
+    public function setAcompte(int $acompte): self
+    {
+        $this->acompte = $acompte;
 
         return $this;
     }

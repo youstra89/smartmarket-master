@@ -28,95 +28,95 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class AdminSellController extends AbstractController
 {
-  /**
-   * @Route("/", name="sell")
-   * @IsGranted("ROLE_VENTE")
-   */
-  public function index(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
-  {
-    // dd($_SERVER['HTTP_USER_AGENT']);
-    $search = new CustomerCommandeSearch();
-    $form = $this->createForm(CustomerCommandeSearchType::class, $search);
-    $form->handleRequest($request);
-    $commandes = $paginator->paginate(
-      $manager->getRepository(CustomerCommande::class)->commandesClients($search),
-      $request->query->getInt('page', 1),
-      20
-    );
-
-    return $this->render('Admin/Sell/index.html.twig', [
-      'form'      => $form->createView(),
-      'current'   => 'sells',
-      'commandes' => $commandes
-    ]);
-  }
-
-  
-  /**
-   * @Route("/preparing-sells", name="preparing_sells")
-   * @IsGranted("ROLE_VENTE")
-   */
-  public function preparing_sells(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
-  {
-    $search = new CustomerCommandeSearch();
-    $form   = $this->createForm(CustomerCommandeSearchType::class, $search);
-    $form->handleRequest($request);
-
-    $commandes = $paginator->paginate(
-      $manager->getRepository(CustomerCommande::class)->commandesClientsAPreparer($search),
-      $request->query->getInt('page', 1),
-      20
-    );
-
-    return $this->render('Admin/Sell/preparing-sells.html.twig', [
-      'form'      => $form->createView(),
-      'current'   => 'sells',
-      'commandes' => $commandes
-    ]);
-  }
-
-
-  /**
-   * @Route("/select-product/{id}", name="get_product")
-   * @IsGranted("ROLE_VENTE")
-   */
-  public function get_product(Request $request, EntityManagerInterface $manager, int $id)
-  {
-    $product = $manager->getRepository(Product::class)->find($id);
-    $data = [
-      "id"               => $product->getId(),
-      "reference"        => $product->getReference(),
-      "label"            => $product->label(),
-      "stock"            => $product->getStock(),
-      "unit_price"       => $product->getUnitPrice(),
-      "purchasing_price" => $product->getPurchasingPrice(),
-    ];
-
-    return new JsonResponse($data);
-  }
-
-  /**
-   * @Route("/select-product-by-reference/{reference}", name="get_product_by_reference")
-   * @IsGranted("ROLE_VENTE")
-   */
-  public function get_product_by_reference(Request $request, EntityManagerInterface $manager, string $reference)
-  {
-    $product = $manager->getRepository(Product::class)->findByReference($reference);
-    $data = [];
-    if(!empty($product))
+    /**
+     * @Route("/", name="sell")
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function index(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
     {
-      $data = [
-        "id"               => $product[0]->getId(),
-        "reference"        => $product[0]->getReference(),
-        "label"            => $product[0]->label(),
-        "stock"            => $product[0]->getStock(),
-        "unit_price"       => $product[0]->getUnitPrice(),
-        "purchasing_price" => $product[0]->getPurchasingPrice(),
-      ];
+      // dd($_SERVER['HTTP_USER_AGENT']);
+      $search = new CustomerCommandeSearch();
+      $form = $this->createForm(CustomerCommandeSearchType::class, $search);
+      $form->handleRequest($request);
+      $commandes = $paginator->paginate(
+        $manager->getRepository(CustomerCommande::class)->commandesClients($search),
+        $request->query->getInt('page', 1),
+        20
+      );
+
+      return $this->render('Admin/Sell/index.html.twig', [
+        'form'      => $form->createView(),
+        'current'   => 'sells',
+        'commandes' => $commandes
+      ]);
     }
 
-    return new JsonResponse($data);
-  }
+  
+    /**
+     * @Route("/preparing-sells", name="preparing_sells")
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function preparing_sells(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
+    {
+      $search = new CustomerCommandeSearch();
+      $form   = $this->createForm(CustomerCommandeSearchType::class, $search);
+      $form->handleRequest($request);
+
+      $commandes = $paginator->paginate(
+        $manager->getRepository(CustomerCommande::class)->commandesClientsAPreparer($search),
+        $request->query->getInt('page', 1),
+        20
+      );
+
+      return $this->render('Admin/Sell/preparing-sells.html.twig', [
+        'form'      => $form->createView(),
+        'current'   => 'sells',
+        'commandes' => $commandes
+      ]);
+    }
+
+
+    /**
+     * @Route("/select-product/{id}", name="get_product")
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function get_product(Request $request, EntityManagerInterface $manager, int $id)
+    {
+      $product = $manager->getRepository(Product::class)->find($id);
+      $data = [
+        "id"               => $product->getId(),
+        "reference"        => $product->getReference(),
+        "label"            => $product->label(),
+        "stock"            => $product->getStock(),
+        "unit_price"       => $product->getUnitPrice(),
+        "purchasing_price" => $product->getPurchasingPrice(),
+      ];
+
+      return new JsonResponse($data);
+    }
+
+    /**
+     * @Route("/select-product-by-reference/{reference}", name="get_product_by_reference")
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function get_product_by_reference(Request $request, EntityManagerInterface $manager, string $reference)
+    {
+      $product = $manager->getRepository(Product::class)->findByReference($reference);
+      $data = [];
+      if(!empty($product))
+      {
+        $data = [
+          "id"               => $product[0]->getId(),
+          "reference"        => $product[0]->getReference(),
+          "label"            => $product[0]->label(),
+          "stock"            => $product[0]->getStock(),
+          "unit_price"       => $product[0]->getUnitPrice(),
+          "purchasing_price" => $product[0]->getPurchasingPrice(),
+        ];
+      }
+
+      return new JsonResponse($data);
+    }
 
     /**
      * @Route("/unique-form-for-selling", name="unique_form_for_selling")
@@ -917,6 +917,56 @@ class AdminSellController extends AbstractController
         'current'     => 'sells',
         'commande'    => $commande,
         'settlements' => $settlements
+      ]);
+    }
+
+    /**
+     * @Route("/impression-de-ticket-de-caisse/{id}", name="ticket_de_ciasse", requirements={"id"="\d+"})
+     * @param CustomerCommande $commande
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function ticket_de_ciasse(int $id, EntityManagerInterface $manager, CustomerCommande $commande)
+    {
+      $info = $manager->getRepository(Informations::class)->find(1);
+      // Configure Dompdf according to your needs
+      $pdfOptions = new Options();
+      $pdfOptions->set('defaultFont', 'Arial');
+      
+      // Instantiate Dompdf with our options
+      $dompdf = new Dompdf($pdfOptions);
+      
+      // Retrieve the HTML generated in our twig file
+      $html = $this->renderView('Admin/Sell/ticket-de-caisse.html.twig', [
+          'info'        => $info,
+          'commande'    => $commande,
+      ]);
+      
+      // Load HTML to Dompdf
+      $dompdf->loadHtml($html);
+      // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+      // $dompdf->setPaper('A8', 'portrait');
+      $dompdf->setPaper('A8', 'landscape');
+
+      $orientation = "landscape";
+      $nbr = count($commande->getProduct());
+      $nbr = $nbr * 25 + 300;
+      $paper = [0, 0, $nbr, 240];
+      // dd($paper);
+      $dompdf->setPaper($paper, $orientation);
+
+      // Render the HTML as PDF
+      $dompdf->render();
+
+      //File name
+      $filename = "vente-".$commande->getReference();
+
+      // Output the generated PDF to Browser (force download)
+      $dompdf->stream($filename.".pdf", [
+          "Attachment" => false
+      ]);
+      return $this->render('Admin/Sell/sell-details.html.twig', [
+        'current'     => 'sells',
+        'commande'    => $commande,
       ]);
     }
 }

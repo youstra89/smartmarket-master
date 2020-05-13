@@ -264,6 +264,15 @@
         var price = $("#price").val();
         var quantity = $("#quantity").val();        
 
+        if(price == undefined || price == null || price == 0){
+          $("#notif p").text('Le prix d\'achat n\'a pas été précisé.');
+          return false;
+        }
+        if(quantity == undefined || quantity == null || quantity == 0){
+          $("#notif p").text('La quantité à acheter n\'a pas été précisée.');
+          return false;
+        }
+
         if(jQuery.inArray(id, productsId) !== -1)
         {
           $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');

@@ -10,7 +10,7 @@
 {% block body %}
   <div class="fh5co-narrow-content">
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Paiement d'une échéance de paiement de la commande {{ echeance.commande.reference }}</h2>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Paiement d'une échéance de paiement de la commande <strong>N°{{ echeance.commande.reference }}</strong></h2>
     <div class="row">
       <div class="col-md-4">
         <h3>Client</h3>
@@ -38,9 +38,39 @@
         </div>
       </div>
     </div><br><br>
+    {# On va déterminer le reste à payer #}
+    {% set total = 0 %}
+    {% for item in echeance.commande.settlements %}
+        {% set total = total + item.amount %}
+    {% endfor %}
+    {% set reste = echeance.commande.montantTtc - total %}
+    <div class="row">
+      <div class="col-md-4">
+        <label for="date1">Montant de l'échéance</label>
+        <input type="text" value="{{ echeance.amount|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+      </div>
+      <div class="col-md-4">
+        <label for="date1">Reste à payer</label>
+        <input type="text" value="{{ reste|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+      </div>
+      <div class="col-md-4">
+        <label for="date1">Reste après cette échéance</label>
+        <input type="text" value="{{ (reste - echeance.amount)|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+      </div>
+    </div><br>
     <form action="" method="post">
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
+          <label for="mode">Mode de paiement</label>
+          <select name="mode" id="mode" class="form-control" required>
+            <option value="1">Espèce</option>
+            <option value="2">Virement</option>
+            {% if echeance.commande.customer.acompte > echeance.amount  %}
+              <option value="3">Acompte client</option>
+            {% endif %}
+          </select>
+        </div>
+        <div class="col-md-6">
           <label for="date1">Date de paiment</label>
           <input type="date" name="date" id="date" value="{{ echeance.dateEcheance|date('Y-m-d') }}" class="form-control">
         </div>

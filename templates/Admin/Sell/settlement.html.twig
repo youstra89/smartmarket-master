@@ -40,7 +40,7 @@
   <div class="fh5co-narrow-content">
     <h2 class="animate-box" data-animate-effect="fadeInLeft">Détails vente N° <strong>{{ commande.reference }}</strong> du <strong>{{ commande.date|date('d-m-Y') }}</strong></h2>
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-4">
         <h3>Client</h3>
         {% if commande.customer is not empty %}
           <strong>Nom Client:</strong>
@@ -51,13 +51,17 @@
           Vente anomyne
         {% endif %}
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
         <h3>Commande</h3>
         <strong>Montant HT</strong>
         <span>{{ commande.totalAmount|number_format(0, ',', ' ') }} F</span><br>
         <strong>Montant TTC</strong>
         <span>{{ commande.montantTtc|number_format(0, ',', ' ') }} F</span><br>
       </div>
+      <div class="col-md-4">
+          <h3>Impression</h3>
+          <a href="{{ path('ticket_de_ciasse', {id: commande.id}) }}" class="btn-sm btn-large btn-info">Imprimer un ticket de caisse</a>
+        </div><br><br>
     </div><br><br>
     <div class="row">
       <div class="">
@@ -154,6 +158,9 @@
                   <select name="mode" id="mode" class="form-control" required>
                     <option value="1">Espèce</option>
                     <option value="2">Virement</option>
+                    {% if commande.commande.customer.acompte > 0 %}
+                      <option value="3">Acompte client</option>
+                    {% endif %}
                   </select>
                 </div>
               </div>

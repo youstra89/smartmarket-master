@@ -105,6 +105,11 @@ class Provider
      */
     private $nationalite;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $acompte;
+
 
     public function __construct()
     {
@@ -166,6 +171,11 @@ class Provider
         $this->firstname = $firstname;
 
         return $this;
+    }
+
+    public function getNom()
+    {
+        return $this->firstname.' '.$this->lastname;
     }
 
     public function getLastname(): ?string
@@ -363,6 +373,18 @@ class Provider
     public function setNationalite(?string $nationalite): self
     {
         $this->nationalite = $nationalite;
+
+        return $this;
+    }
+
+    public function getAcompte(): ?int
+    {
+        return $this->acompte;
+    }
+
+    public function setAcompte(int $acompte): self
+    {
+        $this->acompte = $acompte;
 
         return $this;
     }

@@ -51,6 +51,7 @@
             <div class="form-group">
               <label for="products" class="col-form-label">Produits</label>
               <select name="products" id="products" class="form-control">
+              {# <select name="products" id="products" class="form-control mb-4 js-example-basic-single"> #}
                 <option value="">Sélectionnez un produit</option>
                 {% for product in products if product.stock > 0 %}
                   <option value="{{ product.id }}">{{ product.label }}</option>
@@ -224,8 +225,16 @@
         var price = $("#price").val();
         var quantity = $("#quantity").val();        
 
-        if(jQuery.inArray(id, productsId) !== -1)
-        {
+        if(price == undefined || price == null || price == 0){
+          $("#notif p").text('Le prix de vente n\'a pas été précisé.');
+          return false;
+        }
+        if(quantity == undefined || quantity == null || quantity == 0){
+          $("#notif p").text('La quantité à vendre n\'a pas été précisée.');
+          return false;
+        }
+
+        if(jQuery.inArray(id, productsId) !== -1){
           $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');
         }
         else{
@@ -257,7 +266,8 @@
 
 
       // A chaque fois que le prix change
-      $('.price').on('input',function(e){
+      $('.price').on('input change keyup',function(e){
+        $("#notif p").text('');
         var id = $(this).attr("name");
         var price = $(this).val();
         var priceH = document.getElementById('priceH[' + id + ']');
@@ -276,7 +286,8 @@
      });
 
       // A chaque fois que la quantité change
-      $('.quantity').on('input',function(e){
+      $('.quantity').on('input change keyup',function(e){
+        $("#notif p").text('');
         var id = $(this).attr("name");
         console.log(id);
         

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Admin;
+namespace App\Controller\Comptabilite;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -20,12 +20,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Controller\FonctionsComptabiliteController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
  * @Route("/admin/comptabilite")
- * @Security("has_role('ROLE_COMPTABLE')")
+ * @Security("has_role('ROLE_SUPER_ADMIN')")
  */
 class ComptabiliteController extends AbstractController
 {
@@ -100,7 +99,6 @@ class ComptabiliteController extends AbstractController
 
     /**
      * @Route("/add", name="add_compte")
-     * @IsGranted("ROLE_ADMIN")
      */
     public function add(Request $request, EntityManagerInterface $manager)
     {
@@ -129,7 +127,6 @@ class ComptabiliteController extends AbstractController
 
     /**
      * @Route("/edit/{id}", name="edit_compte")
-     * @IsGranted("ROLE_ADMIN")
      */
     public function edit(Request $request, EntityManagerInterface $manager, ComptaCompte $compte)
     {
@@ -159,7 +156,6 @@ class ComptabiliteController extends AbstractController
 
     /**
      * @Route("/information-exercice", name="info_exercice")
-     * @IsGranted("ROLE_ADMIN")
      */
     public function exercices(Request $request, EntityManagerInterface $manager)
     {
@@ -173,7 +169,6 @@ class ComptabiliteController extends AbstractController
 
     /**
      * @Route("/enregistrer-bilan-d-ouverture", name="enregistrer_bilan_ouverture")
-     * @IsGranted("ROLE_ADMIN")
      */
     public function enregistrer_bilan_ouverture(Request $request, EntityManagerInterface $manager)
     {
