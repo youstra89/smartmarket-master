@@ -35,49 +35,47 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Echéances de paiement enregistrées</h2>
-    <div class="row row-bottom-padded-md">
-      <div class="col-md-10">
-        <div class="table-responsive">
-          <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Client</th>
-                <th>Echéance</th>
-                <th>Montant</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% set i = 0 %}
-              {# {% for item in dates %} #}
-                {% for echeance in echeances %}
-                  {% set i = i + 1 %}
-                  <tr {% if echeance.intervalle < 0 %}class="bg-danger"{% elseif echeance.intervalle < 4 %}class="bg-warning"{% endif %}>
-                    <td>{{ i }}</td>
-                    <td>{{ echeance[0].commande.customer.firstname }} {{ echeance[0].commande.customer.lastname }}</td>
-                    <td>{{ echeance[0].dateEcheance|date('d-m-Y') }}</td>
-                    <td>{% if echeance[0].amount == 0 %}Indéfini{% else %}{{ echeance[0].amount|number_format(0, ',', ' ') }} F{% endif %}</td>
-                    <td>
-                      <a href="{{ path('echeance_edit', {'id': echeance[0].id}) }}" data-toggle="tooltip" data-placement="top" title="Editer l'échéance">
-                        <i class="icon-edit"></i>
-                      </a>&nbsp;&nbsp;
-                      {# <a href="{{ path('delete_user', {'id': echeance[0].id, '_csrf_token': csrf_token('delete_user')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer l'échéance" onclick="return confirm('Etes-vous sûrs de supprimer cet utilisateur ?')">
-                        <i class="icon-trash"></i>
-                      </a>&nbsp;&nbsp; #}
-                      <a  href="{{ path('payer_echeance', {'id': echeance[0].id}) }}" data-toggle="tooltip" data-placement="top" title="Enregistrer le versement">
-                        <i class="icon-settings"></i>
-                      </a>
-                    </td>
-                  </tr>
-                {% endfor %}
-              {# {% endfor %} #}
-            </tbody>
-          </table>
-        </div>
+  <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Echéances de paiement enregistrées</h2>
+  <div class="row row-bottom-padded-md">
+    <div class="col-md-10">
+      <div class="table-responsive">
+        <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Client</th>
+              <th>Echéance</th>
+              <th>Montant</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set i = 0 %}
+            {# {% for item in dates %} #}
+              {% for echeance in echeances %}
+                {% set i = i + 1 %}
+                <tr {% if echeance.intervalle < 0 %}class="bg-danger"{% elseif echeance.intervalle < 4 %}class="bg-warning"{% endif %}>
+                  <td>{{ i }}</td>
+                  <td>{{ echeance[0].commande.customer.firstname }} {{ echeance[0].commande.customer.lastname }}</td>
+                  <td>{{ echeance[0].dateEcheance|date('d-m-Y') }}</td>
+                  <td>{% if echeance[0].amount == 0 %}Indéfini{% else %}{{ echeance[0].amount|number_format(0, ',', ' ') }} F{% endif %}</td>
+                  <td>
+                    <a href="{{ path('echeance_edit', {'id': echeance[0].id}) }}" data-toggle="tooltip" data-placement="top" title="Editer l'échéance">
+                      <i class="icon-edit"></i>
+                    </a>&nbsp;&nbsp;
+                    {# <a href="{{ path('delete_user', {'id': echeance[0].id, '_csrf_token': csrf_token('delete_user')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer l'échéance" onclick="return confirm('Etes-vous sûrs de supprimer cet utilisateur ?')">
+                      <i class="icon-trash"></i>
+                    </a>&nbsp;&nbsp; #}
+                    <a  href="{{ path('payer_echeance', {'id': echeance[0].id}) }}" data-toggle="tooltip" data-placement="top" title="Enregistrer le versement">
+                      <i class="icon-settings"></i>
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            {# {% endfor %} #}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

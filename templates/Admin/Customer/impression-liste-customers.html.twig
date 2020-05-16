@@ -132,7 +132,11 @@
                   <td>{{ customer.firstname }} {{ customer.lastname }}</td>
                   <td>{{ customer.phoneNumber }}</td>
                   <td>{{ customer.email }}</td>
-                  <td>{{ customer.type.type }}</td>
+                  <td>
+                    {% if customer.type %}
+                      {{ customer.type.type }}
+                    {% endif %}
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>

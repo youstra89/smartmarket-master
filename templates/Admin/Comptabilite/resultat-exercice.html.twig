@@ -12,73 +12,69 @@
 
 
 {% block body %}
-<div class="fh5co-narrow-content">
   <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Résultat de l'exercie de <strong>{{ exercice.label }}</strong></h2>
   <div class="row">
-    <div class="">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th colspan="2" style="font-size: 1.5em; text-align: center">Charges</th>
-            <th colspan="2" style="font-size: 1.5em; text-align: center">Produits</th>
-          </tr>
-          <tr>
-            <th width="35%">Compte</th>
-            <th width="15%">Montant</th>
-            <th width="35%">Compte</th>
-            <th width="15%">Montant</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% set totalCharges = 0 %}
-          {% set totalProduits = 0 %}
-          <tr>
-            <td colspan="2">
-              {% for item in comptesCharges if item.compte.classe == classesCharges[0] %}  
-                <div class="row">
-                  <div class="col-md-1">{{ item.compte.numero }}</div>
-                  <div class="col-md-7">{{ item.compte.label }}</div>
-                  <div class="col-md-4" style="text-align: right">{{ item.montantFinal|number_format(2, ',', ' ') }} F</div>
-                </div>
-                {% set totalCharges = totalCharges + item.montantFinal %}
-              {% endfor %}
-            </td>
-            <td colspan="2">
-              {% for item in comptesProduits if item.compte.classe == classesProduits[0] %}  
-                <div class="row">
-                  <div class="col-md-1">{{ item.compte.numero }}</div>
-                  <div class="col-md-7">{{ item.compte.label }}</div>
-                  <div class="col-md-4" style="text-align: right">{{ item.montantFinal|number_format(2, ',', ' ') }} F</div>
-                </div>
-                {% set totalProduits = totalProduits + item.montantFinal %}
-              {% endfor %}
-            </td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>Total</th>
-            <th style="text-align: right">{{ totalCharges|number_format(2, ',', ' ') }} F</th>
-            <th>Total</th>
-            <th style="text-align: right">{{ totalProduits|number_format(2, ',', ' ') }} F</th>
-          </tr>
-          <tr>
-            {% set resultat = totalProduits - totalCharges %}
-            {# {% set resultat = 578350 %} #}
-            {% set color = "" %}
-            {% if resultat > 0 %}
-              {% set color = "green" %}
-            {% elseif resultat < 0 %}
-              {% set color = "red" %}
-            {% endif %}
-            <th colspan="4" style="text-align: center; font-size: 2.5em">Résultat = <span style="color: {{ color }}">{{ resultat|number_format(2, ',', ' ') }} F</span></th>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th colspan="2" style="font-size: 1.5em; text-align: center">Charges</th>
+          <th colspan="2" style="font-size: 1.5em; text-align: center">Produits</th>
+        </tr>
+        <tr>
+          <th width="35%">Compte</th>
+          <th width="15%">Montant</th>
+          <th width="35%">Compte</th>
+          <th width="15%">Montant</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set totalCharges = 0 %}
+        {% set totalProduits = 0 %}
+        <tr>
+          <td colspan="2">
+            {% for item in comptesCharges if item.compte.classe == classesCharges[0] %}  
+              <div class="row">
+                <div class="col-md-1">{{ item.compte.numero }}</div>
+                <div class="col-md-7">{{ item.compte.label }}</div>
+                <div class="col-md-4" style="text-align: right">{{ item.montantFinal|number_format(2, ',', ' ') }} F</div>
+              </div>
+              {% set totalCharges = totalCharges + item.montantFinal %}
+            {% endfor %}
+          </td>
+          <td colspan="2">
+            {% for item in comptesProduits if item.compte.classe == classesProduits[0] %}  
+              <div class="row">
+                <div class="col-md-1">{{ item.compte.numero }}</div>
+                <div class="col-md-7">{{ item.compte.label }}</div>
+                <div class="col-md-4" style="text-align: right">{{ item.montantFinal|number_format(2, ',', ' ') }} F</div>
+              </div>
+              {% set totalProduits = totalProduits + item.montantFinal %}
+            {% endfor %}
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Total</th>
+          <th style="text-align: right">{{ totalCharges|number_format(2, ',', ' ') }} F</th>
+          <th>Total</th>
+          <th style="text-align: right">{{ totalProduits|number_format(2, ',', ' ') }} F</th>
+        </tr>
+        <tr>
+          {% set resultat = totalProduits - totalCharges %}
+          {# {% set resultat = 578350 %} #}
+          {% set color = "" %}
+          {% if resultat > 0 %}
+            {% set color = "green" %}
+          {% elseif resultat < 0 %}
+            {% set color = "red" %}
+          {% endif %}
+          <th colspan="4" style="text-align: center; font-size: 2.5em">Résultat = <span style="color: {{ color }}">{{ resultat|number_format(2, ',', ' ') }} F</span></th>
+        </tr>
+      </tfoot>
+    </table>
   </div>	
-</div>
 {% endblock %}
 
 

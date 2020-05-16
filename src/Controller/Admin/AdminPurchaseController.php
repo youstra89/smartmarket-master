@@ -175,9 +175,9 @@ class AdminPurchaseController extends AbstractController
               $additional_fees = $providerCommande->getAdditionalFees();
   
               try{
-                $manager->flush();
                 $fonctions->ecritureDAchatDansLeJournalComptable($manager, $netAPayer, $tva, $exercice, $date, $providerCommande);
                 $fonctions->ecritureDesChargesDUnAchatDansLeJournalComptable($manager, $transport, $dedouanement, $currency_cost, $forwarding_cost, $additional_fees, $providerCommande, $exercice);
+                $manager->flush();
                 $this->addFlash('success', '<li>Enregistrement de la commande du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li><li>Il faut enregistrer les marchandises.</li>');
               } 
               catch(\Exception $e){
@@ -389,12 +389,11 @@ class AdminPurchaseController extends AbstractController
         $date   = new \DateTime($data['date']);
         $mode   = $data['mode'];
         $amount = $data['amount'];
-        $commandeId = $commande->getId();
         // return new Response(var_dump($data));
         if($this->isCsrfTokenValid('token_reglement_fournisseur', $token)){
           if(empty($date)){
             $this->addFlash('danger', 'Saisir une valeur pour la date.');
-            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('provider_settlement', ['id' => $id]);
           }
           else
           {
@@ -407,7 +406,7 @@ class AdminPurchaseController extends AbstractController
           if(empty($amount) or $amount < 0){
             $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
             // return new Response("Montant nul ou négatif");
-            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('provider_settlement', ['id' => $id]);
           }
 
           /**
@@ -436,7 +435,7 @@ class AdminPurchaseController extends AbstractController
           if($montantDuCompte < $amount)
           {
             $this->addFlash('danger', 'Le solde du compte <strong>'.$compte.' ('.number_format($montantDuCompte, 0, ',', ' ').' F</strong>) est inféreur au montant saisie qui est de <strong>'.number_format($amount, 0, ',', ' ').' F</strong>');
-            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('provider_settlement', ['id' => $id]);
           }
           $newTotal = $amount + $total;
           $reglementMemeDate = $manager->getRepository(ProviderSettlement::class)->reglementMemeDate($id, $date->format('Y-m-d'));
@@ -444,17 +443,17 @@ class AdminPurchaseController extends AbstractController
           if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
           {
             $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
-            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('provider_settlement', ['id' => $id]);
           }
           elseif(!empty($reglementMemeDate))
           {
             $this->addFlash('danger', 'Impossible d\'enregistrer un deuxième versement pour la même date ('. $date->format('d-m-Y') .'). Vous pouvez cependant modifier le montant du premier versement.');
-            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('provider_settlement', ['id' => $id]);
           }
           elseif($newTotal > $commande->getNetAPayer())
           {
             $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
-            return $this->redirectToRoute('provider_settlement', ['id' => $commandeId]);
+            return $this->redirectToRoute('provider_settlement', ['id' => $id]);
           }
           elseif($newTotal < $commande->getNetAPayer())
           {
@@ -474,8 +473,8 @@ class AdminPurchaseController extends AbstractController
           $settlement->setCommande($commande);
           $manager->persist($settlement);
           try{
-            $manager->flush();
             $fonctions->ecritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
+            $manager->flush();
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());

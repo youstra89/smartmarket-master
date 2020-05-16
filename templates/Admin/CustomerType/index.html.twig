@@ -30,23 +30,21 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Types de clients</h2>
-    <a href="{{ path('customertype.add') }}" class="btn-sm btn-primary">Ajouter un type de client</a>
-    <div class="row row-bottom-padded-md mb-5">
-      {% set i = 0 %}
-      {% for item in customertypes %}
-        {% set i = i + 1 %}
-        <div class="col-md-3 col-sm-6 col-padding text-center animate-box card" style="width: 18rem">
-          <div class="card-body">
-            <h5 class="card-title" style="margin: 0px">{{ item.type }}</h5>
-            <h6 class="card-subtitle text-muted" style="margin: 0px">Type de client {{ i }}</h6>
-            <a href="{{ path('customertype.edit', {id: item.id}) }}" class="card-link">Edition</a>
-          </div>
+  <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Types de clients</h2>
+  <a href="{{ path('customertype.add') }}" class="btn-sm btn-primary">Ajouter un type de client</a>
+  <div class="row row-bottom-padded-md mb-5">
+    {% set i = 0 %}
+    {% for item in customertypes %}
+      {% set i = i + 1 %}
+      <div class="col-md-3 col-sm-6 col-padding text-center animate-box card" style="width: 18rem">
+        <div class="card-body">
+          <h5 class="card-title" style="margin: 0px">{{ item.type }}</h5>
+          <h6 class="card-subtitle text-muted" style="margin: 0px">Type de client {{ i }}</h6>
+          <a href="{{ path('customertype.edit', {id: item.id}) }}" class="card-link">Edition</a>
         </div>
-      {% endfor %}
-    </div>
+      </div>
+    {% endfor %}
   </div>
 {% endblock %}
 

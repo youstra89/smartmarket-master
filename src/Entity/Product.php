@@ -79,6 +79,11 @@ class Product
      */
     private $mark;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Family", inversedBy="products")
+     */
+    private $family;
+
     // * @ORM\Column(type="integer", unsigned=true)
     /**
      * @ORM\Column(columnDefinition="integer unsigned")
@@ -419,6 +424,18 @@ class Product
     public function setAveragePackageSellingPrice(int $average_package_selling_price): self
     {
         $this->average_package_selling_price = $average_package_selling_price;
+
+        return $this;
+    }
+
+    public function getFamily(): ?Family
+    {
+        return $this->family;
+    }
+
+    public function setFamily(?Family $family): self
+    {
+        $this->family = $family;
 
         return $this;
     }

@@ -170,6 +170,7 @@ class ProviderCommande
         $this->echeances   = new ArrayCollection();
         $this->settlements = new ArrayCollection();
         $this->product = new ArrayCollection();
+        $this->comptaEcriture = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -578,6 +579,29 @@ class ProviderCommande
     public function setNetAPayer(int $net_a_payer): self
     {
         $this->net_a_payer = $net_a_payer;
+
+        return $this;
+    }
+
+    public function addComptaEcriture(ComptaEcriture $comptaEcriture): self
+    {
+        if (!$this->comptaEcriture->contains($comptaEcriture)) {
+            $this->comptaEcriture[] = $comptaEcriture;
+            $comptaEcriture->setAchat($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComptaEcriture(ComptaEcriture $comptaEcriture): self
+    {
+        if ($this->comptaEcriture->contains($comptaEcriture)) {
+            $this->comptaEcriture->removeElement($comptaEcriture);
+            // set the owning side to null (unless already changed)
+            if ($comptaEcriture->getAchat() === $this) {
+                $comptaEcriture->setAchat(null);
+            }
+        }
 
         return $this;
     }

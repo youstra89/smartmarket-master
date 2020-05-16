@@ -8,11 +8,9 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="animate-box" data-animate-effect="fadeInLeft">Modification d'un pays - <strong>{{ country.name }}</strong> </h2>
-    {{ include('Admin/Country/_country.html.twig', {button: 'Editer'}) }}
-  </div>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Modification d'un pays - <strong>{{ country.name }}</strong> </h2>
+  {{ include('Admin/Country/_country.html.twig', {button: 'Editer'}) }}
 {% endblock %}
 
 

@@ -29,12 +29,12 @@ class Customer
     private $firstname;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $lastname;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $phone_number;
 
@@ -79,18 +79,18 @@ class Customer
     private $deleted_by;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $address;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $residence;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\CustomerType", inversedBy="customers")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $type;
 
@@ -173,6 +173,7 @@ class Customer
 
     public function __construct()
     {
+        $this->acompte           = 0;
         $this->is_deleted        = false;
         $this->created_at        = new \DateTime();
         $this->customerCommandes = new ArrayCollection();

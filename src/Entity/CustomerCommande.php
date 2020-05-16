@@ -151,6 +151,7 @@ class CustomerCommande
         $this->settlements      = new ArrayCollection();
         $this->echeances        = new ArrayCollection();
         $this->returnedProducts = new ArrayCollection();
+        $this->comptaEcriture = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -545,6 +546,29 @@ class CustomerCommande
     public function setNetAPayer(int $net_a_payer): self
     {
         $this->net_a_payer = $net_a_payer;
+
+        return $this;
+    }
+
+    public function addComptaEcriture(ComptaEcriture $comptaEcriture): self
+    {
+        if (!$this->comptaEcriture->contains($comptaEcriture)) {
+            $this->comptaEcriture[] = $comptaEcriture;
+            $comptaEcriture->setVente($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComptaEcriture(ComptaEcriture $comptaEcriture): self
+    {
+        if ($this->comptaEcriture->contains($comptaEcriture)) {
+            $this->comptaEcriture->removeElement($comptaEcriture);
+            // set the owning side to null (unless already changed)
+            if ($comptaEcriture->getVente() === $this) {
+                $comptaEcriture->setVente(null);
+            }
+        }
 
         return $this;
     }

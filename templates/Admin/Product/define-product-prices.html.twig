@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Mise à jour des prix de {{ product.label }}{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Mise à jour des prix de <strong>{{ product.label }}</strong></h2>
+  <div class="responsive-table">
+    <form action="" method="post">
+      <table class="table table-bordered" width="100%">
+        <thead>
+          <tr>
+            <th width="30%">Prix</th>
+            <th width="70%">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <label for="purchasingPrice">Prix d'achat</label>
+              <input type="number" name="purchasingPrice" id="purchasingPrice" value="{{ product.purchasingPrice }}" class="form-control" required>
+            </td>
+            <td style="vertical-align: middle">C'est prix auquel on a l'habitude d'acheter le produit auprès de nos fournisseurs. C'est aussi ce prix qui s'affiche par défaut lors d'une commande chez le fournisseur.</td>
+          </tr>
+          <tr>
+            <td>
+              <label for="unitPrice">Prix unitaire</label>
+              <input type="number" name="unitPrice" id="unitPrice" value="{{ product.unitPrice }}" class="form-control" required>
+            </td>
+            <td style="vertical-align: middle">C'est le prix de vente du produit. C'est ce prix qui s'affiche par défaut lors de la vente du produit.</td>
+          </tr>
+          <tr>
+            <td>
+              <label for="averagePurchasePrice">Prix d'achat moyen</label>
+              <input type="number" name="averagePurchasePrice" id="averagePurchasePrice" value="{{ product.averagePurchasePrice }}" class="form-control" required>
+            </td>
+            <td style="vertical-align: middle">
+              En effet, il peut arrivé qu'un même produit ait été acquis à différents prix auprès de vos fournisseurs. Il faudra dans ce cas trouver les prix moyen auquel un produit est acquis. <br>
+              <span style="color: red">Ce prix est déterminer automatiquement par le système. Le modifier peut avoir des impacts sur les résultats comptables. Il est <strong>fortement</strong> déconseillé de le modifier.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="averageSellingPrice">Prix de vente moyen</label>
+              <input type="number" name="averageSellingPrice" id="averageSellingPrice" value="{{ product.averageSellingPrice }}" class="form-control" required>
+            </td>
+            <td style="vertical-align: middle">C'est le prix en deça duquel on ne peut vendre un produit.</td>
+          </tr>
+          <tr>
+            <td>
+              <label for="averagePackageSellingPrice">Prix de vente moyen du carton/paquet</label>
+              <input type="number" name="averagePackageSellingPrice" id="averagePackageSellingPrice" value="{{ product.averagePackageSellingPrice }}" class="form-control" required>
+            </td>
+            <td style="vertical-align: middle">
+              Ce prix doit être égal <strong>au prix de vente moyen</strong>, si le produit n'est pas divisible. 
+              Sinon, la valeur minimale doit être égale au prix moyen de vente multiplié par le nombre de produit par 
+              carton ou par paquet <span style="font-weight: bold"></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token('prices_definition') }}"/>
+      <button class="btn-sm btn-default">Enregistrer les prix</button>
+    </form>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

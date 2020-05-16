@@ -8,87 +8,85 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Enregistrement d'échéances de paiement</h2>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Enregistrement d'échéances de paiement</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <h3>Client</h3>
+      {% if commande.customer is not empty %}
+        <strong>Nom Client:</strong>
+        <span>{{ commande.customer.firstname }} {{ commande.customer.lastname }}</span><br>
+        <strong>Numéro de téléphone client:</strong>
+        <span>{{ commande.customer.phoneNumber }}</span><br>
+      {% else %}
+        Vente anomyne
+      {% endif %}
+    </div>
+    <div class="col-md-4">
+      <h3>Commande</h3>
+      <strong>Montant total de la vente</strong><br>
+      <span>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</span><br>
+      <strong>Reste à payer</strong><br>
+      <span>{{ commande.getResteAPayer|number_format(0, ',', ' ') }} F</span><br>
+
+    </div>
+  </div><br><br>
+  <form action="" method="post">
     <div class="row">
       <div class="col-md-4">
-        <h3>Client</h3>
-        {% if commande.customer is not empty %}
-          <strong>Nom Client:</strong>
-          <span>{{ commande.customer.firstname }} {{ commande.customer.lastname }}</span><br>
-          <strong>Numéro de téléphone client:</strong>
-          <span>{{ commande.customer.phoneNumber }}</span><br>
-        {% else %}
-          Vente anomyne
-        {% endif %}
+        <label for="date1">Date 1<sup>ère</sup> échéance</label>
+        <input type="date" name="dates[]" id="date1" class="form-control">
       </div>
       <div class="col-md-4">
-        <h3>Commande</h3>
-        <strong>Montant total de la vente</strong><br>
-        <span>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</span><br>
-        <strong>Reste à payer</strong><br>
-        <span>{{ commande.getResteAPayer|number_format(0, ',', ' ') }} F</span><br>
-
+        <label for="montant1">Montant 1<sup>ère</sup> échéance</label>
+        <input type="number" name="montants[]" id="montant1" class="form-control">
       </div>
-    </div><br><br>
-    <form action="" method="post">
-      <div class="row">
-        <div class="col-md-4">
-          <label for="date1">Date 1<sup>ère</sup> échéance</label>
-          <input type="date" name="dates[]" id="date1" class="form-control">
-        </div>
-        <div class="col-md-4">
-          <label for="montant1">Montant 1<sup>ère</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant1" class="form-control">
-        </div>
-      </div><br>
-      <div class="row">
-        <div class="col-md-4">
-          <label for="date2">Date 2<sup>ème</sup> échéance</label>
-          <input type="date" name="dates[]" id="date2" class="form-control" disabled>
-        </div>
-        <div class="col-md-4">
-          <label for="montant2">Montant 2<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant2" class="form-control" disabled>
-        </div>
-      </div><br>
-      <div class="row">
-        <div class="col-md-4">
-          <label for="date3">Date 3<sup>ème</sup> échéance</label>
-          <input type="date" name="dates[]" id="date3" class="form-control" disabled>
-        </div>
-        <div class="col-md-4">
-          <label for="montant3">Montant 3<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant3" class="form-control" disabled>
-        </div>
-      </div><br>
-      <div class="row">
-        <div class="col-md-4">
-          <label for="date4">Date 4<sup>ème</sup> échéance</label>
-          <input type="date" name="dates[]" id="date4" class="form-control" disabled>
-        </div>
-        <div class="col-md-4">
-          <label for="montant4">Montant 4<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant4" class="form-control" disabled>
-        </div>
-      </div><br>
-      <div class="row">
-        <div class="col-md-4">
-          <label for="date5">Date 5<sup>ème</sup> échéance</label>
-          <input type="date" name="dates[]" id="date5" class="form-control" disabled>
-        </div>
-        <div class="col-md-4">
-          <label for="montant5">Montant 5<sup>ème</sup> échéance</label>
-          <input type="number" name="montants[]" id="montant5" class="form-control" disabled>
-        </div>
-      </div><br>
-      <div class="row">
-        <input type="hidden" name="token" value="{{ csrf_token('token_dates_echeances') }}">
-        <button type="submit" class="btn-lg btn-info" onclick="submitForm(this);">Enregistrer</button>
+    </div><br>
+    <div class="row">
+      <div class="col-md-4">
+        <label for="date2">Date 2<sup>ème</sup> échéance</label>
+        <input type="date" name="dates[]" id="date2" class="form-control" disabled>
       </div>
-    </form>
-  </div>
+      <div class="col-md-4">
+        <label for="montant2">Montant 2<sup>ème</sup> échéance</label>
+        <input type="number" name="montants[]" id="montant2" class="form-control" disabled>
+      </div>
+    </div><br>
+    <div class="row">
+      <div class="col-md-4">
+        <label for="date3">Date 3<sup>ème</sup> échéance</label>
+        <input type="date" name="dates[]" id="date3" class="form-control" disabled>
+      </div>
+      <div class="col-md-4">
+        <label for="montant3">Montant 3<sup>ème</sup> échéance</label>
+        <input type="number" name="montants[]" id="montant3" class="form-control" disabled>
+      </div>
+    </div><br>
+    <div class="row">
+      <div class="col-md-4">
+        <label for="date4">Date 4<sup>ème</sup> échéance</label>
+        <input type="date" name="dates[]" id="date4" class="form-control" disabled>
+      </div>
+      <div class="col-md-4">
+        <label for="montant4">Montant 4<sup>ème</sup> échéance</label>
+        <input type="number" name="montants[]" id="montant4" class="form-control" disabled>
+      </div>
+    </div><br>
+    <div class="row">
+      <div class="col-md-4">
+        <label for="date5">Date 5<sup>ème</sup> échéance</label>
+        <input type="date" name="dates[]" id="date5" class="form-control" disabled>
+      </div>
+      <div class="col-md-4">
+        <label for="montant5">Montant 5<sup>ème</sup> échéance</label>
+        <input type="number" name="montants[]" id="montant5" class="form-control" disabled>
+      </div>
+    </div><br>
+    <div class="row">
+      <input type="hidden" name="token" value="{{ csrf_token('token_dates_echeances') }}">
+      <button type="submit" class="btn-lg btn-info" onclick="submitForm(this);">Enregistrer</button>
+    </div>
+  </form>
 {% endblock %}
 
 

@@ -35,73 +35,71 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Commandes à préparer</h2>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Commandes à préparer</h2>
+  <div class="row">
+    {{ form_start(form) }}
     <div class="row">
-      {{ form_start(form) }}
-      <div class="row">
-        <div class="col-md-4">
-          {{ form_row(form.customer, {'attr': {'class': 'form-control mb-4 js-example-basic-single'}}) }}
-        </div>{#
-        <div class="col-md-4">
-          {{ form_row(form.products, { 'attr': {'class': 'js-example-basic-single'} }) }}
-        </div>#}
-        <div class="col-md-4">
-          <button type="submit" class="btn-success btn-lg">{{ 'Rechercher'|trans }}</button>
-        </div>
+      <div class="col-md-4">
+        {{ form_row(form.customer, {'attr': {'class': 'form-control mb-4 js-example-basic-single'}}) }}
+      </div>{#
+      <div class="col-md-4">
+        {{ form_row(form.products, { 'attr': {'class': 'js-example-basic-single'} }) }}
+      </div>#}
+      <div class="col-md-4">
+        <button type="submit" class="btn-success btn-lg">{{ 'Rechercher'|trans }}</button>
       </div>
-      {{ form_end(form) }}
     </div>
-    <div class="row row-bottom-padded-md">
-      {% if commandes|length != 0 %}
-        <div class="col-md-10">
-          <div class="table-responsive">
-            <table class="table" width="75%">
-              <thead>
+    {{ form_end(form) }}
+  </div>
+  <div class="row row-bottom-padded-md">
+    {% if commandes|length != 0 %}
+      <div class="col-md-10">
+        <div class="table-responsive">
+          <table class="table" width="75%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Référence</th>
+                <th>Date</th>
+                <th>Clients</th>
+                <th>Montant</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% for commande in commandes %}
+                {% set i = i + 1 %}
                 <tr>
-                  <th>#</th>
-                  <th>Référence</th>
-                  <th>Date</th>
-                  <th>Clients</th>
-                  <th>Montant</th>
-                  <th>Actions</th>
+                  <td>{{ i }}</td>
+                  <td>{{ commande.reference }}</td>
+                  <td>{{ commande.date|date('d-m-Y') }}</td>
+                  <td>
+                    {% if commande.customer is not empty %}
+                      {{ commande.customer.firstname }} {{ commande.customer.lastname }} ({{ commande.customer.phoneNumber }})
+                    {% else %}
+                      ---
+                    {% endif %}
+                  </td>
+                  <td>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</td>
+                  <td>
+                    <a href="{{ path('customer_commande_details', {id: commande.id}) }}" data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
+                    &nbsp;&nbsp;&nbsp;
+                    <a href="{{ path('deliver_customer_commande', {id: commande.id}) }}" data-toggle="tooltip" title="Servir la commande"><i class="icon-shopping-cart"></i></a>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {% set i = 0 %}
-                {% for commande in commandes %}
-                  {% set i = i + 1 %}
-                  <tr>
-                    <td>{{ i }}</td>
-                    <td>{{ commande.reference }}</td>
-                    <td>{{ commande.date|date('d-m-Y') }}</td>
-                    <td>
-                      {% if commande.customer is not empty %}
-                        {{ commande.customer.firstname }} {{ commande.customer.lastname }} ({{ commande.customer.phoneNumber }})
-                      {% else %}
-                        ---
-                      {% endif %}
-                    </td>
-                    <td>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</td>
-                    <td>
-                      <a href="{{ path('customer_commande_details', {id: commande.id}) }}" data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
-                      &nbsp;&nbsp;&nbsp;
-                      <a href="{{ path('deliver_customer_commande', {id: commande.id}) }}" data-toggle="tooltip" title="Servir la commande"><i class="icon-shopping-cart"></i></a>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            <div class="navigation">
-                {{ knp_pagination_render(commandes) }}
-            </div>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="navigation">
+              {{ knp_pagination_render(commandes) }}
           </div>
         </div>
-      {% else %}
-        <p>Aucune commande client n'a été enregistrée pour le moment ou bien aucune commande ne correspond aux critères de recherche saisis.</p>
-      {% endif %}
-    </div>
+      </div>
+    {% else %}
+      <p>Aucune commande client n'a été enregistrée pour le moment ou bien aucune commande ne correspond aux critères de recherche saisis.</p>
+    {% endif %}
   </div>
 {% endblock %}
 

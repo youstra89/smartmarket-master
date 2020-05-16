@@ -24,12 +24,12 @@ class CustomerType extends AbstractType
         $builder
             ->add('firstname',    TextType::class, ['label' => 'Prénom', 'required' => true])
             ->add('lastname',     TextType::class, ['label' => 'Nom', 'required' => true])
-            ->add('phone_number', TextType::class, ['label' => 'Numéro de téléphone', 'required' => true])
+            ->add('phone_number', TextType::class, ['label' => 'Numéro de téléphone', 'required' => false])
             ->add('email',        EmailType::class, ['label' => 'Email', 'required' => false])
-            ->add('address',      TextType::class, ['label' => 'Adresse', 'required' => true])
-            ->add('residence',    TextType::class, ['label' => 'Résidence', 'required' => true])
+            ->add('address',      TextType::class, ['label' => 'Adresse', 'required' => false])
+            ->add('residence',    TextType::class, ['label' => 'Résidence', 'required' => false])
             ->add('type', EntityType::class, [
-                'required' => true,
+                'required' => false,
                 'class'    => Type::class,
                 'choice_label' => 'type',
                 'label'    => 'Type de client',

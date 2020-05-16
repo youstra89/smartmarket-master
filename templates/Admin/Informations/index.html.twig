@@ -57,117 +57,115 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Informations sur l'entreprise</h2>
-    {% if is_granted('ROLE_SUPER_ADMIN') and info == null %}
-      <a href="{{ path('add_informations') }}" class="btn-primary btn-sm">Enregistrer les informations</a><br><br>
-    {% elseif is_granted('ROLE_SUPER_ADMIN') and info != null %}
-      <a href="{{ path('edit_informations') }}" class="btn-info btn-sm">Modifier les informations</a><br><br>
-    {% endif %}
-    <div class="row">
-        <div class="col-md-4">
-          <div class="form-group">
-            <label for="">Nom</label>
-            {{ info.nom }}
-          </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Slogan</label>
-                {{ info.slogan }}
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Situation géographique</label>
-                {{ info.adresse }}
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Numéro de téléphone</label>
-                {{ info.telephone }}
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Email </label>
-                {{ info.email }}
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Site web</label>
-                {{ info.siteWeb }}
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Capital</label>
-                {{ info.capital }}
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Régime d'imposition</label>
-                {{ info.regimeImposition }}
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Numéro registre de commerce</label>
-                {{ info.registreCommerce }}
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Numero de compte bancaire</label>
-                {{ info.numeroCompteBancaire }}
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Logo</label>
-                <img src="{{ asset('uploads/images/' ~ info.logo) }}" alt="" style="max-width: 500px; height: auto">
-            </div>
-        </div>
-    </div>
-    <br><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Sauvegarde des données</h2>
-    <div class="row">	 
-      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
-        <div class="box-part text-center">      
-          <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
-          <div class="title">
-            <h4>Données</h4>
-          </div>        
-          <div class="text">
-            <span>Cette fonctionnalité vous permet de sauvegarder l'intégralité de vos données au format xlsx.</span>
-          </div>           
-          <a href="{{ path('export_data') }}" class="btn-primary btn-sm">
-            Créer une sauvegarde
-          </a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Informations sur l'entreprise</h2>
+  {% if is_granted('ROLE_SUPER_ADMIN') and info == null %}
+    <a href="{{ path('add_informations') }}" class="btn-primary btn-sm">Enregistrer les informations</a><br><br>
+  {% elseif is_granted('ROLE_SUPER_ADMIN') and info != null %}
+    <a href="{{ path('edit_informations') }}" class="btn-info btn-sm">Modifier les informations</a><br><br>
+  {% endif %}
+  <div class="row">
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="">Nom</label>
+          {{ info.nom }}
         </div>
       </div>
-      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
-        <div class="box-part text-center">      
-          <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
-          <div class="title">
-            <h4>Images</h4>
-          </div>        
-          <div class="text">
-            <span>Cette fonctionnalité vous permet de sauvegarder les images de vos produits dans un dossier compressé.</span>
-          </div>           
-          <a href="{{ path('export_images') }}" class="btn-primary btn-sm">
-            Créer une sauvegarde
-          </a>
-        </div>
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Slogan</label>
+              {{ info.slogan }}
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Situation géographique</label>
+              {{ info.adresse }}
+          </div>
+      </div>
+  </div>
+  <div class="row">
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Numéro de téléphone</label>
+              {{ info.telephone }}
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Email </label>
+              {{ info.email }}
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Site web</label>
+              {{ info.siteWeb }}
+          </div>
+      </div>
+  </div>
+  <div class="row">
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Capital</label>
+              {{ info.capital }}
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Régime d'imposition</label>
+              {{ info.regimeImposition }}
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Numéro registre de commerce</label>
+              {{ info.registreCommerce }}
+          </div>
+      </div>
+  </div>
+  <div class="row">
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Numero de compte bancaire</label>
+              {{ info.numeroCompteBancaire }}
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="form-group">
+              <label for="">Logo</label>
+              <img src="{{ asset('uploads/images/' ~ info.logo) }}" alt="" style="max-width: 500px; height: auto">
+          </div>
+      </div>
+  </div>
+  <br><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Sauvegarde des données</h2>
+  <div class="row">	 
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Données</h4>
+        </div>        
+        <div class="text">
+          <span>Cette fonctionnalité vous permet de sauvegarder l'intégralité de vos données au format xlsx.</span>
+        </div>           
+        <a href="{{ path('export_data') }}" class="btn-primary btn-sm">
+          Créer une sauvegarde
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Images</h4>
+        </div>        
+        <div class="text">
+          <span>Cette fonctionnalité vous permet de sauvegarder les images de vos produits dans un dossier compressé.</span>
+        </div>           
+        <a href="{{ path('export_images') }}" class="btn-primary btn-sm">
+          Créer une sauvegarde
+        </a>
       </div>
     </div>
   </div>

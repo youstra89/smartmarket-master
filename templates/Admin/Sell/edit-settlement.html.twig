@@ -8,26 +8,24 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Mise à jour du versement N°{{ settlement.reference }} du {{ settlement.date|date('d-m-Y') }}</h2>
-    <form action="" method="post">
-      <div class="row">
-          <div class="col-md-4">
-              <div class="form-group">
-                  <label for="date">Date</label>
-                  <input type="date" name="date" id="date" class="form-control" value="{{ settlement.date|date('Y-m-d') }}" required>
-              </div>
-          </div>
-          <div class="col-md-4">
-              <div class="form-group">
-                  <label for="">Montant</label>
-                  <input type="amount" name="amount" id="amount" class="form-control" value="{{ settlement.amount }}" required>
-              </div>
-          </div>
-      </div>
-      <input type="hidden" name="token" value="{{ csrf_token('token_edit_reglement') }}">
-      <button class="btn-default btn-sm">{{ button|default('Enregistrer') }}</button>
-    </form>
-  </div>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Mise à jour du versement N°{{ settlement.reference }} du {{ settlement.date|date('d-m-Y') }}</h2>
+  <form action="" method="post">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ settlement.date|date('Y-m-d') }}" required>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Montant</label>
+                <input type="amount" name="amount" id="amount" class="form-control" value="{{ settlement.amount }}" required>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="token" value="{{ csrf_token('token_edit_reglement') }}">
+    <button class="btn-default btn-sm">{{ button|default('Enregistrer') }}</button>
+  </form>
 {% endblock %}

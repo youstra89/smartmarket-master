@@ -25,7 +25,7 @@ class ProviderCommandeSearchType extends AbstractType
               'label' => false,
               'placeholder' => 'Fournisseur',
               'choice_label' => function ($provider) {
-                    return $provider->getFirstname() . ' ' . $provider->getLastname() . ' --- ' . $provider->getCountry()->getName();
+                    return $provider->getNom(). ' --- ' . $provider->getCountry()->getName();
               },
               'class' => 'App\Entity\Provider',
               'query_builder' => function (EntityRepository $er) {

@@ -19,9 +19,9 @@ class ProviderType extends AbstractType
         $builder
             ->add('firstname',    TextType::class, ['label' => 'Prénom', 'required' => true])
             ->add('lastname',     TextType::class, ['label' => 'Nom', 'required' => true])
-            ->add('phone_number', TextType::class, ['label' => 'Numéro de téléphone', 'required' => true])
-            ->add('email',        TextType::class, ['label' => 'Email', 'required' => true])
-            ->add('city',         TextType::class, ['label' => 'Ville', 'required' => true])
+            ->add('phone_number', TextType::class, ['label' => 'Numéro de téléphone', 'required' => false])
+            ->add('email',        TextType::class, ['label' => 'Email', 'required' => false])
+            ->add('city',         TextType::class, ['label' => 'Ville', 'required' => false])
             ->add('numero_compte_bancaire', TextType::class, ['label' => 'Numéro de compte bancaire', 'required' => false])
             ->add('nationalite',      TextType::class, ['label' => 'Nationalité', 'required' => false])
             ->add('country', EntityType::class, [

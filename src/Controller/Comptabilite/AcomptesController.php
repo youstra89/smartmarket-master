@@ -74,7 +74,7 @@ class AcomptesController extends AbstractController
               $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() + $montant);
               $label = "Versement d'acompte/avance pour le clien ".$customer->getNom();
               $reference = $fonctions->generateReferenceEcriture($manager);
-              $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcompteClients, 0, $montant, $remarque);
+              $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcompteClients, 0, $montant, $remarque);
               $manager->persist($ecriture);
 
               try{
@@ -145,7 +145,7 @@ class AcomptesController extends AbstractController
               $compteACrediter->setMontantFinal($compteACrediter->getMontantFinal() - $montant);
               $label = "Versement d'acompte/avance chez le fournisseur ".$provider->getNom();
               $reference = $fonctions->generateReferenceEcriture($manager);
-              $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteAcompteFournisseurs, $compteACrediter, 0, $montant, $remarque);
+              $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteAcompteFournisseurs, $compteACrediter, 0, $montant, $remarque);
               $manager->persist($ecriture);
 
               try{

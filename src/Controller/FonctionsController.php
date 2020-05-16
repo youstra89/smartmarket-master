@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class FonctionsController extends AbstractController
 {
     // Cette fonction permet de générer les matricules automatiquement
-    public function generateReference(string $type = null, object $object = null)
+    public function generateReference(string $type = null, object $object = null, int $nbr = 1)
     {
       $prefix = "";
       $characters_to_delete = 2;
@@ -24,10 +24,11 @@ class FonctionsController extends AbstractController
         $prefix = "FO";
       }
       
-      if(!empty($object))
+      $reference = $object->getReference();
+      if(!empty($reference))
       {
         $zero = "";
-        $number = (int) substr($object->getReference(), $characters_to_delete);
+        $number = (int) substr($reference, $characters_to_delete);
         $numero_ordre = $number + 1;
         if(strlen($numero_ordre) == 1){
           $zero = '00';
@@ -36,10 +37,19 @@ class FonctionsController extends AbstractController
           $zero = '0';
         }
         $matricule = $prefix.$zero.$numero_ordre;
+        if($nbr != 1){
+          $multipleMatricules[] = $matricule;
+          for ($i=0; $i < $nbr - 1; $i++) { 
+            $numero_ordre = $numero_ordre + 1;
+            $multipleMatricules[] = $prefix.$zero.$numero_ordre;
+          }
+          $matricule = $multipleMatricules;
+        }
       }
       else{
         $matricule = "PR001";            
       }
+
       return $matricule;
     }
 }

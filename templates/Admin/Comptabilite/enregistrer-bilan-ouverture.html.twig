@@ -12,71 +12,68 @@
 
 
 {% block body %}
-<div class="fh5co-narrow-content">
   <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Enregistrement du bilan d'ouverture</h2>
   <div class="row">
-    <div class="">
-      <form action="" method="post">
-        <span style="font-style: italic; color: red"><strong>NB: </strong>- Veuillez saisir les montants en supprimant le chiffre 0 initialement dans les zones de saisie des montants. Sinon, vous aurez des erreurs de calcul. <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Cependant, s'il n y a pas de montant à saisir, vous pouvez laissez le zéro. Car tous les champs sont obligatoires.</span>
-        <div class="form-control">
-          <label for="date">Date de début du premier exercie</label>
-          <input type="date" name="date" id="date" value="{{ "now"|date("Y-m-d") }}">
-        </div>
-        <table class="table table-bordered">
-          <thead>
+    <form action="" method="post">
+      <span style="font-style: italic; color: red"><strong>NB: </strong>- Veuillez saisir les montants en supprimant le chiffre 0 initialement dans les zones de saisie des montants. Sinon, vous aurez des erreurs de calcul. <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Cependant, s'il n y a pas de montant à saisir, vous pouvez laissez le zéro. Car tous les champs sont obligatoires.</span>
+      <div class="form-control">
+        <label for="date">Date de début du premier exercie</label>
+        <input type="date" name="date" id="date" value="{{ "now"|date("Y-m-d") }}">
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th colspan="2" style="font-size: 1.5em; text-align: center">Actif</th>
+            <th colspan="2" style="font-size: 1.5em; text-align: center">Passif</th>
+          </tr>
+          <tr>
+            <th width="35%">Compte</th>
+            <th width="15%">Montant</th>
+            <th width="35%">Compte</th>
+            <th width="15%">Montant</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in 0..2 %}  
             <tr>
-              <th colspan="2" style="font-size: 1.5em; text-align: center">Actif</th>
-              <th colspan="2" style="font-size: 1.5em; text-align: center">Passif</th>
+              <td colspan="2" style="font-style: italic">{{ classesActifs[i].label }}</td>
+              <td colspan="2" style="font-style: italic">{{ classesPassifs[i].label }}</td>
             </tr>
             <tr>
-              <th width="35%">Compte</th>
-              <th width="15%">Montant</th>
-              <th width="35%">Compte</th>
-              <th width="15%">Montant</th>
+              <td colspan="2">
+                {% for compte in comptesActifs if compte.classe == classesActifs[i] %}  
+                  <div class="row">
+                    <div class="col-md-1">{{ compte.numero }}</div>
+                    <div class="col-md-6">{{ compte.label }}</div>
+                    <div class="col-md-4"><input type="number" class="comptesActifs" name="comptesActifs[{{ compte.numero }}]" value="0" title="Montant de {{ compte.label }}" required></div>
+                  </div>
+                {% endfor %}
+              </td>
+              <td colspan="2">
+                {% for compte in comptesPassifs if compte.classe == classesPassifs[i] %}  
+                  <div class="row">
+                    <div class="col-md-1">{{ compte.numero }}</div>
+                    <div class="col-md-6">{{ compte.label }}</div>
+                    <div class="col-md-4"><input type="number" class="comptesPassifs" name="comptesPassifs[{{ compte.numero }}]" value="0" title="Montant de {{ compte.label }}" required></div>
+                  </div>
+                {% endfor %}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {% for i in 0..2 %}  
-              <tr>
-                <td colspan="2" style="font-style: italic">{{ classesActifs[i].label }}</td>
-                <td colspan="2" style="font-style: italic">{{ classesPassifs[i].label }}</td>
-              </tr>
-              <tr>
-                <td colspan="2">
-                  {% for compte in comptesActifs if compte.classe == classesActifs[i] %}  
-                    <div class="row">
-                      <div class="col-md-1">{{ compte.numero }}</div>
-                      <div class="col-md-6">{{ compte.label }}</div>
-                      <div class="col-md-4"><input type="number" class="comptesActifs" name="comptesActifs[{{ compte.numero }}]" value="0" title="Montant de {{ compte.label }}" required></div>
-                    </div>
-                  {% endfor %}
-                </td>
-                <td colspan="2">
-                  {% for compte in comptesPassifs if compte.classe == classesPassifs[i] %}  
-                    <div class="row">
-                      <div class="col-md-1">{{ compte.numero }}</div>
-                      <div class="col-md-6">{{ compte.label }}</div>
-                      <div class="col-md-4"><input type="number" class="comptesPassifs" name="comptesPassifs[{{ compte.numero }}]" value="0" title="Montant de {{ compte.label }}" required></div>
-                    </div>
-                  {% endfor %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-          <tfoot>
-            <tr>
-              <th>Total</th>
-              <th><input type="number" id="totalActif" name="totalActif" value="0" readonly></th>
-              <th>Total</th>
-              <th><input type="number" id="totalPassif" name="totalPassif" value="0" readonly></th>
-            </tr>
-          </tfoot>
-        </table>
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('bilan_ouverture') }}"/>
-        <button type="submit" class="btn-sm btn-info" id="sms">Enregistrer le bilan</button>
-      </form>
-    </div>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Total</th>
+            <th><input type="number" id="totalActif" name="totalActif" value="0" readonly></th>
+            <th>Total</th>
+            <th><input type="number" id="totalPassif" name="totalPassif" value="0" readonly></th>
+          </tr>
+        </tfoot>
+      </table>
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token('bilan_ouverture') }}"/>
+      <button type="submit" class="btn-sm btn-info" id="sms">Enregistrer le bilan</button>
+    </form>
     {# <div class="table-responsive">
       <table class="table table-bordered">
         <thead>
@@ -128,7 +125,6 @@
       </table>
     </div> #}
   </div>	
-</div>
 {% endblock %}
 
 

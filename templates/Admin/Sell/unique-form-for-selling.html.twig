@@ -37,129 +37,127 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une nouvelle vente</h2>
-    <section class="container">
-      <form class="text-sm">
-        <legend>Ajoute de produit au pannier</legend>
-        <div class="row">
-          <div class="form-group col-md-6 col-sm-6 col-xs-6">
-            <label for="reference" class="col-form-label">Référence de produit</label>
-            <input type="text" name="reference" class="form-control" id="reference" value="PR">
-          </div>
-          <div class="form-group col-md-6 col-sm-6 col-xs-6">
-            <label for="products" class="col-form-label">Produits</label>
-            <select name="products" id="products" class="form-control">
-            {# <select name="products" id="products" class="form-control mb-4 js-example-basic-single"> #}
-              <option value="">Sélectionnez un produit</option>
-              {% for product in products if product.stock > 0 %}
-                <option value="{{ product.id }}">{{ product.label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="form-group col-md-4 col-sm-4 col-xs-4">
-            <label for="unite" class="col-form-label">Vente par:</label>
-            <select name="unite" id="unite" class="form-control" required>
-              <option value="1" selected>Unité</option>
-              <option value="2">Carton / paquet</option>
-            </select>
-          </div>
-          <div class="form-group col-md-4 col-sm-4 col-xs-4">
-            <label for="quantity" class="col-form-label">Quantité:</label>
-            <input type="number" class="form-control" id="quantity" value="1" min="1" required>
-          </div>
-          <div class="form-group col-md-4 col-sm-4 col-xs-4">
-            <label for="price" class="col-form-label">Prix unitaire:</label>
-            <input type="number" class="form-control" id="price" value="" required>
-          </div>
-        </div>
-        <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
-        <div class="modal-footer">
-          <input type="hidden" name="productId" id="productId" value="">
-          <input type="hidden" name="prixUnitaire" id="prixUnitaire" value="">
-          <input type="hidden" name="nombreUnite" id="nombreUnite" value="">
-          <input type="hidden" name="productLabel" id="productLabel" value="">
-          <input type="hidden" name="productStock" id="productStock" value="">
-          <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
-        </div>
-      </form>
-      <form class="form" action="" method="post">
-        <br>
-        <div class="row">
-          <div class="form-group col-md-6">
-            <label for="customer">Client</label>
-            <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
-              <option value="">Sélectionner un client</option>
-              {% for customer in customers %}
-                <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        {# </div>
-        <div class="row"> #}
-          <div class="form-group col-md-2">
-            <label for="date">Date de la commande</label><br>
-            <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}" required>
-          </div>
-          <div class="form-group col-md-2">
-            <label for="tva">TVA</label><br>
-            <select name="tva" id="tva" required>
-              <option value="">Sélectionner un taux</option>
-              <option value="0" selected>0%</option>
-              <option value="18">18%</option>
-            </select>
-          </div>
-          <div class="form-group col-md-2">
-            <label for="remise">Remise</label><br>
-            <input type="number" name="remise" id="remise" value="0" required>
-          </div>
-        </div>
-        {% set i = 0 %}
-        <div class="table-responsive">
-          <table class="table" id="myTable">
-            <thead>
-              <tr>
-                <th>Référence</th>
-                <th>Produit</th>
-                <th>Quantité</th>
-                <th>Prix Unitaire</th>
-                <th>Sous total</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            {% set total = 0 %}
-            <tbody>
-              {# <tr><td>Reference</td><td>label</td><td><input type="number" class="quantity" id="quantities[]" name="quantities[]" value="" required readonly></td><td><input type="number" class="price" id="prices[]" name="prices[]" value="" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[]" name="sousTotal[]" value="" readonly><input type="hidden" name="products[]" value=""></td><td><i class="icon-trash" title="Retirer de la vente en cours"></i></td></tr> #}
-              <tr></tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Total de la commande (HT)</span></td>
-                <td><input type="text" id="total" name="total" value="" readonly required></td>
-              </tr>
-              <tr>
-                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Valeur TVA</span></td>
-                <td><input type="text" id="montantTva" name="montantTva" value="" readonly required></td>
-              </tr>
-              <tr>
-                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Montant TTC</span></td>
-                <td><input type="text" id="ttc" name="ttc" value="" readonly required></td>
-              </tr>
-              <tr>
-                <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Net à payer</span></td>
-                <td><input type="text" id="net" name="net" value="" readonly required></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        <input type="hidden" name="token" value="{{ csrf_token('vente') }}"/>
-        <input type="submit" class="btn-default btn-lg" id="save" value="Enregistrer" onclick="submitForm(this);">
-        {# <button class="btn-default btn-lg" id="save">{{ button|default('Enregistrer') }}</button><br><br> #}
-      </form>
-    </section>
-  </div>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une nouvelle vente</h2>
+  <form class="text-sm">
+    <legend>Ajoute de produit au pannier</legend>
+    <div class="row">
+      <div class="form-group col-md-6 col-sm-6 col-xs-6">
+        <label for="reference" class="col-form-label">Référence de produit</label>
+        <input type="text" name="reference" class="form-control" id="reference" value="PR">
+      </div>
+      <div class="form-group col-md-6 col-sm-6 col-xs-6">
+        <label for="products" class="col-form-label">Produits</label>
+        {# <select name="products" id="products" class="form-control"> #}
+        <select name="products" id="products" class="form-control mb-4 js-example-basic-single">
+          <option value="">Sélectionnez un produit</option>
+          {% for product in products if product.stock > 0 %}
+            <option value="{{ product.id }}">{{ product.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-md-4 col-sm-4 col-xs-4">
+        <label for="venduPar" class="col-form-label">Vente par:</label>
+        <select name="venduPar" id="venduPar" class="form-control" required>
+          <option value="1" selected>Unité</option>
+          <option value="2">Carton / paquet</option>
+        </select>
+      </div>
+      <div class="form-group col-md-4 col-sm-4 col-xs-4">
+        <label for="quantity" class="col-form-label">Quantité:</label>
+        <input type="number" class="form-control" id="quantity" value="1" min="1" required>
+      </div>
+      <div class="form-group col-md-4 col-sm-4 col-xs-4">
+        <label for="price" class="col-form-label">Prix unitaire:</label>
+        <input type="number" class="form-control" id="price" value="" required>
+      </div>
+    </div>
+    <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
+    <div class="modal-footer">
+      <input type="hidden" name="productId" id="productId" value="">
+      <input type="hidden" name="averageSellingPrice" id="averageSellingPrice" value="">
+      <input type="hidden" name="averagePackageSellingPrice" id="averagePackageSellingPrice" value="">
+      <input type="hidden" name="prixUnitaire" id="prixUnitaire" value="">
+      <input type="hidden" name="nombreUnite" id="nombreUnite" value="">
+      <input type="hidden" name="productLabel" id="productLabel" value="">
+      <input type="hidden" name="productStock" id="productStock" value="">
+      <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
+    </div>
+  </form>
+  <form class="form" action="" method="post">
+    <br>
+    <div class="row">
+      <div class="form-group col-md-6">
+        <label for="customer">Client</label>
+        <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
+          <option value="">Sélectionner un client</option>
+          {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {# </div>
+    <div class="row"> #}
+      <div class="form-group col-md-2">
+        <label for="date">Date de la commande</label><br>
+        <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}" required>
+      </div>
+      <div class="form-group col-md-2">
+        <label for="tva">TVA</label><br>
+        <select name="tva" id="tva" required>
+          <option value="">Sélectionner un taux</option>
+          <option value="0" selected>0%</option>
+          <option value="18">18%</option>
+        </select>
+      </div>
+      <div class="form-group col-md-2">
+        <label for="remise">Remise</label><br>
+        <input type="number" name="remise" id="remise" value="0" required>
+      </div>
+    </div>
+    {% set i = 0 %}
+    <div class="table-responsive">
+      <table class="table" id="myTable">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix Unitaire</th>
+            <th>Sous total</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        {% set total = 0 %}
+        <tbody>
+          {# <tr><td>Reference</td><td>label</td><td><input type="number" class="quantity" id="quantities[]" name="quantities[]" value="" required readonly></td><td><input type="number" class="price" id="prices[]" name="prices[]" value="" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[]" name="sousTotal[]" value="" readonly><input type="hidden" name="products[]" value=""></td><td><i class="icon-trash" title="Retirer de la vente en cours"></i></td></tr> #}
+          <tr></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Total de la commande (HT)</span></td>
+            <td><input type="text" id="total" name="total" value="" readonly required></td>
+          </tr>
+          <tr>
+            <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Valeur TVA</span></td>
+            <td><input type="text" id="montantTva" name="montantTva" value="" readonly required></td>
+          </tr>
+          <tr>
+            <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Montant TTC</span></td>
+            <td><input type="text" id="ttc" name="ttc" value="" readonly required></td>
+          </tr>
+          <tr>
+            <td colspan="4"><span style="font-size: 1.5em; font-weight: bold;">Net à payer</span></td>
+            <td><input type="text" id="net" name="net" value="" readonly required></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <input type="hidden" name="token" value="{{ csrf_token('vente') }}"/>
+    <input type="submit" class="btn-default btn-lg" id="save" value="Enregistrer" onclick="submitForm(this);">
+    {# <button class="btn-default btn-lg" id="save">{{ button|default('Enregistrer') }}</button><br><br> #}
+  </form>
 {% endblock %}
 
 
@@ -176,7 +174,7 @@
           type: 'GET',
           dataType: 'json',
           success: function (result) { 
-              var vente_par = $("#unite").val();
+              var vente_par = $("#venduPar").val();
               $("#price").val(result.unit_price);
               if(vente_par == 2){
                 $("#price").val(result.unit_price * result.unite);
@@ -185,6 +183,8 @@
               $("#reference").val(result.reference);
               $("#productLabel").val(result.label);
               $("#prixUnitaire").val(result.unit_price);
+              $("#averageSellingPrice").val(result.average_selling_price);
+              $("#averagePackageSellingPrice").val(result.average_package_selling_price);
               $("#nombreUnite").val(result.unite);
               $("#productStock").val(result.stock);
               $("#quantity").val(1);
@@ -209,7 +209,7 @@
             success: function (result) { 
               if(result.length != 0 && result.stock != 0) 
               {
-                var vente_par = $("#unite").val();
+                var vente_par = $("#venduPar").val();
                 $("#price").val(result.unit_price);
                 if(vente_par == 2){
                   $("#price").val(result.unit_price * result.unite);
@@ -217,6 +217,8 @@
                 $("#productId").val(result.id);
                 $("#productLabel").val(result.label);
                 $("#prixUnitaire").val(result.unit_price);
+                $("#averageSellingPrice").val(result.average_selling_price);
+                $("#averagePackageSellingPrice").val(result.average_package_selling_price);
                 $("#nombreUnite").val(result.unite);
                 $("#productStock").val(result.stock);
                 $("#quantity").val(1);
@@ -243,7 +245,7 @@
         }
       });
 
-      // $("#unite").on("change", function(){
+      // $("#venduPar").on("change", function(){
       //   var price = $("#prixUnitaire").val();
       //   var unite = $("#nombreUnite").val();
       //   var quantity = $("#quantity").val();
@@ -252,22 +254,41 @@
 
       // A chaque fois que la quantité change
       $('#add_product').on('click', function(e){
-        var id = $("#productId").val();
-        var reference = $("#reference").val();
-        var unite = $("#nombreUnite").val();
-        var label = $("#productLabel").val();
-        var stock = $("#productStock").val();
-        var price = $("#price").val();
-        var quantity = $("#quantity").val();        
-
+        var id                  = $("#productId").val();
+        var reference           = $("#reference").val();
+        var unite               = $("#nombreUnite").val();
+        var venduPar            = $("#venduPar").val();
+        var label               = $("#productLabel").val();
+        var stock               = $("#productStock").val();
+        var price               = $("#price").val();
+        var quantity            = $("#quantity").val();        
+        var averageSellingPrice = $("#averageSellingPrice").val();        
+        var averagePackageSellingPrice = $("#averagePackageSellingPrice").val();        
+        // console.log(averageSellingPrice, averagePackageSellingPrice);
+        
         if(price == undefined || price == null || price == 0){
           $("#notif p").text('Le prix de vente n\'a pas été précisé.');
           return false;
+        }
+        if(price < averageSellingPrice && unite == 1){
+          $("#notif p").text(label + ' ne peut être vendu en deça de ' + averageSellingPrice + 'F.');
+          return false;
+        }
+        if(unite != 1){
+          if(price < averageSellingPrice && venduPar == 1){
+            $("#notif p").text(label + ' ne peut être vendu en deça de ' + averageSellingPrice + 'F.');
+            return false;
+          }
+          if(price < averagePackageSellingPrice && venduPar == 2){
+            $("#notif p").text(label + ' ne peut être vendu en deça de ' + averagePackageSellingPrice + 'F.');
+            return false;
+          }
         }
         if(quantity == undefined || quantity == null || quantity == 0){
           $("#notif p").text('La quantité à vendre n\'a pas été précisée.');
           return false;
         }
+        // return false;
 
         if(jQuery.inArray(id, productsId) !== -1){
           $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');
@@ -277,7 +298,7 @@
             productsId.push(id);
             console.log(productsId);
             var sousTotal = quantity * price; 
-            var vente_par = unite == 1 ? 1 : $("#unite").val();               
+            var vente_par = unite == 1 ? 1 : $("#venduPar").val();               
             // $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td></td></tr>');
             $("#myTable tbody tr:last").after('<tr id="tableLineId' + id + '"><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="setQuantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="setPrice" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" id="ventePar[' + id + ']" name="ventePar[' + id + ']" value="' + vente_par + '"><input type="hidden" name="products[]" value="' + id + '"></td><td><i class="icon-trash" id="' + id + '" title="Retirer ' + label + ' de la vente en cours" onclick="$.fn.deleteProduct(' + id + ')"></i></td></tr>');
             $("#products").val(null);
@@ -294,7 +315,7 @@
             $("#montantTva").val(taxe)
             $("#ttc").val(t + taxe)
             $("#net").val(t + taxe - remise)
-            $("#unite").val(1)
+            $("#venduPar").val(1)
           }
           else{
             $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');

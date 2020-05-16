@@ -192,7 +192,11 @@
                       <strong>Téléphone client:</strong>
                       <span>{{ commande.customer.phoneNumber }}</span><br>
                       <strong>Type du client:</strong>
-                      <span>{{ commande.customer.type.type }}</span><br>
+                      <span>
+                        {% if commande.customer.type %}
+                          {{ commande.customer.type.type }}
+                        {% endif %}
+                      </span><br>
                     </div>
                   {% endif %}
                 </div>

@@ -30,22 +30,22 @@ class Provider
     private $firstname;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $lastname;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $phone_number;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $email;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $city;
 
@@ -113,6 +113,7 @@ class Provider
 
     public function __construct()
     {
+        $this->acompte        = 0;
         $this->is_deleted     = false;
         $this->created_at     = new \DateTime();
         $this->providerCommandes = new ArrayCollection();
@@ -175,6 +176,8 @@ class Provider
 
     public function getNom()
     {
+        if(empty($this->lastname))
+            return $this->firstname;
         return $this->firstname.' '.$this->lastname;
     }
 

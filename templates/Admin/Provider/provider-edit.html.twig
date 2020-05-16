@@ -8,7 +8,6 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
     <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
     <h2 class="animate-box" data-animate-effect="fadeInLeft">Mise à jour des informations du fournisseur <strong>{{ provider.firstname }} {{ provider.lastname }}</strong> </h2>
     {{ form_start(form, {'attr': {'class': ''}}) }}
@@ -76,7 +75,6 @@
         </div>
         <button class="btn btn-default" onclick="submitForm(this);">{{ button|default('Editer') }}</button>
     {{ form_end(form) }}
-  </div>
 {% endblock %}
 
 

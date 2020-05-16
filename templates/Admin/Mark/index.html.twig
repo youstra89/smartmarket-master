@@ -35,41 +35,39 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Marques de produits</h2>
-    <a href="{{ path('mark.add') }}" class="btn-sm btn-primary">Ajouter une nouvelle marque</a><br><br>
-    <div class="table-responsive">
-      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
-        <thead>
+  <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Marques de produits</h2>
+  <a href="{{ path('mark.add') }}" class="btn-sm btn-primary">Ajouter une nouvelle marque</a><br><br>
+  <div class="table-responsive">
+    <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Marque</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>N°</th>
+          <th>Marque</th>
+          <th>Actions</th>
+        </tr>
+      </tfoot>
+      <tbody>
+        {% set i = 0 %}
+        {% for mark in marks %}
+          {% set i = i + 1 %}
           <tr>
-            <th>N°</th>
-            <th>Marque</th>
-            <th>Actions</th>
+            <td>{{ i }}</td>
+            <td>{{ mark.label }}</td>
+            <td>
+              <a href="{{ path('mark.edit', {id: mark.id}) }}" title="Modifier cette marque"><i class="icon-edit"></i></a>
+            </td>
           </tr>
-        </thead>
-        <tfoot>
-          <tr>
-            <th>N°</th>
-            <th>Marque</th>
-            <th>Actions</th>
-          </tr>
-        </tfoot>
-        <tbody>
-          {% set i = 0 %}
-          {% for mark in marks %}
-            {% set i = i + 1 %}
-            <tr>
-              <td>{{ i }}</td>
-              <td>{{ mark.label }}</td>
-              <td>
-                <a href="{{ path('mark.edit', {id: mark.id}) }}" title="Modifier cette marque"><i class="icon-edit"></i></a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 {% endblock %}
 

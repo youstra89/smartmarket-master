@@ -35,57 +35,55 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Fournisseurs</h2>
-    <a href="{{ path('provider.add') }}" class="btn-sm btn-primary">Ajouter un fournisseur</a>
-    <a href="{{ path('country') }}" class="btn-sm btn-primary">Gestion des pays</a><br><br>
-    <div class="table-responsive">
-      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
-        <thead>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Fournisseurs</h2>
+  <a href="{{ path('provider.add') }}" class="btn-sm btn-primary">Ajouter un fournisseur</a>
+  <a href="{{ path('country') }}" class="btn-sm btn-primary">Gestion des pays</a><br><br>
+  <div class="table-responsive">
+    <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Référence</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Téléphone</th>
+          <th>Email</th>
+          <th>Pays</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>N°</th>
+          <th>Référence</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Téléphone</th>
+          <th>Email</th>
+          <th>Pays</th>
+          <th>Actions</th>
+        </tr>
+      </tfoot>
+      <tbody>
+        {% set i = 0 %}
+        {% for provider in providers %}
+          {% set i = i + 1 %}
           <tr>
-            <th>N°</th>
-            <th>Référence</th>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Téléphone</th>
-            <th>Email</th>
-            <th>Pays</th>
-            <th>Actions</th>
+            <td>{{ i }}</td>
+            <td>{{ provider.reference }}</td>
+            <td>{{ provider.lastname }}</td>
+            <td>{{ provider.firstname }}</td>
+            <td>{{ provider.phoneNumber }}</td>
+            <td>{{ provider.email }}</td>
+            <td>{{ provider.country.name }}</td>
+            <td>
+              <a href="{{ path('provider.edit', {id: provider.id}) }}" title="Modifier info fournisseur"><i class="icon-edit"></i></a>
+            </td>
           </tr>
-        </thead>
-        <tfoot>
-          <tr>
-            <th>N°</th>
-            <th>Référence</th>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Téléphone</th>
-            <th>Email</th>
-            <th>Pays</th>
-            <th>Actions</th>
-          </tr>
-        </tfoot>
-        <tbody>
-          {% set i = 0 %}
-          {% for provider in providers %}
-            {% set i = i + 1 %}
-            <tr>
-              <td>{{ i }}</td>
-              <td>{{ provider.reference }}</td>
-              <td>{{ provider.lastname }}</td>
-              <td>{{ provider.firstname }}</td>
-              <td>{{ provider.phoneNumber }}</td>
-              <td>{{ provider.email }}</td>
-              <td>{{ provider.country.name }}</td>
-              <td>
-                <a href="{{ path('provider.edit', {id: provider.id}) }}" title="Modifier info fournisseur"><i class="icon-edit"></i></a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 {% endblock %}
 

@@ -11,10 +11,8 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement des détails de la commande fournisseur du {{ commande.date|date('d-mY') }}</h2>
-    {{ include('Admin/Purchase/_purchase-details.html.twig') }}
-  </div>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement des détails de la commande fournisseur du {{ commande.date|date('d-mY') }}</h2>
+  {{ include('Admin/Purchase/_purchase-details.html.twig') }}
 {% endblock %}
 
 

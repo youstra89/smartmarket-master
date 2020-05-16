@@ -194,8 +194,8 @@ class AdminEcheanceController extends AbstractController
           $manager->persist($settlement);
 
           try{
-            $manager->flush();
             $fonctions->ecritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $montant, $exercice, $date, $settlement);
+            $manager->flush();
             $this->addFlash('success', 'Enregistrement du paiement de l\'échéance de la commande <strong>'.$echeance->getCommande()->getReference().'</strong> réussie.');
           } 
           catch(\Exception $e){

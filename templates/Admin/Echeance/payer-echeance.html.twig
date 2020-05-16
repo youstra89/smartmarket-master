@@ -8,79 +8,77 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Paiement d'une échéance de paiement de la commande <strong>N°{{ echeance.commande.reference }}</strong></h2>
-    <div class="row">
-      <div class="col-md-4">
-        <h3>Client</h3>
-        {% if echeance.commande.customer is not empty %}
-          <strong>Nom Client:</strong>
-          <span>{{ echeance.commande.customer.firstname }} {{ echeance.commande.customer.lastname }}</span><br>
-          <strong>Numéro de téléphone client:</strong>
-          <span>{{ echeance.commande.customer.phoneNumber }}</span><br>
-        {% else %}
-          Vente anomyne
-        {% endif %}
-      </div>
-      <div class="col-md-8">
-        <h3>Echéance</h3>
-        <div class="row">
-          <div class="col-md-4">
-            <strong>Montant </strong><br>
-            <span>{{ echeance.amount|number_format(0, ',', ' ') }} F</span><br>
-          </div>
-          <div class="col-md-4">
-            <strong>Date de paiement prévue</strong><br>
-            <span>{{ datePrevue }}</span><br>
-            {# <span>{{ echeance.dateEcheance|date('d-m-Y') }}</span><br> #}
-          </div>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Paiement d'une échéance de paiement de la commande <strong>N°{{ echeance.commande.reference }}</strong></h2>
+  <div class="row">
+    <div class="col-md-4">
+      <h3>Client</h3>
+      {% if echeance.commande.customer is not empty %}
+        <strong>Nom Client:</strong>
+        <span>{{ echeance.commande.customer.firstname }} {{ echeance.commande.customer.lastname }}</span><br>
+        <strong>Numéro de téléphone client:</strong>
+        <span>{{ echeance.commande.customer.phoneNumber }}</span><br>
+      {% else %}
+        Vente anomyne
+      {% endif %}
+    </div>
+    <div class="col-md-8">
+      <h3>Echéance</h3>
+      <div class="row">
+        <div class="col-md-4">
+          <strong>Montant </strong><br>
+          <span>{{ echeance.amount|number_format(0, ',', ' ') }} F</span><br>
+        </div>
+        <div class="col-md-4">
+          <strong>Date de paiement prévue</strong><br>
+          <span>{{ datePrevue }}</span><br>
+          {# <span>{{ echeance.dateEcheance|date('d-m-Y') }}</span><br> #}
         </div>
       </div>
-    </div><br><br>
-    {# On va déterminer le reste à payer #}
-    {% set total = 0 %}
-    {% for item in echeance.commande.settlements %}
-        {% set total = total + item.amount %}
-    {% endfor %}
-    {% set reste = echeance.commande.netAPayer - total %}
+    </div>
+  </div><br><br>
+  {# On va déterminer le reste à payer #}
+  {% set total = 0 %}
+  {% for item in echeance.commande.settlements %}
+      {% set total = total + item.amount %}
+  {% endfor %}
+  {% set reste = echeance.commande.netAPayer - total %}
+  <div class="row">
+    <div class="col-md-4">
+      <label for="date1">Montant de l'échéance</label>
+      <input type="text" value="{{ echeance.amount|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+    </div>
+    <div class="col-md-4">
+      <label for="date1">Reste à payer</label>
+      <input type="text" value="{{ reste|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+    </div>
+    <div class="col-md-4">
+      <label for="date1">Reste après cette échéance</label>
+      <input type="text" value="{{ (reste - echeance.amount)|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+    </div>
+  </div><br>
+  <form action="" method="post">
     <div class="row">
-      <div class="col-md-4">
-        <label for="date1">Montant de l'échéance</label>
-        <input type="text" value="{{ echeance.amount|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+      <div class="col-md-6">
+        <label for="mode">Mode de paiement</label>
+        <select name="mode" id="mode" class="form-control" required>
+          <option value="1">Espèce</option>
+          <option value="2">Virement</option>
+          {% if echeance.commande.customer.acompte > echeance.amount  %}
+            <option value="3">Acompte client</option>
+          {% endif %}
+        </select>
       </div>
-      <div class="col-md-4">
-        <label for="date1">Reste à payer</label>
-        <input type="text" value="{{ reste|number_format(0, ',', ' ') }} F" class="form-control" readonly>
-      </div>
-      <div class="col-md-4">
-        <label for="date1">Reste après cette échéance</label>
-        <input type="text" value="{{ (reste - echeance.amount)|number_format(0, ',', ' ') }} F" class="form-control" readonly>
+      <div class="col-md-6">
+        <label for="date1">Date de paiment</label>
+        <input type="date" name="date" id="date" value="{{ echeance.dateEcheance|date('Y-m-d') }}" class="form-control">
       </div>
     </div><br>
-    <form action="" method="post">
-      <div class="row">
-        <div class="col-md-6">
-          <label for="mode">Mode de paiement</label>
-          <select name="mode" id="mode" class="form-control" required>
-            <option value="1">Espèce</option>
-            <option value="2">Virement</option>
-            {% if echeance.commande.customer.acompte > echeance.amount  %}
-              <option value="3">Acompte client</option>
-            {% endif %}
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label for="date1">Date de paiment</label>
-          <input type="date" name="date" id="date" value="{{ echeance.dateEcheance|date('Y-m-d') }}" class="form-control">
-        </div>
-      </div><br>
-      <div class="row">
-        <input type="hidden" name="token" value="{{ csrf_token('token_payer_echeance') }}">
-        <button type="submit" class="btn-lg btn-info" onclick="submitForm(this);">Enregistrer</button>
-      </div>
-    </form>
-  </div>
+    <div class="row">
+      <input type="hidden" name="token" value="{{ csrf_token('token_payer_echeance') }}">
+      <button type="submit" class="btn-lg btn-info" onclick="submitForm(this);">Enregistrer</button>
+    </div>
+  </form>
 {% endblock %}
 
 

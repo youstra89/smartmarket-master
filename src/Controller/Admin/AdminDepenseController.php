@@ -60,8 +60,8 @@ class AdminDepenseController extends AbstractController
             $depense->setCreatedBy($this->getUser());
             $manager->persist($depense);
             try{
-              $manager->flush();
               $fonctions->ecritureDeDepensesDansLeJournalComptable($manager, $depense->getAmount(), $mode, $depense, $depense->getDescription(), $exercice);
+              $manager->flush();
               $this->addFlash('success', 'Enregistrement de dépense <strong>'.$depense->getDescription().'</strong> réussie.');
               return $this->redirectToRoute('depenses_du_mois', ["mois" => $mois]);
             } 

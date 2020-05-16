@@ -33,6 +33,8 @@ class ComptabiliteController extends AbstractController
      */
     public function etat_entreprise(EntityManagerInterface $manager, CheckConnectedUser $checker, FonctionsComptabiliteController $fonctions)
     {
+      // $jourDuMois = (new \DateTime())->format("d");
+      // dd((int) $jourDuMois);
         if($checker->getAccess() == true){
           return $this->redirectToRoute('login');
         }
@@ -413,7 +415,7 @@ class ComptabiliteController extends AbstractController
         }
       }
       $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
-      $reference = $fonctions->generateReferenceEcriture($derniereEcriture);
+      $reference = $fonctions->generateReferenceEcriture($manager);
       $comptes  = $manager->getRepository(ComptaCompteExercice::class)->comptesDuBilanOuDuResultat("tous", null, $id);
       return $this->render('Admin/Comptabilite/ecrire-dans-journal.html.twig', [
         'current'  => 'accounting',

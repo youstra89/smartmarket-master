@@ -91,7 +91,7 @@
 			</nav>
 		</aside>
 		<div id="fh5co-main">
-			<div class="container">
+			<div class="fh5co-narrow-content">
 				{% block notifications %}
 					{% for message in app.flashes('success') %}
 						<div class="alert alert-success fade in">
@@ -116,7 +116,7 @@
 					{% endfor %}
 				{% endblock %}
 				{% block body %}
-					<div class="fh5co-narrow-content">
+					<div class="">
 						<h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Panel Admin</h2>
 						<div class="row">
 							<a href="{{ path('product') }}">

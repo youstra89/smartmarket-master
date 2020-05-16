@@ -38,7 +38,6 @@
 
 
 {% block body %}
-<div class="fh5co-narrow-content">
   <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Journal de l'exercice de <strong>{{ exercice.label }}</strong></h2>
   {% if exercice.acheve == 0 %}
@@ -49,14 +48,14 @@
       <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
         <thead>
           <tr>
-            <th width="5%">#</th>
+            <th width="">#</th>
             <th width="">Numéro</th>
-            <th width="">Date</th>
+            <th width="7%">Date</th>
             <th width="">Libellé</th>
             <th width="">Débit</th>
             <th width="">Crédit</th>
             <th width="">TVA</th>
-            <th width="">Montant</th>
+            <th width="8%">Montant</th>
             <th width="">Actions</th>
           </tr>
         </thead>
@@ -87,5 +86,4 @@
       </table>
     </div>
   </div>
-</div>
 {% endblock %}

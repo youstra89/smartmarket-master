@@ -8,40 +8,37 @@
 
 
 {% block body %}
-    <div class="fh5co-narrow-content">
-        <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-        <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ajout d'un nouveau compte <strong></strong> </h2>
-        <div class="row">
-            {{ form_start(form, {'attr': {'class': ''}}) }}
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                             <label for="">{{ form_label(form.numero) }}</label>
-                            {{ form_widget(form.numero, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        <div class="form-error">
-                            {{ form_errors(form.numero) }}
-                        </div>
+    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ajout d'un nouveau compte <strong></strong> </h2>
+    <div class="row">
+        {{ form_start(form, {'attr': {'class': ''}}) }}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                            <label for="">{{ form_label(form.numero) }}</label>
+                        {{ form_widget(form.numero, {'attr': {'class': 'form-control'}}) }}
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="">{{ form_label(form.classe) }}</label>
-                            {{ form_widget(form.classe, {'attr': {'class': 'form-control'}}) }}
-                        </div>
+                    <div class="form-error">
+                        {{ form_errors(form.numero) }}
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="">{{ form_label(form.label) }}</label>
-                            {{ form_widget(form.label, {'attr': {'class': 'form-control'}}) }}
-                        </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="">{{ form_label(form.classe) }}</label>
+                        {{ form_widget(form.classe, {'attr': {'class': 'form-control'}}) }}
                     </div>
                 </div>
-                <button class="btn-sm btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
-            {{ form_end(form) }}
-        </div>
-        
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="">{{ form_label(form.label) }}</label>
+                        {{ form_widget(form.label, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+            </div>
+            <button class="btn-sm btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
+        {{ form_end(form) }}
     </div>
 {% endblock %}
 

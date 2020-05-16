@@ -2,14 +2,15 @@
 
 namespace App\Controller;
 
+use App\Entity\Depense;
 use App\Entity\Settlement;
+use App\Entity\ComptaCompte;
 use App\Entity\ComptaEcriture;
 use App\Entity\ComptaExercice;
 use App\Entity\CustomerCommande;
-use App\Entity\ComptaCompteExercice;
-use App\Entity\Depense;
 use App\Entity\ProviderCommande;
 use App\Entity\ProviderSettlement;
+use App\Entity\ComptaCompteExercice;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -47,7 +48,7 @@ class FonctionsComptabiliteController extends AbstractController
       $compteADebiter  = $compteClient;
       $compteAcrediter = $compteMarchandise;
       $ecriture_liee_a = $vente;
-      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
       $manager->persist($ecriture);
 
 
@@ -67,20 +68,18 @@ class FonctionsComptabiliteController extends AbstractController
         $remarque         = null;
         $compteADebiter   = $compteClient;
         $compteAcrediter  = $compteTVACollectee;
-        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
+        $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
         $manager->persist($ecriture);
       }
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = false;
-      }
-
-      return $response;
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = false;
+      // }
     }
 
 
@@ -103,18 +102,18 @@ class FonctionsComptabiliteController extends AbstractController
       $compteADebiter  = $compteClient;
       $compteAcrediter = $compteResultat;
       $ecriture_liee_a = $vente;
-      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
       $manager->persist($ecriture);
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = true;
-      }
-      return $response;
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = true;
+      // }
+      // return $response;
     }
 
 
@@ -162,19 +161,19 @@ class FonctionsComptabiliteController extends AbstractController
       $compteADebiter  = $compteADebiter;
       $compteAcrediter = $compteAcrediter;
       $ecriture_liee_a = $settlement;
-      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
       $manager->persist($ecriture);
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = false;
-      }
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = false;
+      // }
 
-      return $response;
+      // return $response;
     }
 
 
@@ -218,7 +217,7 @@ class FonctionsComptabiliteController extends AbstractController
         $compteADebiter  = $compteClient;
         $compteAcrediter = $compteMarchandise;
         $ecriture_liee_a = $vente;
-        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+        $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
         $manager->persist($ecriture);
       }
 
@@ -251,7 +250,7 @@ class FonctionsComptabiliteController extends AbstractController
         $compteADebiter  = $compteMarchandise;
         $compteAcrediter = $compteClient;
         $ecriture_liee_a = $vente;
-        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+        $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
         $manager->persist($ecriture);
       }
 
@@ -282,19 +281,19 @@ class FonctionsComptabiliteController extends AbstractController
         $compteADebiter  = $compteMarchandise;
         $compteAcrediter = $compteClient;
         $ecriture_liee_a = $vente;
-        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+        $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
         $manager->persist($ecriture);
       }
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = true;
-      }
-      return $response;
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = true;
+      // }
+      // return $response;
     }
 
 
@@ -325,7 +324,7 @@ class FonctionsComptabiliteController extends AbstractController
       $compteADebiter  = $compteMarchandise;
       $compteAcrediter = $compteFournisseur;
       $ecriture_liee_a = $achat;
-      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
 
       $manager->persist($ecriture);
 
@@ -346,20 +345,20 @@ class FonctionsComptabiliteController extends AbstractController
         $remarque         = null;
         $compteADebiter   = $compteTVADeductible;
         $compteAcrediter  = $compteFournisseur;
-        $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
+        $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
         $manager->persist($ecriture);
       }
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = false;
-      }
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = false;
+      // }
 
-      return $response;
+      // return $response;
     }
 
 
@@ -403,19 +402,19 @@ class FonctionsComptabiliteController extends AbstractController
       $remarque = null;
       $ecriture_liee_a = $settlement;
 
-      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
       $manager->persist($ecriture);
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = true;
-      }
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = true;
+      // }
       
-      return $response;
+      // return $response;
     }
 
 
@@ -460,19 +459,19 @@ class FonctionsComptabiliteController extends AbstractController
       $remarque        = null;
       $compteADebiter  = $compteResultat;
       $compteAcrediter = $compteCaisse;
-      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque);
       $manager->persist($ecriture);
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = true;
-      }
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = true;
+      // }
         
-      return $response;
+      // return $response;
     }
 
 
@@ -507,19 +506,19 @@ class FonctionsComptabiliteController extends AbstractController
       $compteADebiter  = $compteResultat;
       $compteAcrediter = $compteACrediter;
       $ecriture_liee_a = $depense;
-      $ecriture = $this->genererNouvelleEcritureDuJournal($exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
       $manager->persist($ecriture);
 
-      try{
-        $manager->flush();
-        $response = true;
-      } 
-      catch(\Exception $e){
-        $this->addFlash('danger', $e->getMessage());
-        $response = true;
-      }
+      // try{
+      //   $manager->flush();
+      //   $response = true;
+      // } 
+      // catch(\Exception $e){
+      //   $this->addFlash('danger', $e->getMessage());
+      //   $response = true;
+      // }
         
-      return $response;
+      // return $response;
     }
 
 
@@ -543,17 +542,102 @@ class FonctionsComptabiliteController extends AbstractController
       }
 
       $resultat = $sommesActifs - $sommesPassifs;
-      $compteREsultat = $manager->getRepository(ComptaCompteExercice::class)->findCompte(7, $exerciceId);
-      $compteREsultat->setMontantFinal($resultat);
+      $compteResultat = $manager->getRepository(ComptaCompteExercice::class)->findCompte(7, $exerciceId);
+      $compteResultat->setMontantFinal($resultat);
     }
 
 
-    public function genererNouvelleEcritureDuJournal(ComptaExercice $exercice, string $reference, \DateTime $date, string $label, ComptaCompteExercice $compteADebiter, ComptaCompteExercice $compteAcrediter, int $tva, int $montant, string $remarque = null, $ecriture_liee_a = null)
+    public function genererNouvelleEcritureDuJournal(EntityManagerInterface $manager, ComptaExercice $exercice, string $reference, \DateTime $date, string $label, ComptaCompteExercice $compteADebiter, ComptaCompteExercice $compteAcrediter, int $tva, int $montant, string $remarque = null, $ecriture_liee_a = null)
     {
       /**
        * Cette fonction permet de créer une nouvelle entité écriture. Vu qu'une écriture peut liée à une vente, 
-       * un achat, un règelement client ou fournisseur, il va falloir vérifier à chaque fois le paramètre $ecriture_liee_a
+       * un achat, un règelement client ou fournisseur, il va falloir vérifier à chaque fois le paramètre $ecriture_liee_a.
+       * 
+       * 
+       * Mais avant cela, on s'assurer que nous ne sommes pas en début de mois. Sinon, si nous sommes en début de mois et qu'il y a un exercice 
+       * déjà enregistré, cela veut dire que l'exercice du mois qui vient de s'écoulé est fini. Auquel cas, il va falloir faire le bilan final 
+       * du mois passé et enregistrer un nouvel exercice (avec bien entendu le bilan initial du mois en cours). Il ne faudra pas oublier de 
+       * passé la valeur de $exercice->getAcheve() à true.
        */ 
+      // $jourDuMois = (new \DateTime())->format("d");
+      // if((int) $jourDuMois == 1){
+      $date = new \DateTime();
+      if($date > $exercice->getDateFin()){
+        $ancienExercice   = $exercice;
+        $ancienExerciceId = $ancienExercice->getId();
+        // 1- On va mettre reporter la valeur du compte résultat au compte réserve pour le nouvel exercice. 
+        // 2- On passe la valeur du $exercice->getAcheve() à true, avec $exercice l'exercice qui vient à peine de finir.
+        /**
+         * 3- On enregistre un tout nouvel exercice et on enregistre aussi tous les comptes du bilan et tous les comptes du résultat. 
+         *    Les valeurs initiales comptes du bilan de ce nouvel exercice seront exactement les mêmes que leurs valeurs finales sauf les
+         *    comptes réserve et résultat. En effet, vu que la valeur du compte résultat va être ajouter au compte réserve, la valeur initiale
+         *    du compte... 
+         *    Trève de commantaire, passons à l'acte
+         */
+
+        // Première étape
+        // Ajout du résultat aux réserves
+        $compteReserve  = $manager->getRepository(ComptaCompteExercice::class)->findCompte(6, $ancienExerciceId);  
+        $compteResultat = $manager->getRepository(ComptaCompteExercice::class)->findCompte(7, $ancienExerciceId);  
+        $valeurCompteResultatNouvelExercice = $compteReserve->getMontantFinal() + $compteResultat->getMontantFinal();
+        // Normalement, ce qui vient de se faire est une opération qui doit être ecrite dans le journal.
+
+        // Deuxième étape
+        $ancienExercice->setAcheve(true);
+
+        // Troisième et dernière étape, on enregistre le nouvel exercice
+        // On va commencer par créer un exercice
+        $date      = (new \DateTime())->format("Y-m-d");
+        $dateDebut = new \DateTime(date('01-m-Y', strtotime($date)));
+        $dateFin   = new \DateTime(date('t-m-Y', strtotime($date)));
+        $labelExercice  = $this->dateEnFrancais($dateDebut, false);
+
+        $exercice = new ComptaExercice();
+        $exercice->setDateDebut($dateDebut);
+        $exercice->setDateFin($dateFin);
+        $exercice->setLabel($labelExercice);
+        $exercice->setCreatedBy($this->getUser());
+        $manager->persist($exercice);
+
+        $comptesDuBilan  = $manager->getRepository(ComptaCompte::class)->comptesDuBilanOuDuResultat("bilan");
+        foreach ($comptesDuBilan as $key => $compte) {
+          // La valeur du compte réserve doit être calculer et la valeur du compte résultat est toujour 0
+          $compteId = $compte->getId();
+          if($compteId == 6){
+            $montantCompte = $valeurCompteResultatNouvelExercice;
+          }
+          elseif($compteId == 7){
+            $montantCompte = 0;
+          }
+          else{
+            $montantCompte = $this->obtenirLaValeurDUnCompteLorsDeLExercicePrecedent($ancienExercice, $compteId);
+          }
+          $compteExercice = new ComptaCompteExercice();
+          $compteExercice->setExercice($exercice);
+          $compteExercice->setCompte($compte);
+          $compteExercice->setMontantInitial($montantCompte);
+          $compteExercice->setMontantFinal($montantCompte);
+          $compteExercice->setCreatedBy($this->getUser());
+
+          $manager->persist($compteExercice);
+          // dd($compteExercice);
+        }
+
+        // Et enfin, les comptes du résutat
+        $comptesResutats  = $manager->getRepository(ComptaCompte::class)->comptesDuBilanOuDuResultat("resultat");
+        foreach ($comptesResutats as $key => $compte) {
+          $compteExercice = new ComptaCompteExercice();
+          $compteExercice->setExercice($exercice);
+          $compteExercice->setCompte($compte);
+          $compteExercice->setMontantInitial(0);
+          $compteExercice->setMontantFinal(0);
+          $compteExercice->setCreatedBy($this->getUser());
+          $manager->persist($compteExercice);
+          // dd($compteExercice);
+        }
+
+      }
+
       $ecriture = new ComptaEcriture();
       $ecriture->setExercice($exercice);
       $ecriture->setNumero($reference);
@@ -607,5 +691,51 @@ class FonctionsComptabiliteController extends AbstractController
         $reference = "SM-001";            
       }
       return $reference;
+    }
+
+    public function dateEnFrancais($date, bool $jour = true)
+    {
+      // Cette fonction me permet de convertir la date reçu en paramètre en français
+      /**
+       * Elle reçoit deux paramètres
+       *      ----- Paramètre 1
+       *    - Le premier est la date à convertir
+       * 
+       *      ----- Paramètre 2
+       *    - Le deuxième est le type de retour qui peut être soit en mois (ex: Mars 2020) ou en jour (ex: Vendredi 20 Mars 2020)
+       *      Ce deuxième paramètre est de type booléen et facultatif. S'il est à true (qui est d'ailleurs sa valeur par défaut) 
+       *      alors le retour sera en jour. Sinon, il est en mois.
+       */
+      if (setlocale(LC_TIME, 'fr_FR') == '') {
+        $format_jour = '%#d';
+      } else {
+        $format_jour = '%e';
+      }
+      setlocale (LC_TIME, 'fr_FR.utf8','fra'); 
+
+      if($jour == true)
+      {
+        $date = $date instanceof \DateTime ? $date->format("Y-m-d") : $date;
+        $date = utf8_encode(strftime("%A $format_jour %B %Y", strtotime($date)));
+        $dateEnFrancais = ucwords($date);
+      }
+      else{
+        $date = $date instanceof \DateTime ? $date->format("Y-m-d") : $date;
+        $mois = utf8_encode(strftime("$format_jour %B %Y", strtotime($date)));
+        $dateEnFrancais = ucfirst(substr($mois, 3));
+      }
+
+      return $dateEnFrancais;
+    }
+
+
+    public function obtenirLaValeurDUnCompteLorsDeLExercicePrecedent(ComptaExercice $exercice, int $compteId)
+    {
+      $montant = 0;
+      foreach ($exercice->getComptaCompteExercices() as $value) {
+        if($value->getId() == $compteId)
+          $montant = $value->getMontantFinal();
+      }
+      return $montant;
     }
 }

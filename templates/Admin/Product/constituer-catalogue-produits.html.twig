@@ -30,29 +30,27 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    <h2 class="animate-box" data-animate-effect="fadeInLeft">Constitution de catalogue de produits</h2>
-    {% if products|length != 0 %}
-      <form action="" method="post">
-        {% for category in categories %}
-          <h3>{{ category.name }}</h3>
-          <div class="row">
-            {% for item in products if category.id == item.category.id %}
-              <div class="col-md-4">
-                <label for="product[{{item.id}}]">
-                  <input type="checkbox" name="products[{{item.id}}]" id="product[{{item.id}}]" value="{{item.id}}">
-                  {{ item.label }}
-                </label>
-              </div>
-            {% endfor %}
-          </div><br><br>
-        {% endfor %}
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('provider.order') }}"/>
-        <button type="submit" name="valider" id="valider" class="btn btn-primary btn-sm" onclick="submitForm(this);">Valider</button>
-      </form>
-    {% endif %}
-  </div>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Constitution de catalogue de produits</h2>
+  {% if products|length != 0 %}
+    <form action="" method="post">
+      {% for category in categories %}
+        <h3>{{ category.name }}</h3>
+        <div class="row">
+          {% for item in products if category.id == item.category.id %}
+            <div class="col-md-4">
+              <label for="product[{{item.id}}]">
+                <input type="checkbox" name="products[{{item.id}}]" id="product[{{item.id}}]" value="{{item.id}}">
+                {{ item.label }}
+              </label>
+            </div>
+          {% endfor %}
+        </div><br><br>
+      {% endfor %}
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token('provider.order') }}"/>
+      <button type="submit" name="valider" id="valider" class="btn btn-primary btn-sm" onclick="submitForm(this);">Valider</button>
+    </form>
+  {% endif %}
   {#<script type="text/javascript">
       function checkAllBox(ref, name) {
           var form = ref;

@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\Family;
 use App\Entity\Product;
 use App\Entity\Category;
 use App\Form\ProductType;
@@ -11,11 +12,12 @@ use App\Entity\Informations;
 use App\Entity\ProductSearch;
 use App\Form\ProductSearchType;
 use App\Controller\FonctionsController;
-use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Component\HttpFoundation\Request;
+use App\Entity\Mark;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 // Include Dompdf required namespaces
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -52,7 +54,7 @@ class AdminProductController extends AbstractController
     }
 
     /**
-     * @Route("/add", name="product.add")
+     * @Route("/add", name="product_add")
      * @IsGranted("ROLE_ADMIN")
      */
     public function add(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions)
@@ -123,11 +125,106 @@ class AdminProductController extends AbstractController
     }
 
     /**
-     * @Route("/edit/{id}", name="product.edit")
+     * @Route("/add-multiple-products", name="add_multiple_products")
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function add_multiple_products(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions)
+    {
+        $families     = $manager->getRepository(Family  ::class)->findAll();
+        $categories   = $manager->getRepository(Category::class)->findAll();
+        $marks        = $manager->getRepository(Mark    ::class)->findAll();
+        $last_product = $manager->getRepository(Product ::class)->last_saved_product();
+        $manager   = $this->getDoctrine()->getManager();
+        // dump($reference);
+        if($request->isMethod('post'))
+        {
+          $data = $request->request->all();
+          // return new Response(var_dump($data));
+          if(!empty($data['token']))
+          {
+            $token = $data['token'];
+            if($this->isCsrfTokenValid('insert_products', $token)){
+              $data              = $request->request->all();
+              $familiesP         = $data["families"];
+              $categoriesP       = $data["categories"];
+              $marksP            = $data["marks"];
+              $descriptions      = $data["descriptions"];
+              $stocks            = $data["stocks"];
+              $purchasing_prices = $data["purchasing_prices"];
+              $selling_prices    = $data["selling_prices"];
+              $unites            = $data["unites"];
+
+              foreach ($unites as $key => $value) {
+                if(
+                  !empty($categoriesP[$key]) and 
+                  !empty($stocks[$key]) and 
+                  !empty($purchasing_prices[$key]) and 
+                  !empty($selling_prices[$key])
+                ){
+                  $product = new Product();
+                  $mark     = $this->obtenirLObjetAdequat($marks, (int) $marksP[$key]);
+                  $category = $this->obtenirLObjetAdequat($categories, (int) $categoriesP[$key]);
+                  $family   = $this->obtenirLObjetAdequat($families, (int) $familiesP[$key]);
+                  $product->setMark($mark);
+                  $product->setFamily($family);
+                  $product->setCategory($category);
+                  $product->setPurchasingPrice($purchasing_prices[$key]);
+                  $product->setUnitPrice($selling_prices[$key]);
+                  $product->setAveragePurchasePrice($purchasing_prices[$key]);
+                  $product->setAverageSellingPrice($selling_prices[$key]);
+                  $product->setUnite($value);
+                  $product->setStock($stocks[$key]);
+                  $product->setSecurityStock(0);
+                  $product->setDescription($descriptions[$key]);
+                  $product->setAveragePackageSellingPrice($selling_prices[$key] * $value);
+                  $product->setCreatedBy($this->getUser());
+                  $manager->persist($product);
+                  $tab[] = $product;
+                }
+              }
+
+              $nbr = count($tab);
+              $reference = $fonctions->generateReference("product", $last_product, $nbr);
+              foreach ($reference as $key => $value) {
+                $tab[$key]->setReference($reference[$key]);
+              }
+              // dd($tab);
+
+              try{
+                $manager->flush();
+                $this->addFlash('success', 'Enregistrement de <strong>'.$nbr.' produits</strong> réussie.');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+              } 
+              return $this->redirectToRoute('product');
+            }
+          }
+        }
+        return $this->render('Admin/Product/add-multiple-products.html.twig', [
+          'current'    => 'products',
+          'marks'      => $marks,
+          'families'   => $families,
+          'categories' => $categories,
+        ]);
+    }
+
+    public function obtenirLObjetAdequat(array $array, int $id)
+    {
+      $object = null;
+      foreach ($array as $value) {
+        if($value->getId() == $id)
+          $object = $value;
+      }
+      return $object;
+    }
+
+    /**
+     * @Route("/edit/{id}", name="product_edit")
      * @IsGranted("ROLE_ADMIN")
      * @param Product $product
      */
-    public function edit(Request $request, EntityManagerInterface $manager, Product $product)
+    public function edit(Request $request, EntityManagerInterface $manager, Product $product, int $id)
     {
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
@@ -138,8 +235,17 @@ class AdminProductController extends AbstractController
             $this->addFlash('danger', 'Impossible de continuer. Prix d\'achat supérieur au prix de vente.');
             return $this->redirectToRoute('product');
           }
-          $mark = !empty($product->getMark()) ? $product->getMark()->getLabel() : '';
-          $label = $product->getCategory()->getName().' '.$mark.' '.$product->getDescription();
+          
+          /**
+           * Attention !!!!!
+           * Lors de la mise à jour d'un produit, il faut bien contrôler les produits qui peuvent être décomposer.
+           * Si la valeur de $product->getUnite() change, il faudra que sa nouvelle valeur soit un multiple du stock actuel.
+           */
+          // $rest = $product->getStock() % $product->getUnite();
+          // if($product->getUnite() != 1 and $rest != 0){
+          //   $this->addFlash('danger', 'Impossible de continuer. Il faut que la valeur de Unité/produit soit un multiple du stock actuel '.$product->getStock().'.');
+          //   return $this->redirectToRoute('product_edit', ["id" => $id]);
+          // }
           /** @var UploadedFile $imageFile */
           $imageFile = $form->get('image')->getData();
 
@@ -169,7 +275,7 @@ class AdminProductController extends AbstractController
           $product->setUpdatedBy($this->getUser());
           try{
             $manager->flush();
-            $this->addFlash('success', 'Mise à jour de <strong>'.$label.'</strong> réussie.');
+            $this->addFlash('success', 'Mise à jour de <strong>'.$product->label().'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
@@ -181,6 +287,92 @@ class AdminProductController extends AbstractController
           'product' => $product,
           'form'    => $form->createView()
         ]);
+    }
+
+    /**
+     * @Route("/define-product-prices/{id}", name="define_product_prices")
+     * @IsGranted("ROLE_SUPER_ADMIN")
+     * @param Product $product
+     */
+    public function define_product_prices(Request $request, EntityManagerInterface $manager, Product $product, int $id)
+    {
+      if($request->isMethod('post'))
+      {
+        $token = $request->get('_csrf_token');
+        $data = $request->request->all();
+        $unitPrice                  = (int) $data["unitPrice"];
+        $purchasingPrice            = (int) $data["purchasingPrice"];
+        $averagePurchasePrice       = (int) $data["averagePurchasePrice"];
+        $averageSellingPrice        = (int) $data["averageSellingPrice"];
+        $averagePackageSellingPrice = (int) $data["averagePackageSellingPrice"];
+        /**
+         * Avant l'enregistrement de ces informations, on va faire des vérifications très très importantes.
+         */
+        // Vérification 1: Le prix de vente doit obligatoirement être supérieur au prix d'achat. On exerce de l'activité 
+        //                 pour avoir de l'argent. Pas pour en perdre
+        if($purchasingPrice > $unitPrice)
+        {
+          $this->addFlash('danger', 'Impossible de continuer. Prix d\'achat supérieur au prix de vente.');
+          return $this->redirectToRoute('define_product_prices', ["id" => $id]);
+        }
+
+        // Vérification 2: Si le produit n'est pas détaillable alors il faut forcément que le prix moyen de vente 
+        //                 de l'unité soit égal au prix de vente moyen du carton/paquet
+        if($product->getUnite() == 1 and $averageSellingPrice !== $averagePackageSellingPrice)
+        {
+          $this->addFlash('danger', 'Impossible de continuer. Pour ce produit, les prix moyens de vente de l\'unité et du carton/paquet doivent être égaux.');
+          return $this->redirectToRoute('define_product_prices', ["id" => $id]);
+        }
+
+        // Vérification 3: Si le produit est détaillable alors le prix de vente moyen du carton pourra être 
+        //                 légèrement inférieur au nombre de produit dans le carton multiplié par le prix unitaire de vente
+        $prixRaisonable = $averageSellingPrice * $product->getUnite() - $averageSellingPrice;
+        if($product->getUnite() !== 1 and $averagePackageSellingPrice < $prixRaisonable)
+        {
+          $this->addFlash('danger', 'Impossible de continuer. Pour ce produit, le prix moyen de vente du carton devrait être légèrement supérieur à '.number_format($prixRaisonable, 0, ',', ' ').'.');
+          return $this->redirectToRoute('define_product_prices', ["id" => $id]);
+        }
+
+        
+        if($this->isCsrfTokenValid('prices_definition', $token)){
+          // On va initier une nouvelle variable pour constater les changement de prix
+          $constat = false;
+          if($product->getUnitPrice() != $unitPrice or 
+             $product->getPurchasingPrice() != $purchasingPrice or 
+             $product->getAveragePurchasePrice() != $averagePurchasePrice or 
+             $product->getAverageSellingPrice() != $averageSellingPrice or 
+             $product->getAveragePackageSellingPrice() != $averagePackageSellingPrice
+          ){
+            $constat = true;
+          }
+
+          if($constat == true){
+            $product->setUnitPrice($unitPrice);
+            $product->setPurchasingPrice($purchasingPrice);
+            $product->setAveragePurchasePrice($averagePurchasePrice);
+            $product->setAverageSellingPrice($averageSellingPrice);
+            $product->setAveragePackageSellingPrice($averagePackageSellingPrice);
+            $product->setUpdatedAt(new \DateTime());
+            $product->setUpdatedBy($this->getUser());
+            try{
+              $manager->flush();
+              $this->addFlash('success', 'Mise à jour de <strong>'.$product->label().'</strong> réussie.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            } 
+          }
+          else{
+            $this->addFlash('warning', 'Aucune modification constatée pour les prix de <strong>'.$product->label().'</strong>.');
+          }
+
+          return $this->redirectToRoute('product');
+        }
+      }
+      return $this->render('Admin/Product/define-product-prices.html.twig', [
+        'current' => 'products',
+        'product' => $product,
+      ]);
     }
 
     /**

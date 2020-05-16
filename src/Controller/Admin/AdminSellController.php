@@ -7,8 +7,11 @@ use Dompdf\Options;
 use App\Entity\Product;
 use App\Entity\Customer;
 use App\Entity\Settlement;
+use App\Entity\ComptaCompte;
 use App\Entity\Informations;
+use App\Entity\ComptaExercice;
 use App\Entity\CustomerCommande;
+use App\Entity\ComptaCompteExercice;
 use App\Entity\CustomerCommandeSearch;
 use App\Entity\CustomerCommandeDetails;
 use App\Form\CustomerCommandeSearchType;
@@ -19,7 +22,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Controller\FonctionsComptabiliteController;
-use App\Entity\ComptaExercice;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -84,13 +86,15 @@ class AdminSellController extends AbstractController
     {
       $product = $manager->getRepository(Product::class)->find($id);
       $data = [
-        "id"               => $product->getId(),
-        "reference"        => $product->getReference(),
-        "label"            => $product->label(),
-        "stock"            => $product->getStock(),
-        "unite"            => $product->getUnite(),
-        "unit_price"       => $product->getUnitPrice(),
-        "purchasing_price" => $product->getPurchasingPrice() * $product[0]->getUnite(),
+        "id"                            => $product->getId(),
+        "reference"                     => $product->getReference(),
+        "label"                         => $product->label(),
+        "stock"                         => $product->getStock(),
+        "unite"                         => $product->getUnite(),
+        "unit_price"                    => $product->getUnitPrice(),
+        "purchasing_price"              => $product->getPurchasingPrice() * $product->getUnite(),
+        "average_selling_price"         => $product->getAverageSellingPrice(),
+        "average_package_selling_price" => $product->getAveragePackageSellingPrice(),
       ];
 
       return new JsonResponse($data);
@@ -102,18 +106,20 @@ class AdminSellController extends AbstractController
      */
     public function get_product_by_reference(Request $request, EntityManagerInterface $manager, string $reference)
     {
-      $product = $manager->getRepository(Product::class)->findByReference($reference);
+      $product = $manager->getRepository(Product::class)->findByReference($reference)[0];
       $data = [];
       if(!empty($product))
       {
         $data = [
-          "id"               => $product[0]->getId(),
-          "reference"        => $product[0]->getReference(),
-          "label"            => $product[0]->label(),
-          "stock"            => $product[0]->getStock(),
-          "unite"            => $product[0]->getUnite(),
-          "unit_price"       => $product[0]->getUnitPrice(),
-          "purchasing_price" => $product[0]->getPurchasingPrice() * $product[0]->getUnite(),
+          "id"                            => $product->getId(),
+          "reference"                     => $product->getReference(),
+          "label"                         => $product->label(),
+          "stock"                         => $product->getStock(),
+          "unite"                         => $product->getUnite(),
+          "unit_price"                    => $product->getUnitPrice(),
+          "purchasing_price"              => $product->getPurchasingPrice() * $product->getUnite(),
+          "average_selling_price"         => $product->getAverageSellingPrice(),
+          "average_package_selling_price" => $product->getAveragePackageSellingPrice(),
         ];
       }
 
@@ -262,10 +268,10 @@ class AdminSellController extends AbstractController
 
               //On va maintenant enregistrer le règlement de la commande
               try{
-                $manager->flush();
-                // $this->addFlash('success', '<li>Enregistrement de la vente N°<strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
+                $this->addFlash('success', '<li>Enregistrement de la vente N°<strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
                 $res1 = $fonctions->ecritureDeVenteDansLeJournalComptable($manager, $prixDAchatGlobal, $resultat, $tva, $exercice, $date, $customerCommande);
                 $res2 = $fonctions->ecritureDuResultatDeVenteJournalComptable($manager, $resultat, $exercice, $date, $customerCommande);
+                $manager->flush();
                 // dd($res1, $res2);
                 // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
                 return $this->redirectToRoute('settlement', ['id' => $customerCommande->getId()]);
@@ -368,6 +374,7 @@ class AdminSellController extends AbstractController
               $commande->setUpdatedAt(new \DateTime());
               $commande->setUpdatedBy($this->getUser());
               try{
+                $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
                 $manager->flush();
                 $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
               } 
@@ -375,6 +382,9 @@ class AdminSellController extends AbstractController
                 $this->addFlash('danger', $e->getMessage());
                 return $this->redirectToRoute('edit_sell', ["id" => $id]);
               }
+            }
+            else{
+              $this->addFlash('warning', 'Aucun changement constaté.');
             }
             return $this->redirectToRoute('sell');
           }
@@ -585,6 +595,7 @@ class AdminSellController extends AbstractController
         return $this->redirectToRoute('sell');
       }
       $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $exerciceId = $exercice->getId();
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       $reglements = $commande->getSettlements();
       // $total = array_sum(array_map('getValue', $reglements));
@@ -630,6 +641,19 @@ class AdminSellController extends AbstractController
             }
           }
           else {
+            /**
+             * On va faire une certaine vérification. Le but est de savoir si le compte qui est sélectionné pour le règlement a
+             * un solde débiteur et s'il peut satisfaire le règlement.
+             * 
+             * On selectionne donc ce compte qui est soit la banque, soit la caisse. Si le solde du compte en question est supérieur 
+             * ou égal au montant du règlement, alors on peut continuer le règlement. Sinon, on renvoie une erreur à l'utilisateur
+             */
+            if($mode == 3 and $commande->getCustomer()->getAcompte() < $amount){
+              $montantDuCompte = $commande->getCustomer()->getAcompte();
+              $compte = "Client - Acomptes et avances versées";
+              $this->addFlash('danger', 'Le solde du compte <strong>'.$compte.' ('.number_format($montantDuCompte, 0, ',', ' ').' F</strong>) est inféreur au montant saisie qui est de <strong>'.number_format($amount, 0, ',', ' ').' F</strong>');
+              return $this->redirectToRoute('settlement', ['id' => $id]);
+            }
             $newTotal = $amount + $total;
             $dernierVersement = $manager->getRepository(Settlement::class)->lastSettlement($id);
             if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
@@ -671,8 +695,8 @@ class AdminSellController extends AbstractController
             else
               $this->addFlash('success', 'Règlement bien enregistré. Cependant la commande n\'est pas soldée.');
             
-            $manager->flush();
             $fonctions->ecritureDeReglementsClientsDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
+            $manager->flush();
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());

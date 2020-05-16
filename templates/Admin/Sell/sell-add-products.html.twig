@@ -30,64 +30,62 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour la vente du {{ commande.commande.date|date('d-m-Y') }}</h2>
-    <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
-    {% if products|length != 0 %}
-      <div class="row">
-        <div class="col-md-8">
-          <div class="table-responsive">
-            <table class="table" width="75%">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Nom de la marchandise</th>
-                  <th>Stock</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% set i = 0 %}
-                {% for product in products %}
-                {% set i = i + 1 %}
-                <tr>
-                  <td>{{ i }}</td>
-                  <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
-                  <td>
-                    {% if product.stock != 0 %}
-                      {{ product.stock }}
-                    {% else %}
-                      Stock épuisé
-                    {% endif %}
-                  </td>
-                  <td>
-                    {% if product.stock != 0 %}
-                      <a href="{{ path('add.order.product', {id: product.id, commandeId: commande.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
-                        <i class="icon-plus"></i>
-                      </a>
-                    {% else %}
-                      Stock épuisé
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+  <h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Ajout de marchandises pour la vente du {{ commande.commande.date|date('d-m-Y') }}</h2>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  {% if products|length != 0 %}
+    <div class="row">
+      <div class="col-md-8">
+        <div class="table-responsive">
+          <table class="table" width="75%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nom de la marchandise</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% for product in products %}
+              {% set i = i + 1 %}
+              <tr>
+                <td>{{ i }}</td>
+                <td>{{ product.category.name }} {{ product.mark.label }} - {{ product.description }}</td>
+                <td>
+                  {% if product.stock != 0 %}
+                    {{ product.stock }}
+                  {% else %}
+                    Stock épuisé
+                  {% endif %}
+                </td>
+                <td>
+                  {% if product.stock != 0 %}
+                    <a href="{{ path('add.order.product', {id: product.id, commandeId: commande.id}) }}" data-toggle="tooltip" title="Ajouter {{ product.category.name }} {{ product.mark.label }} - {{ product.description }} à la commande">
+                      <i class="icon-plus"></i>
+                    </a>
+                  {% else %}
+                    Stock épuisé
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="row md-8">
-        {% if app.session.get('idProductsForSelling')|length != 0 %}
-          <div class="col-lg-6">
-            <a href="{{ path('customer.commande.details.save', {id: commande.id}) }}" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsForSelling')|length }} produits]</a>
-          </div>
-          <div class="col-lg-6">
-            <a href="{{ path('customer.commande.reset', {id: commande.id}) }}" class="btn-danger btn-sm">Annuler la vente en cours</a>
-          </div>
-        {% endif %}
-      </div>
-    {% endif %}
-  </div>
+    </div>
+    <div class="row md-8">
+      {% if app.session.get('idProductsForSelling')|length != 0 %}
+        <div class="col-lg-6">
+          <a href="{{ path('customer.commande.details.save', {id: commande.id}) }}" class="btn-success btn-sm">Enregister la commande [{{ app.session.get('idProductsForSelling')|length }} produits]</a>
+        </div>
+        <div class="col-lg-6">
+          <a href="{{ path('customer.commande.reset', {id: commande.id}) }}" class="btn-danger btn-sm">Annuler la vente en cours</a>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
 {% endblock %}
 
 

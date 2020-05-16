@@ -35,69 +35,67 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <h2 class="animate-box" data-animate-effect="fadeInLeft">Commandes</h2>
-    <a href="{{ path('provider') }}" class="btn-primary btn-sm">Gestion des fournisseurs</a>
-    <a href="{{ path('unique_form_provider_order') }}" class="btn-primary btn-sm">Ajouter une commande</a>
-      <a href="{{ path('add_acompte_fournisseur') }}" class="btn-sm btn-primary">Enregistrer acompte fournisseur</a>
-    <br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Commandes</h2>
+  <a href="{{ path('provider') }}" class="btn-primary btn-sm">Gestion des fournisseurs</a>
+  <a href="{{ path('unique_form_provider_order') }}" class="btn-primary btn-sm">Ajouter une commande</a>
+    <a href="{{ path('add_acompte_fournisseur') }}" class="btn-sm btn-primary">Enregistrer acompte fournisseur</a>
+  <br><br>
+  <div class="row">
+    {{ form_start(form) }}
     <div class="row">
-      {{ form_start(form) }}
-      <div class="row">
-        <div class="col-md-4">
-          {{ form_row(form.provider, {'attr': {'class': 'form-control js-example-basic-single'}}) }}
-        </div>
-        <div class="col-md-4">
-          {{ form_row(form.products, { 'attr': {'class': 'js-example-basic-single'} }) }}
-        </div>
-        <div class="col-md-4">
-          <button type="submit" class="btn-success btn-sm">{{ 'Rechercher'|trans }}</button>
-        </div>
+      <div class="col-md-4">
+        {{ form_row(form.provider, {'attr': {'class': 'form-control js-example-basic-single'}}) }}
       </div>
-      {{ form_end(form) }}
+      <div class="col-md-4">
+        {{ form_row(form.products, { 'attr': {'class': 'js-example-basic-single'} }) }}
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn-success btn-sm">{{ 'Rechercher'|trans }}</button>
+      </div>
     </div>
-    <div class="row row-bottom-padded-md">
-      {% if commandes|length != 0 %}
-        <div class="col-md-8">
-          <div class="table-responsive">
-            <table class="table" width="75%">
-              <thead>
+    {{ form_end(form) }}
+  </div>
+  <div class="row row-bottom-padded-md">
+    {% if commandes|length != 0 %}
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <table class="table" width="100%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Référence</th>
+                <th>Date</th>
+                <th>Fournisseur</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% for commande in commandes %}
+                {% set i = i + 1 %}
                 <tr>
-                  <th>#</th>
-                  <th>Référence</th>
-                  <th>Date</th>
-                  <th>Fournisseur</th>
-                  <th>Actions</th>
+                  <td>{{ i }}</td>
+                  <td>{{ commande.reference }}</td>
+                  <td>{{ commande.date|date('d-m-Y') }}</td>
+                  <td>{{ commande.provider.firstname }} {{ commande.provider.lastname }} ({{ commande.provider.country.name }})</td>
+                  <td>
+                    <a href="{{ path('provider.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
+                    {% if commande.ended == false %}
+                      <a href="{{ path('provider_settlement', {id: commande.id}) }}"data-toggle="tooltip" title="Enregistrer un versement"><i class="icon-plus"></i></a>
+                    {% endif %}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {% set i = 0 %}
-                {% for commande in commandes %}
-                  {% set i = i + 1 %}
-                  <tr>
-                    <td>{{ i }}</td>
-                    <td>{{ commande.reference }}</td>
-                    <td>{{ commande.date|date('d-m-Y') }}</td>
-                    <td>{{ commande.provider.firstname }} {{ commande.provider.lastname }} ({{ commande.provider.country.name }})</td>
-                    <td>
-                      <a href="{{ path('provider.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
-                      {% if commande.ended == false %}
-                        <a href="{{ path('provider_settlement', {id: commande.id}) }}"data-toggle="tooltip" title="Enregistrer un versement"><i class="icon-plus"></i></a>
-                      {% endif %}
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            <div class="navigation">
-                {{ knp_pagination_render(commandes) }}
-            </div>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="navigation">
+              {{ knp_pagination_render(commandes) }}
           </div>
         </div>
-      {% else %}
-        <p>Aucune commande fournisseur n'a été enregistrée pour le moment ou bien aucune commande ne correspond aux critères de recherche saisis.</p>
-      {% endif %}
-    </div>
+      </div>
+    {% else %}
+      <p>Aucune commande fournisseur n'a été enregistrée pour le moment ou bien aucune commande ne correspond aux critères de recherche saisis.</p>
+    {% endif %}
   </div>
 {% endblock %}
 

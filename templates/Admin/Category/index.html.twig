@@ -35,41 +35,39 @@
 
 
 {% block body %}
-  <div class="fh5co-narrow-content">
-    <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
-    <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Catégories</h2>
-    <a href="{{ path('category.add') }}" class="btn-sm btn-primary">Ajouter une nouvelle catégorie</a><br><br>
-    <div class="table-responsive">
-      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
-        <thead>
+  <a href="javascript:history.back()" class="btn btn-primary sm">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Catégories</h2>
+  <a href="{{ path('category.add') }}" class="btn-sm btn-primary">Ajouter une nouvelle catégorie</a><br><br>
+  <div class="table-responsive">
+    <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Catégorie</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>N°</th>
+          <th>Catégorie</th>
+          <th>Actions</th>
+        </tr>
+      </tfoot>
+      <tbody>
+        {% set i = 0 %}
+        {% for category in categories %}
+          {% set i = i + 1 %}
           <tr>
-            <th>N°</th>
-            <th>Catégorie</th>
-            <th>Actions</th>
+            <td>{{ i }}</td>
+            <td>{{ category.name }}</td>
+            <td>
+              <a href="{{ path('category.edit', {id: category.id}) }}" title="Modifier cette catégorie"><i class="icon-edit"></i></a>
+            </td>
           </tr>
-        </thead>
-        <tfoot>
-          <tr>
-            <th>N°</th>
-            <th>Catégorie</th>
-            <th>Actions</th>
-          </tr>
-        </tfoot>
-        <tbody>
-          {% set i = 0 %}
-          {% for category in categories %}
-            {% set i = i + 1 %}
-            <tr>
-              <td>{{ i }}</td>
-              <td>{{ category.name }}</td>
-              <td>
-                <a href="{{ path('category.edit', {id: category.id}) }}" title="Modifier cette catégorie"><i class="icon-edit"></i></a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 {% endblock %}
 
