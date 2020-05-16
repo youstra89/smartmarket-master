@@ -591,6 +591,7 @@ class FonctionsComptabiliteController extends AbstractController
         $dateDebut = new \DateTime(date('01-m-Y', strtotime($date)));
         $dateFin   = new \DateTime(date('t-m-Y', strtotime($date)));
         $labelExercice  = $this->dateEnFrancais($dateDebut, false);
+        $date      = (new \DateTime());
 
         $exercice = new ComptaExercice();
         $exercice->setDateDebut($dateDebut);
@@ -733,7 +734,7 @@ class FonctionsComptabiliteController extends AbstractController
     {
       $montant = 0;
       foreach ($exercice->getComptaCompteExercices() as $value) {
-        if($value->getId() == $compteId)
+        if($value->getCompte()->getId() == $compteId)
           $montant = $value->getMontantFinal();
       }
       return $montant;
