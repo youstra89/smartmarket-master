@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20200514153039 extends AbstractMigration
+final class Version20200518092901 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -22,9 +22,8 @@ final class Version20200514153039 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE customer CHANGE lastname lastname VARCHAR(255) DEFAULT NULL');
         $this->addSql('ALTER TABLE product CHANGE stock stock integer unsigned');
-        $this->addSql('ALTER TABLE provider CHANGE lastname lastname VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE provider_settlement CHANGE commande_id commande_id INT DEFAULT NULL');
     }
 
     public function down(Schema $schema) : void
@@ -32,8 +31,7 @@ final class Version20200514153039 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE customer CHANGE lastname lastname VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('ALTER TABLE product CHANGE stock stock INT UNSIGNED DEFAULT NULL');
-        $this->addSql('ALTER TABLE provider CHANGE lastname lastname VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`');
+        $this->addSql('ALTER TABLE provider_settlement CHANGE commande_id commande_id INT NOT NULL');
     }
 }

@@ -4,13 +4,15 @@ namespace App\Form;
 
 use App\Entity\Country;
 use App\Entity\Provider;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 class ProviderType extends AbstractType
 {
@@ -32,6 +34,7 @@ class ProviderType extends AbstractType
                 'multiple' => false,
                 'placeholder' => 'Sélectionner un pays'
             ])
+            ->add('observation',      TextareaType::class, ['label' => 'Observations', 'required' => false])
         ;
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event)
@@ -42,6 +45,9 @@ class ProviderType extends AbstractType
             if (!$customer || null === $customer->getId()) {
                 $form
                     ->add('reference',   TextType::class, ['label' => 'Référence', 'required' => true])
+                    ->add('acompte',   NumberType::class, ['label' => 'Acomptes ou avances versés', 'required' => true])
+                    ->add('arriere_initial',   NumberType::class, ['label' => 'Arriérés à l\'enregistrement', 'required' => true])
+
                 ;
             }
             else{

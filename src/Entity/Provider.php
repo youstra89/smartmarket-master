@@ -110,10 +110,19 @@ class Provider
      */
     private $acompte;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $arriere_initial;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $observation;
+
 
     public function __construct()
     {
-        $this->acompte        = 0;
         $this->is_deleted     = false;
         $this->created_at     = new \DateTime();
         $this->providerCommandes = new ArrayCollection();
@@ -388,6 +397,30 @@ class Provider
     public function setAcompte(int $acompte): self
     {
         $this->acompte = $acompte;
+
+        return $this;
+    }
+
+    public function getArriereInitial(): ?int
+    {
+        return $this->arriere_initial;
+    }
+
+    public function setArriereInitial(int $arriere_initial): self
+    {
+        $this->arriere_initial = $arriere_initial;
+
+        return $this;
+    }
+
+    public function getObservation(): ?string
+    {
+        return $this->observation;
+    }
+
+    public function setObservation(?string $observation): self
+    {
+        $this->observation = $observation;
 
         return $this;
     }

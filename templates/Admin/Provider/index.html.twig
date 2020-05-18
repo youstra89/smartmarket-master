@@ -79,6 +79,9 @@
             <td>{{ provider.country.name }}</td>
             <td>
               <a href="{{ path('provider.edit', {id: provider.id}) }}" title="Modifier info fournisseur"><i class="icon-edit"></i></a>
+              {% if provider.arriereInitial > 0 %}
+                <a href="{{ path('paiement_arriere_initial', {id: provider.id}) }}" title="Règelement d'arriéré initiale"><i class="icon-time"></i></a>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}

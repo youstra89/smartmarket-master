@@ -61,5 +61,27 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
+    <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            {{ form_label(form.acompte) }}
+            {{ form_widget(form.acompte, {'attr': {'class': 'form-control', 'placeholder': 'Ce champ est obligatoire. S\'il n\'a pas de valeur, veuillez mettre 0'}}) }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            {{ form_label(form.arriere_initial) }}
+            {{ form_widget(form.arriere_initial, {'attr': {'class': 'form-control', 'placeholder': 'Ce champ est obligatoire. S\'il n\'a pas de valeur, veuillez mettre 0'}}) }}
+          </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            {{ form_label(form.observation) }}
+            {{ form_widget(form.observation, {'attr': {'class': 'form-control', 'placeholder':'Vous pouvez prendre des notes sur vos fournisseurs'}}) }}
+          </div>
+        </div>
+    </div>
+    <button class="btn-lg btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
 {{ form_end(form) }}

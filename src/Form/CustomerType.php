@@ -4,18 +4,20 @@ namespace App\Form;
 
 use App\Entity\Customer;
 use App\Entity\CustomerType as Type;
-use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 class CustomerType extends AbstractType
 {
@@ -93,6 +95,8 @@ class CustomerType extends AbstractType
                     ])
                 ],
             ])
+            ->add('observation',      TextareaType::class, ['label' => 'Observations', 'required' => false])
+
         ;
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event)
@@ -103,6 +107,8 @@ class CustomerType extends AbstractType
             if (!$customer || null === $customer->getId()) {
                 $form
                     ->add('reference',   TextType::class, ['label' => 'Référence', 'required' => true])
+                    ->add('acompte',   NumberType::class, ['label' => 'Acomptes ou avances recçu', 'required' => true])
+                    ->add('creance_initiale',   NumberType::class, ['label' => 'Créances à l\'enregistrement', 'required' => true])
                 ;
             }
             else{

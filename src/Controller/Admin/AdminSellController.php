@@ -317,6 +317,7 @@ class AdminSellController extends AbstractController
           if($this->isCsrfTokenValid('modifier_vente', $token)){
             $data       = $request->request->all();
             $quantities = $data["quantitiesH"];
+            $remise     = isset($data["remise"]) ? $data["remise"] : 0;
             $prices     = $data["pricesH"];
             $total      = $data["total"];
             $change     = false;
@@ -367,10 +368,12 @@ class AdminSellController extends AbstractController
 
             if($change === true)
             {
-              $tva = $commande->getTva();
-              $ancienTotal = $commande->getTotalAmount();
+              $tva         = $commande->getTva();
+              $ancienTotal = $commande->getMontantTtc();
+              $montantTtc  = $total + $total * ($tva/100);
               $commande->setTotalAmount($total);
-              $commande->setMontantTtc($total + $total * ($tva/100));
+              $commande->setMontantTtc($montantTtc);
+              $commande->setNetAPayer($montantTtc - $remise);
               $commande->setUpdatedAt(new \DateTime());
               $commande->setUpdatedBy($this->getUser());
               try{
@@ -595,7 +598,6 @@ class AdminSellController extends AbstractController
         return $this->redirectToRoute('sell');
       }
       $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
-      $exerciceId = $exercice->getId();
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       $reglements = $commande->getSettlements();
       // $total = array_sum(array_map('getValue', $reglements));

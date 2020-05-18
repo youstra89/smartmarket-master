@@ -59,6 +59,7 @@
           <th>Téléphone</th>
           <th>Email</th>
           <th>Type</th>
+          <th>Solde</th>
           <th>Nationalite</th>
           <th>Profession</th>
           <th>Date de naissance</th>
@@ -79,6 +80,7 @@
           <th>Téléphone</th>
           <th>Email</th>
           <th>Type</th>
+          <th>Solde</th>
           <th>Nationalite</th>
           <th>Profession</th>
           <th>Date de naissance</th>
@@ -106,6 +108,7 @@
                 {{ customer.type.type }}
               {% endif %}
             </td>
+            <td>{{ customer.solde|number_format(0, ',', ' ') }} F</td>
             <td>{{ customer.nationalite }}</td>
             <td>{{ customer.profession }}</td>
             <td>{{ customer.dateNaissance|date("d-m-Y") }}</td>
@@ -116,6 +119,9 @@
               <a href="{{ path('customer.edit', {id: customer.id}) }}" title="Modifier info client"><i class="icon-edit"></i></a>
               <a href="{{ path('prepare_sell_for_customer', {id: customer.id}) }}" title="Préparer une commande"><i class="icon-plus"></i></a>
               <a href="{{ path('customer_info', {id: customer.id}) }}" title="Voir les détails"><i class="icon-params"></i></a>
+              {% if customer.creanceInitiale > 0 %}
+                <a href="{{ path('paiement_creance_initiale', {id: customer.id}) }}" title="Règelement créance initiale"><i class="icon-time"></i></a>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}

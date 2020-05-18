@@ -162,6 +162,14 @@
 
 
 {% block javascript %}
+  <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
+  <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+  <script>
+    // const routes = require('../../public/js/fos_js_routes.json');
+    // import Routing from '../../vendor/friendsofsymfony/jsrouting-bundle/Resources/public/js/router.min.js';
+
+    // Routing.setRoutingData(routes);
+  </script>
   <script>
     $(document).ready(function(){
       var total = $("#total").val();
@@ -171,6 +179,8 @@
       $('#products').on('change',function(e){
         $.ajax({
           url: '/ventes/select-product/' + this.value,
+          // url: "{{ path('get_product', {'id': " + this.value + "})|escape('js') }}",
+          url: Routing.generate('get_product', { id: this.value }, true),
           type: 'GET',
           dataType: 'json',
           success: function (result) { 
@@ -204,6 +214,8 @@
           var ref = $(this).val();
           $.ajax({
             url: '/ventes/select-product-by-reference/' + ref,
+            // url: "{{ path('get_product_by_reference', {'reference': " + ref + "})|escape('js') }}",
+            url: Routing.generate('get_product', { reference: ref }, true),
             type: 'GET',
             dataType: 'json',
             success: function (result) { 

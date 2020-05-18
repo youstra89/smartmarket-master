@@ -170,10 +170,19 @@ class Customer
      */
     private $acompte;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $creance_initiale;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $observation;
+
 
     public function __construct()
     {
-        $this->acompte           = 0;
         $this->is_deleted        = false;
         $this->created_at        = new \DateTime();
         $this->customerCommandes = new ArrayCollection();
@@ -322,7 +331,7 @@ class Customer
     public function getMontantTotalCommandeNonSoldees()
     {
         $total = 0;
-        foreach ($this->getCustomerCommandes() as $key => $value) {
+        foreach ($this->getCustomerCommandes() as $value) {
             if($value->getEnded() === false and $value->getIsDeleted() === false)
                 $total = $total + $value->getNetAPayer();
         }
@@ -332,7 +341,7 @@ class Customer
     public function getMontantTotalReglementCommandeNonSoldees()
     {
         $total = 0;
-        foreach ($this->getCustomerCommandes() as $key => $value) {
+        foreach ($this->getCustomerCommandes() as $value) {
             if($value->getEnded() === false and $value->getIsDeleted() === false)
             {
                 foreach ($value->getSettlements() as $settlement) {
@@ -343,6 +352,11 @@ class Customer
             }
         }
         return $total;
+    }
+
+    public function getSolde()
+    {
+        return $this->getMontantTotalCommandeNonSoldees() - $this->getMontantTotalReglementCommandeNonSoldees() - $this->acompte + $this->creance_initiale;
     }
 
     /**
@@ -588,6 +602,30 @@ class Customer
     public function setAcompte(int $acompte): self
     {
         $this->acompte = $acompte;
+
+        return $this;
+    }
+
+    public function getCreanceInitiale(): ?int
+    {
+        return $this->creance_initiale;
+    }
+
+    public function setCreanceInitiale(int $creance_initiale): self
+    {
+        $this->creance_initiale = $creance_initiale;
+
+        return $this;
+    }
+
+    public function getObservation(): ?string
+    {
+        return $this->observation;
+    }
+
+    public function setObservation(?string $observation): self
+    {
+        $this->observation = $observation;
 
         return $this;
     }

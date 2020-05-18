@@ -16,10 +16,10 @@
 
 body {
     font-family: "Roboto", Arial, sans-serif;
-    font-weight: 300;
-    font-size: 16px;
+    font-weight: 370;
+    font-size: 18px;
     line-height: 1.6;
-    color: rgba(0, 0, 0, 0.9);
+    color: rgba(0, 0, 0, 1);
     background: whitesmoke;
 }
 

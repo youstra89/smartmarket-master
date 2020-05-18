@@ -25,7 +25,7 @@ class ProviderSettlement
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ProviderCommande", inversedBy="settlements")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $commande;
 

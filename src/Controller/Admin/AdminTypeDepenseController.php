@@ -65,6 +65,10 @@ class AdminTypeDepenseController extends AbstractController
      */
     public function edit(Request $request, EntityManagerInterface $manager, TypeDepense $typedepense)
     {
+      if($typedepense->getTypeSysteme() == 1){
+        $this->addFlash('danger', '<strong>'.$typedepense->getLabel().'</strong> est un type système. Vous ne pouvez pas le modifier.');
+        return $this->redirectToRoute('typedepenses');
+      }
       $form = $this->createForm(TypeDepenseType::class, $typedepense);
       $form->handleRequest($request);
       if($form->isSubmitted() && $form->isValid())

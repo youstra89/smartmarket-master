@@ -23,6 +23,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * @Route("/products")
@@ -33,18 +36,19 @@ class AdminProductController extends AbstractController
      * @Route("/", name="product")
      * @IsGranted("ROLE_USER")
      */
-    public function index(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
+    public function index(Request $request, EntityManagerInterface $manager, Stopwatch $stopwatch, CacheInterface $cache)
     {
+      $stopwatch->start("produits");
+      // $cache->get("affiche-produit", function(ItemInterface $item){
+      //   $item->expiresAfter(10);
+      //   return sleep(3);
+      // });
       $search = new ProductSearch();
       $form = $this->createForm(ProductSearchType::class, $search);
       $form->handleRequest($request);
-
-      // $products = $paginator->paginate(
-      //   $manager->getRepository(Product::class)->findAllProductsQuery($search),
-      //   $request->query->getInt('page', 1),
-      //   12
-      // );
+      
       $products = $manager->getRepository(Product::class)->findAll();
+      $stopwatch->stop("produits");
 
       return $this->render('Admin/Product/index.html.twig', [
         // 'form'     => $form->createView(),
@@ -103,9 +107,9 @@ class AdminProductController extends AbstractController
               // instead of its contents
               $product->setImage($newFilename);
           }
-          $product->setAveragePurchasePrice(0);
-          $product->setAverageSellingPrice(0);
-          $product->setAveragePackageSellingPrice(0);
+          $product->setAveragePurchasePrice($product->getPurchasingPrice());
+          $product->setAverageSellingPrice($product->getUnitPrice());
+          $product->setAveragePackageSellingPrice($product->getUnitPrice() * $product->getUnite());
 
           $manager->persist($product);
           try{
@@ -333,6 +337,13 @@ class AdminProductController extends AbstractController
           return $this->redirectToRoute('define_product_prices', ["id" => $id]);
         }
 
+        // Vérification 4 : Si le prix moyen de vente est supérieur au prix de vente, ça provoquera des erreurs lors d'une vente.
+        if($averageSellingPrice > $unitPrice)
+        {
+          $this->addFlash('danger', 'Impossible de continuer. Le prix moyen de vente ne doit pas être supérieur au prix de vente.');
+          return $this->redirectToRoute('define_product_prices', ["id" => $id]);
+        }
+        // die();
         
         if($this->isCsrfTokenValid('prices_definition', $token)){
           // On va initier une nouvelle variable pour constater les changement de prix

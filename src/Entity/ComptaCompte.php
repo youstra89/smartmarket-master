@@ -79,7 +79,7 @@ class ComptaCompte
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ComptaEcriture", mappedBy="debit")
      */
-    private $comptaJournals;
+    private $comptaEcritures;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ComptaCompteExercice", mappedBy="compte")
@@ -91,7 +91,7 @@ class ComptaCompte
         $this->is_root    = false;
         $this->is_deleted = false;
         $this->created_at = new \DateTime();
-        $this->comptaJournals = new ArrayCollection();
+        $this->comptaEcritures = new ArrayCollection();
         $this->comptaCompteExercices = new ArrayCollection();
     }
 
@@ -139,25 +139,25 @@ class ComptaCompte
     /**
      * @return Collection|ComptaEcriture[]
      */
-    public function getComptaJournals(): Collection
+    public function getComptaEcritures(): Collection
     {
-        return $this->comptaJournals;
+        return $this->comptaEcritures;
     }
 
-    public function addComptaJournal(ComptaEcriture $comptaEcriture): self
+    public function addComptaEcriture(ComptaEcriture $comptaEcriture): self
     {
-        if (!$this->comptaJournals->contains($comptaEcriture)) {
-            $this->comptaJournals[] = $comptaEcriture;
+        if (!$this->comptaEcritures->contains($comptaEcriture)) {
+            $this->comptaEcritures[] = $comptaEcriture;
             $comptaEcriture->setDebit($this);
         }
 
         return $this;
     }
 
-    public function removeComptaJournal(ComptaEcriture $comptaEcriture): self
+    public function removeComptaEcriture(ComptaEcriture $comptaEcriture): self
     {
-        if ($this->comptaJournals->contains($comptaEcriture)) {
-            $this->comptaJournals->removeElement($comptaEcriture);
+        if ($this->comptaEcritures->contains($comptaEcriture)) {
+            $this->comptaEcritures->removeElement($comptaEcriture);
             // set the owning side to null (unless already changed)
             if ($comptaEcriture->getDebit() === $this) {
                 $comptaEcriture->setDebit(null);

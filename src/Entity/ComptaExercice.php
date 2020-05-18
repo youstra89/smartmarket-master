@@ -71,7 +71,7 @@ class ComptaExercice
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ComptaEcriture", mappedBy="exercice")
      */
-    private $comptaJournals;
+    private $comptaEcritures;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\ComptaCompteExercice", mappedBy="exercice")
@@ -98,7 +98,7 @@ class ComptaExercice
         $this->acheve         = false;
         $this->is_deleted     = false;
         $this->created_at     = new \DateTime();
-        $this->comptaJournals = new ArrayCollection();
+        $this->comptaEcritures = new ArrayCollection();
         $this->comptaCompteExercices = new ArrayCollection();
         $this->customerCommandes = new ArrayCollection();
         $this->providerCommandes = new ArrayCollection();
@@ -148,25 +148,25 @@ class ComptaExercice
     /**
      * @return Collection|ComptaEcriture[]
      */
-    public function getComptaJournals(): Collection
+    public function getComptaEcritures(): Collection
     {
-        return $this->comptaJournals;
+        return $this->comptaEcritures;
     }
 
-    public function addComptaJournal(ComptaEcriture $comptaEcriture): self
+    public function addComptaEcriture(ComptaEcriture $comptaEcriture): self
     {
-        if (!$this->comptaJournals->contains($comptaEcriture)) {
-            $this->comptaJournals[] = $comptaEcriture;
+        if (!$this->comptaEcritures->contains($comptaEcriture)) {
+            $this->comptaEcritures[] = $comptaEcriture;
             $comptaEcriture->setExercice($this);
         }
 
         return $this;
     }
 
-    public function removeComptaJournal(ComptaEcriture $comptaEcriture): self
+    public function removeComptaEcriture(ComptaEcriture $comptaEcriture): self
     {
-        if ($this->comptaJournals->contains($comptaEcriture)) {
-            $this->comptaJournals->removeElement($comptaEcriture);
+        if ($this->comptaEcritures->contains($comptaEcriture)) {
+            $this->comptaEcritures->removeElement($comptaEcriture);
             // set the owning side to null (unless already changed)
             if ($comptaEcriture->getExercice() === $this) {
                 $comptaEcriture->setExercice(null);

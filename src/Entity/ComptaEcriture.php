@@ -17,7 +17,7 @@ class ComptaEcriture
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaExercice", inversedBy="comptaJournals")
+     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaExercice", inversedBy="comptaEcritures")
      * @ORM\JoinColumn(nullable=false)
      */
     private $exercice;
@@ -38,13 +38,13 @@ class ComptaEcriture
     private $label;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaCompteExercice", inversedBy="comptaJournals")
+     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaCompteExercice", inversedBy="comptaEcritures")
      * @ORM\JoinColumn(nullable=false)
      */
     private $debit;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaCompteExercice", inversedBy="comptaJournals")
+     * @ORM\ManyToOne(targetEntity="App\Entity\ComptaCompteExercice", inversedBy="comptaEcritures")
      * @ORM\JoinColumn(nullable=false)
      */
     private $credit;

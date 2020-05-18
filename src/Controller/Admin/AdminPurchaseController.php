@@ -156,7 +156,6 @@ class AdminPurchaseController extends AbstractController
                 $prixMoyen = (int) round($prixMoyen);
                 // Ensuite, on met à jour le stock
                 $product->setStock($stockQte);
-                // dd($prixMoyen);
                 $product->setAveragePurchasePrice($prixMoyen);
                 $product->setUpdatedAt(new \DateTime());
               }
@@ -209,106 +208,13 @@ class AdminPurchaseController extends AbstractController
         return $this->redirectToRoute('provider.order.add.product', ['id' => $id]);
     }
 
-    /**
-     * @Route("/enregistrement-d-une-commande/{id}", name="provider.commande.details.save")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
-     * @param ProviderCommande $commande
-     */
-    public function save_provider_commande_details(Request $request, EntityManagerInterface $manager, ProviderCommande $commande)
-    {
-        $ids = $this->get('session')->get('idProductsProviderOrder');
-        $products = $manager->getRepository(Product::class)->findSelectedProducts($ids);
-        if($request->isMethod('post'))
-        {
-          $data = $request->request->all();
-          $token = $data['token'];
-          // return new Response(var_dump($data));
-          if($this->isCsrfTokenValid('achat', $token)){
-            // Soit les variables
-            //  - $qte les différentes quantités des différents produits et
-            //  - $price les différents prix unitaires
-            //  - $totalCharge, le coût total de toutes les charges
-            $qte = $data['quantityH'];
-            $price = $data['priceH'];
-            $totalGeneral = 0;
-            $totalCommande = 0;
-            foreach ($data['sousTotal'] as $key => $value) {
-              $totalCommande += $value;
-            }
-            $totalCharge = $commande->getAdditionalFees() + $commande->getTransport() + $commande->getDedouanement() + $commande->getCurrencyCost() + $commande->getForwardingCost();
-            $t = [];
-            // return new Response(var_dump([$totalCharge, $totalCommande]));
-            // Pour chaque produit de la commande, on doit enregistrer des informations (prix unitaire, qte ...)
-            foreach ($price as $priceKey => $priceValue) {
-              foreach ($qte as $key => $value) {
-                if($priceKey == $key){
-                  $prixTotal = 0;
-                  $part = 0;
-                  $product = $manager->getRepository(Product::class)->find($key);
-                  $prixTotal = $value * $priceValue;
-                  // On va commencer par calculer le prix de revient de chaque marchandise
-                  /* Pour se faire, on déternime d'abord le pourcentage du prix total de chaque
-                   * article (marchandise, ou encore produit) dans le prix total de la commande
-                   **/
-                  $part = ($prixTotal * 100) / $totalCommande;
-                  // On cherche maintenant le coût total des charges pour l'article actuel
-                  // (l'article dans la boucle foreach
-                  $chargeProduit = ($totalCharge * $part) / 100;
-                  // On divise maintenant cette somme ($chargeProduit) par le nombre de
-                  // produit de la commande.
-                  $chargeUnitaire = $chargeProduit / $value;
-
-                  // On enregistre d'abord les détails de commande
-                  $commandeProduit = new ProviderCommandeDetails();
-                  $commandeProduit->setCommande($commande);
-                  $commandeProduit->setProduct($product);
-                  $commandeProduit->setQuantity($value);
-                  $commandeProduit->setUnitPrice($priceValue);
-                  $commandeProduit->setSubtotal($prixTotal);
-                  $commandeProduit->setMinimumSellingPrice($priceValue + $chargeUnitaire);
-                  $totalGeneral += $prixTotal;
-                  $manager->persist($commandeProduit);
-                  // Ensuite, on met à jour le stock
-                  $stockQte = $product->getStock() + $value;
-                  $product->setStock($stockQte);
-                  $product->setUpdatedAt(new \DateTime());
-                  $t[] = ['prod' => $key, 'qte' => $value, 'price' => $priceValue, 'total' => $prixTotal];
-                }
-              }
-            }
-            // return new Response(var_dump($t));
-            $coutGlobal = $commande->getTotalFees() + $totalGeneral;
-            $commande->setGlobalTotal($coutGlobal);
-            $commande->setTotalAmount($totalGeneral);
-            $commande->setUpdatedAt(new \DateTime());
-            $commande->setUpdatedBy($this->getUser());
-
-            $this->get('session')->remove('idProductsProviderOrder');
-            try{
-              $manager->flush();
-              $this->addFlash('success', 'Enregistrement des détails de la commande fournisseur du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> résussi.');
-            } 
-            catch(\Exception $e){
-              $this->addFlash('danger', $e->getMessage());
-            }
-            return $this->redirectToRoute('purchase.selling.price', ['id' => $commande->getId()]);
-          }
-        }
-
-        return $this->render('Admin/Purchase/purchase-details-save.html.twig', [
-            'current'  => 'purchases',
-            'products' => $products,
-            'commande' => $commande
-        ]);
-    }
-
 
     /**
      * @Route("/prix-de-revient-des-marchandises-d-une-commande/{id}", name="purchase.selling.price")
      * @IsGranted("ROLE_APPROVISIONNEMENT")
      * @param ProviderCommande $commande
      */
-    public function prix_de_revient(Request $request, EntityManagerInterface $manager, ProviderCommande $commande)
+    public function prix_de_revient(Request $request, EntityManagerInterface $manager, ProviderCommande $commande, int $id)
     {
         // $products = $commande->getProviderCommandeDetails;
         if($request->isMethod('post'))
@@ -316,17 +222,29 @@ class AdminPurchaseController extends AbstractController
           $data = $request->request->all();
           $token = $data['token'];
           if($this->isCsrfTokenValid('prix_de_vente', $token)){
-            $price = $data['price'];
+            $prices = $data['price'];
             // return new Response(var_dump($price));
-            foreach ($price as $key => $value) {
+            foreach ($prices as $key => $value) {
               if ($value == 0) {
                 $this->addFlash('danger', 'Echec, la marge bénéficiaire ne doit pas être nulle.');
-                return $this->redirectToRoute('purchase.selling.price', ['id' => $commande->getId()]);
+                return $this->redirectToRoute('purchase.selling.price', ['id' => $id]);
               }
               else {
-                $product = $manager->getRepository(ProviderCommandeDetails::class)->find($key);
-                $fixedPrice = $product->getMinimumSellingPrice() + $value;
-                $product->setFixedAmount($fixedPrice);
+                $commandeItem = $manager->getRepository(ProviderCommandeDetails::class)->find($key);
+                $fixedPrice   = $commandeItem->getMinimumSellingPrice() + $value;
+                $commandeItem->setFixedAmount($fixedPrice);
+
+                // On va aussi déterminer le prix de vente minimum de tout les stock
+                $product   = $commandeItem->getProduct();
+                $quantity  = $commandeItem->getQuantity();
+                $stockAvantCommande = $product->getStock() - $quantity;
+
+                $produit1  = $stockAvantCommande * $product->getAverageSellingPrice();
+                $produit2  = $quantity * $fixedPrice;
+                $prixMoyen = ($produit1 + $produit2) / $product->getStock();
+                $prixMoyen = (int) round($prixMoyen);
+                $product->setAverageSellingPrice($prixMoyen);
+                $product->setAveragePackageSellingPrice($prixMoyen * $product->getUnite());
               }
             }
             try{

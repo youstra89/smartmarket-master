@@ -41,7 +41,9 @@
         <div class="card-body">
           <h5 class="card-title" style="margin: 0px">{{ item.label }}</h5>
           <h6 class="card-subtitle text-muted" style="margin: 0px">Type de dépense {{ i }}</h6>
-          <a href="{{ path('typedepense.edit', {id: item.id}) }}" class="card-link">Edition</a>
+          {% if item.typeSysteme == 0 %}
+            <a href="{{ path('typedepense.edit', {id: item.id}) }}" class="card-link">Edition</a>
+          {% endif %}
         </div>
       </div>
     {% endfor %}

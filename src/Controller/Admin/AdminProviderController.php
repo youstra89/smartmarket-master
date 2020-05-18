@@ -4,13 +4,16 @@ namespace App\Controller\Admin;
 
 use App\Entity\Provider;
 use App\Form\ProviderType;
+use App\Entity\ComptaExercice;
+use App\Controller\FonctionsController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+
+use App\Controller\FonctionsComptabiliteController;
+use App\Entity\ProviderSettlement;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
-use App\Controller\FonctionsController;
 
 /**
  * @Route("/admin/fournisseurs")
@@ -34,7 +37,7 @@ class AdminProviderController extends AbstractController
      * @Route("/add", name="provider.add")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function add(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions)
+    public function add(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions, FonctionsComptabiliteController $fonctionsComptables)
     {
         $provider = new Provider();
         $form = $this->createForm(ProviderType::class, $provider);
@@ -43,6 +46,21 @@ class AdminProviderController extends AbstractController
         $reference = $fonctions->generateReference("provider", $last_provider);
         if($form->isSubmitted() && $form->isValid())
         {
+          $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+          $nom = $provider->getNom();
+          $acompte = $provider->getAcompte();
+          $arriere = $provider->getArriereInitial();
+          if($acompte < 0 or $arriere < 0){
+            $this->addFlash('danger', "Les valeurs de <strong>Avances</strong> et / ou <strong>Arriéré</strong> doivent être supérieur à zéro");
+            return $this->redirectToRoute('provider.add');
+          }
+          // Lors de l'enregistrement d'un nouveau nouveau client, s'il y a des avances et ou des créances, il faut les ajouter aux ecritures comptables
+          if($acompte > 0){
+            $fonctionsComptables->ecritureDesAvancesOuDesCreancesInitiales($manager, $acompte, $exercice, new \DateTime(), $nom, true, "fournisseur");
+          }
+          if($arriere > 0){
+            $fonctionsComptables->ecritureDesAvancesOuDesCreancesInitiales($manager, $arriere, $exercice, new \DateTime(), $nom, false, "fournisseur");
+          }
           $provider->setCreatedBy($this->getUser());
           $manager->persist($provider);
           try{
@@ -89,5 +107,70 @@ class AdminProviderController extends AbstractController
           'provider' => $provider,
           'form'    => $form->createView()
         ]);
+    }
+
+
+    /**
+     * @Route("/enregistrement-arriere-initial/{id}", name="paiement_arriere_initial", requirements={"id"="\d+"})
+     *
+     * @param Request $request
+     * @param Provider $provider
+     * @return void
+     */
+    public function paiement_arriere_initial(Request $request, EntityManagerInterface $manager, Provider $provider, int $id, FonctionsComptabiliteController $fonctions)
+    {
+      if(0 > $provider->getArriereInitial() or null == $provider->getArriereInitial()){
+        $this->addFlash('danger', 'Aucun arriéré initial à payer pour ce fournisseur');
+        return $this->redirectToRoute('provider');  
+      }
+
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        // return new Response(var_dump($data));
+        if(!empty($data['token']))
+        {
+          $token = $data['token'];
+          if($this->isCsrfTokenValid('token_reglement_arriere_initial', $token)){
+            $date   = new \DateTime($data['date']);
+            $mode   = (int) $data['mode'];
+            $amount = (int) $data['amount'];
+            if($amount > $provider->getArriereInitial()){
+              $this->addFlash('danger', 'Le montant saisie est supérieur au total de la créance initiale');
+              return $this->redirectToRoute('paiement_arriere_initial', ["id" => $id]);  
+            }
+            $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+            $user = $this->getUser();
+            $settlement = new ProviderSettlement();
+            $settlement->setDate($date);
+            $settlement->setModePaiement($mode);
+            $settlement->setAmount($amount);
+            $settlement->setNumber(0);
+            $settlement->setReceiver($user);
+            $settlement->setCreatedBy($this->getUser());
+            $manager->persist($settlement);
+
+            $provider->setArriereInitial($provider->getArriereInitial() - $amount);
+            $fonctions->ecritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement, true);
+
+            try{
+              $manager->flush();
+              $this->addFlash('success', 'Enregistrement de règlement des arriérés initiaux de <strong>'.$provider->getNom().'</strong> réussi.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            } 
+            return $this->redirectToRoute('provider');
+          }
+          else{
+            $this->addFlash('danger', 'Formulaire invalide, veuillez réessayer');
+          }
+        }
+      }
+
+      return $this->render('Admin/Provider/paiement-arriere-initial.html.twig', [
+        'current'  => 'purchases',
+        'provider' => $provider
+      ]);
     }
 }

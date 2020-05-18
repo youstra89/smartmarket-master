@@ -469,7 +469,7 @@ class CustomerCommande
                 $total = $total + $settlement->getAmount();
             }
         }
-        return $this->total_amount - $total;
+        return $this->total_amount - $total -$this->remise;
     }
 
     public function getTva(): ?int

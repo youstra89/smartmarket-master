@@ -24,7 +24,7 @@ class Settlement
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\CustomerCommande", inversedBy="settlements")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true)
      */
     private $commande;
 
