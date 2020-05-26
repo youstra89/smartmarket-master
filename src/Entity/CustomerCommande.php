@@ -103,11 +103,6 @@ class CustomerCommande
     private $echeances;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ReturnedProduct", mappedBy="commande")
-     */
-    private $returnedProducts;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $status;
@@ -155,7 +150,6 @@ class CustomerCommande
         $this->created_at       = new \DateTime();
         $this->settlements      = new ArrayCollection();
         $this->echeances        = new ArrayCollection();
-        $this->returnedProducts = new ArrayCollection();
         $this->comptaEcriture = new ArrayCollection();
         $this->avoirs = new ArrayCollection();
     }
@@ -257,37 +251,6 @@ class CustomerCommande
             // set the owning side to null (unless already changed)
             if ($echeance->getCommande() === $this) {
                 $echeance->setCommande(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|ReturnedProduct[]
-     */
-    public function getReturnedProducts(): Collection
-    {
-        return $this->returnedProducts;
-    }
-
-    public function addReturnedProduct(ReturnedProduct $returnedProduct): self
-    {
-        if (!$this->returnedProducts->contains($returnedProduct)) {
-            $this->returnedProducts[] = $returnedProduct;
-            $returnedProduct->setCommande($this);
-        }
-
-        return $this;
-    }
-
-    public function removeReturnedProduct(ReturnedProduct $returnedProduct): self
-    {
-        if ($this->returnedProducts->contains($returnedProduct)) {
-            $this->returnedProducts->removeElement($returnedProduct);
-            // set the owning side to null (unless already changed)
-            if ($returnedProduct->getCommande() === $this) {
-                $returnedProduct->setCommande(null);
             }
         }
 
