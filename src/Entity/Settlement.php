@@ -105,6 +105,21 @@ class Settlement
         return $this->id;
     }
 
+    public function mode(): ?string
+    {
+        if($this->mode_paiement == 1)
+            $mode = "Caisse";
+        if($this->mode_paiement == 2)
+            $mode = "Virement";
+        if($this->mode_paiement == 3)
+            $mode = "Acompte";
+        if($this->mode_paiement == 4)
+            $mode = "Services Money";
+
+
+        return $mode;
+    }
+
     public function getDate(): ?\DateTimeInterface
     {
         return $this->date;

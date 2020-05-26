@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Mark;
+use App\Entity\Family;
 use App\Entity\Product;
 use App\Entity\Category;
 use Symfony\Component\Form\FormEvent;
@@ -10,8 +11,8 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Validator\Constraints\File;
 
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -54,6 +55,30 @@ class ProductType extends AbstractType
                     ])
                 ],
             ])
+            ->add('category',    EntityType::class, [
+                'required' => true,
+                'class'    => Category::class,
+                'choice_label' => 'name',
+                'label'    => 'Catégorie',
+                'multiple' => false,
+                'placeholder' => 'Sélectionner un élément'
+            ])
+            ->add('mark',        EntityType::class, [
+                'required' => false,
+                'class'    => Mark::class,
+                'choice_label' => 'label',
+                'label'    => 'Marque',
+                'multiple' => false,
+                'placeholder' => 'Sélectionner un élément'
+            ])
+            ->add('family',        EntityType::class, [
+                'required' => false,
+                'class'    => Family::class,
+                'choice_label' => 'label',
+                'label'    => 'Famille',
+                'multiple' => false,
+                'placeholder' => 'Sélectionner un élément'
+            ]);
         ;
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event)
@@ -63,23 +88,7 @@ class ProductType extends AbstractType
 
             if (!$product || null === $product->getId()) {
                 $form
-                ->add('reference',   TextType::class, ['label' => 'Référence', 'required' => true])
-                ->add('category',    EntityType::class, [
-                    'required' => true,
-                    'class'    => Category::class,
-                    'choice_label' => 'name',
-                    'label'    => 'Catégorie',
-                    'multiple' => false,
-                    'placeholder' => 'Sélectionner un élément'
-                ])
-                ->add('mark',        EntityType::class, [
-                    'required' => false,
-                    'class'    => Mark::class,
-                    'choice_label' => 'label',
-                    'label'    => 'Marque',
-                    'multiple' => false,
-                    'placeholder' => 'Sélectionner un élément'
-                ]);
+                ->add('reference',   TextType::class, ['label' => 'Référence', 'required' => true]);
             }
             else{
             }

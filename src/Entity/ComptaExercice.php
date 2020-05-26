@@ -93,6 +93,11 @@ class ComptaExercice
      */
     private $providerCommandes;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Avoir", mappedBy="exercice")
+     */
+    private $avoirs;
+
     public function __construct()
     {
         $this->acheve         = false;
@@ -102,6 +107,7 @@ class ComptaExercice
         $this->comptaCompteExercices = new ArrayCollection();
         $this->customerCommandes = new ArrayCollection();
         $this->providerCommandes = new ArrayCollection();
+        $this->avoirs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -359,6 +365,37 @@ class ComptaExercice
             // set the owning side to null (unless already changed)
             if ($providerCommande->getExercice() === $this) {
                 $providerCommande->setExercice(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Avoir[]
+     */
+    public function getAvoirs(): Collection
+    {
+        return $this->avoirs;
+    }
+
+    public function addAvoir(Avoir $avoir): self
+    {
+        if (!$this->avoirs->contains($avoir)) {
+            $this->avoirs[] = $avoir;
+            $avoir->setExercice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAvoir(Avoir $avoir): self
+    {
+        if ($this->avoirs->contains($avoir)) {
+            $this->avoirs->removeElement($avoir);
+            // set the owning side to null (unless already changed)
+            if ($avoir->getExercice() === $this) {
+                $avoir->setExercice(null);
             }
         }
 

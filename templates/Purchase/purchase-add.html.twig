@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Enregistrement d'une commande{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une commande</h2>
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  {{ include('Purchase/_purchase.html.twig') }}
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

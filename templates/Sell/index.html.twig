@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+  <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" /> -->
+  <link href="{{ asset('datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+{% endblock %}
+
+
+{% block title %}Les ventes{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ventes</h2>
+  <div class="btn-group btn-group">
+    <a href="{{ path('customer') }}" class="btn-sm btn-primary">Gestion des clients</a>
+    <a href="{{ path('preparing_sells') }}" class="btn-sm btn-primary">Commandes</a>
+    <a href="{{ path('unique_form_for_selling') }}" class="btn-sm btn-primary">Ajouter une vente</a>
+    <a href="{{ path('add_acompte_client') }}" class="btn-sm btn-primary">Enregistrer acompte client</a>
+  </div><br><br>
+
+  <div class="row row-bottom-padded-md">
+    {% if commandes|length != 0 %}
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <table  class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Référence</th>
+                <th>Date</th>
+                <th>Clients</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% for commande in commandes %}
+                {% set i = i + 1 %}
+                <tr>
+                  <td>{{ i }}</td>
+                  <td>{{ commande.reference }}</td>
+                  <td>{{ commande.date|date('d-m-Y') }}</td>
+                  <td>
+                    {% if commande.customer is not empty %}
+                      {{ commande.customer.firstname }} {{ commande.customer.lastname }} ({{ commande.customer.phoneNumber }})
+                    {% else %}
+                      ---
+                    {% endif %}
+                  </td>
+                  <td>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</td>
+                  <td>
+                    {% if commande.ended == 0 %}
+                      Pas soldé
+                    {% else %}
+                      Soldé
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{{ path('customer.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
+                    {# {% if is_granted('ROLE_SUPER_ADMIN') %}
+                      &nbsp;&nbsp;<a  href="{{ path('delete_commande', {'id': commande.id, '_csrf_token': csrf_token('delete_commande'), 'sells':'yes'}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer la commande N° {{ commande.reference }}" onclick="return confirm('Etes-vous sûrs de supprimer la commande N°{{ commande.reference }} ? Les règlements et échéances liés seront automatiquement supprimés aussi.')">
+                        <i class="icon-trash"></i>
+                      </a>
+                    {% endif %} #}
+                    {% if commande.ended == false %}
+                      &nbsp;&nbsp;<a href="{{ path('settlement', {id: commande.id}) }}"data-toggle="tooltip" title="Enregistrer un règlement"><i class="icon-plus"></i></a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% else %}
+      <p>Aucune commande client n'a été enregistrée pour le moment ou bien aucune commande ne correspond aux critères de recherche saisis.</p>
+    {% endif %}
+  </div>
+{% endblock %}
+
+
+
+{% block javascript %}
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/datatables-demo.js') }}"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script> -->
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+  <script>
+    $(document).ready(function() {
+      $('.js-example-basic-single').select2();
+    });
+  </script>
+{% endblock %}

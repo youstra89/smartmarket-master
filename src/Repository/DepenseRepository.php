@@ -30,7 +30,7 @@ class DepenseRepository extends ServiceEntityRepository
         ;
     }
 
-    public function monthSells($date)
+    public function depense_mensuelle($date)
     {
         $manager = $this->getEntityManager()->getConnection();
         $requete_eentrees = 'SELECT SUM(d.amount) AS somme FROM depense d WHERE d.date_depense LIKE :date AND d.is_deleted = :status ORDER BY d.date_depense ASC;';

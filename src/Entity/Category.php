@@ -23,7 +23,7 @@ class Category
 
     /**
      * @Assert\NotBlank()
-     * @Assert\Length(min=3, max=255, minMessage="Le nombre de caractères saisis est trop court")
+     * @Assert\Length(min=1, max=255, minMessage="Le nombre de caractères saisis est trop court")
      * @ORM\Column(type="string", length=255)
      */
     private $name;

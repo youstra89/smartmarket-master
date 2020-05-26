@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Ajout de marque{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ajout de marque</h2>
+  {{ include('Mark/_mark.html.twig') }}
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

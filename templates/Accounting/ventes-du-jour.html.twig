@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Les ventes du {{ dateVente }}{% endblock %}
+
+
+{% block notifications %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary sm">
+    <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
+  </a><br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Les ventes du <strong>{{ dateVente }}</strong></h2>
+  <div class="table-responsive">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          <th>Montant HT</th>
+          <th>Montant TTC</th>
+          <th>Montant Net à payer</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set i = 0 %}
+        {% set totalHT = 0 %}
+        {% set totalTTC = 0 %}
+        {% set totalNet = 0 %}
+        {% for item in ventes %}
+          {% set totalHT = totalHT + item.totalAmount %}
+          {% set totalTTC = totalTTC + item.montantTtc %}
+          {% set totalNet = totalNet + item.netAPayer %}
+          {% set i = i + 1 %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ item.date|date('d-m-Y') }}</td>
+            <td>{{ item.totalAmount|number_format(0, ',', ' ') }} F</td>
+            <td>{{ item.montantTtc|number_format(0, ',', ' ') }} F</td>
+            <td>{{ item.netAPayer|number_format(0, ',', ' ') }} F</td>
+            <td>
+              <a href="{{ path('customer.order.details', {id: item.id}) }}" class=" circle arrow small">Plus de détails</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="2">Total</th>
+          <th>{{ totalHT|number_format(0, ',', ' ') }} F</th>
+          <th>{{ totalTTC|number_format(0, ',', ' ') }} F</th>
+          <th>{{ totalNet|number_format(0, ',', ' ') }} F</th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+{% endblock %}

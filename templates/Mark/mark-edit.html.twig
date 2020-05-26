@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Modification de marque - {{ mark.label }}{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="nimate-box" data-animate-effect="fadeInLeft">Modification de la marque <strong>{{ mark.label }}</strong> </h2>
+  {{ include('Mark/_mark.html.twig', {button: 'Editer'}) }}
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

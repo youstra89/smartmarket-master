@@ -51,7 +51,7 @@
         <select name="products" id="products" class="form-control mb-4 js-example-basic-single">
           <option value="">Sélectionnez un produit</option>
           {% for product in products if product.stock > 0 %}
-            <option value="{{ product.id }}">{{ product.label }}</option>
+            <option value="{{ product.id }}">{{ product.reference }} --- {{ product.label }}</option>
           {% endfor %}
         </select>
       </div>
@@ -93,12 +93,10 @@
         <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
           <option value="">Sélectionner un client</option>
           {% for customer in customers %}
-            <option value="{{ customer.id }}">{{ customer.firstname }} {{ customer.lastname }} {{ customer.phoneNumber }}</option>
+            <option value="{{ customer.id }}">{{ customer.reference }} {{ customer.nom }} {{ customer.phoneNumber }}</option>
           {% endfor %}
         </select>
       </div>
-    {# </div>
-    <div class="row"> #}
       <div class="form-group col-md-2">
         <label for="date">Date de la commande</label><br>
         <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}" required>
@@ -154,6 +152,24 @@
         </tfoot>
       </table>
     </div>
+    <hr style="border: 3px;">
+    <h3>Règlement</h3>
+    <div class="row">
+      <div class="col-md-6">
+        <label for="mode">Mode de paiement</label>
+        <select name="mode" id="mode" class="form-control" required>
+          <option value="1" selected>Espèce</option>
+          <option value="2">Virement</option>
+          <option value="3">Acompte client</option>
+          <option value="4">Services Mobile Money</option>
+          <option value="5">Créances</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="amount">Montant règlement</label>
+        <input type="integer" name="amount" class="form-control" required>
+      </div>
+    </div><br>
     <input type="hidden" name="token" value="{{ csrf_token('vente') }}"/>
     <input type="submit" class="btn-default btn-lg" id="save" value="Enregistrer" onclick="submitForm(this);">
     {# <button class="btn-default btn-lg" id="save">{{ button|default('Enregistrer') }}</button><br><br> #}
@@ -162,14 +178,6 @@
 
 
 {% block javascript %}
-  <script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
-  <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
-  <script>
-    // const routes = require('../../public/js/fos_js_routes.json');
-    // import Routing from '../../vendor/friendsofsymfony/jsrouting-bundle/Resources/public/js/router.min.js';
-
-    // Routing.setRoutingData(routes);
-  </script>
   <script>
     $(document).ready(function(){
       var total = $("#total").val();
@@ -179,8 +187,6 @@
       $('#products').on('change',function(e){
         $.ajax({
           url: '/ventes/select-product/' + this.value,
-          // url: "{{ path('get_product', {'id': " + this.value + "})|escape('js') }}",
-          url: Routing.generate('get_product', { id: this.value }, true),
           type: 'GET',
           dataType: 'json',
           success: function (result) { 
@@ -203,19 +209,21 @@
               $("#notif p").text('');
           },
           error: function (xhr, status, error) {
+            $("#products").val(null);
+            $("#price").val(null);
+            $("#quantity").val(1);
+            $("#notif p").text('Désolé ! Le serveur de données a rencontré un problème.');
             console.log(error)
           }
         });
       });
 
 
-      $("#reference").keyup(function(){
+      $("#reference").on("keyup change paste input", function(){
         if($(this).val().length >= 5){
           var ref = $(this).val();
           $.ajax({
             url: '/ventes/select-product-by-reference/' + ref,
-            // url: "{{ path('get_product_by_reference', {'reference': " + ref + "})|escape('js') }}",
-            url: Routing.generate('get_product', { reference: ref }, true),
             type: 'GET',
             dataType: 'json',
             success: function (result) { 
@@ -247,6 +255,10 @@
               }
             },
             error: function (xhr, status, error) {
+              $("#products").val(null);
+              $("#price").val(null);
+              $("#quantity").val(1);
+              $("#notif p").text('Référence (' + ref + ') incorrecte.');
               console.log(error)
             }
           });
@@ -266,16 +278,16 @@
 
       // A chaque fois que la quantité change
       $('#add_product').on('click', function(e){
-        var id                  = $("#productId").val();
+        var id                  = parseInt($("#productId").val());
         var reference           = $("#reference").val();
-        var unite               = $("#nombreUnite").val();
-        var venduPar            = $("#venduPar").val();
+        var unite               = parseInt($("#nombreUnite").val());
+        var venduPar            = parseInt($("#venduPar").val());
         var label               = $("#productLabel").val();
-        var stock               = $("#productStock").val();
-        var price               = $("#price").val();
-        var quantity            = $("#quantity").val();        
-        var averageSellingPrice = $("#averageSellingPrice").val();        
-        var averagePackageSellingPrice = $("#averagePackageSellingPrice").val();        
+        var stock               = parseInt($("#productStock").val());
+        var price               = parseInt($("#price").val());
+        var quantity            = parseInt($("#quantity").val());        
+        var averageSellingPrice = parseInt($("#averageSellingPrice").val());        
+        var averagePackageSellingPrice = parseInt($("#averagePackageSellingPrice").val());        
         // console.log(averageSellingPrice, averagePackageSellingPrice);
         
         if(price == undefined || price == null || price == 0){
@@ -306,11 +318,11 @@
           $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');
         }
         else{
-          if(parseInt(quantity) <= parseInt(stock)){
+          if(quantity <= stock){
             productsId.push(id);
             console.log(productsId);
             var sousTotal = quantity * price; 
-            var vente_par = unite == 1 ? 1 : $("#venduPar").val();               
+            var vente_par = unite == 1 ? 1 : venduPar;               
             // $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td></td></tr>');
             $("#myTable tbody tr:last").after('<tr id="tableLineId' + id + '"><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="setQuantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="setPrice" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" id="ventePar[' + id + ']" name="ventePar[' + id + ']" value="' + vente_par + '"><input type="hidden" name="products[]" value="' + id + '"></td><td><i class="icon-trash" id="' + id + '" title="Retirer ' + label + ' de la vente en cours" onclick="$.fn.deleteProduct(' + id + ')"></i></td></tr>');
             $("#products").val(null);
@@ -340,13 +352,13 @@
       // A chaque fois que le prix change
       $('.price').on('input change keyup',function(e){
         $("#notif p").text('');
-        var id = $(this).attr("name");
-        var price = $(this).val();
-        var priceH = document.getElementById('priceH[' + id + ']');
-        var qte = document.getElementById('quantity[' + id + ']').value;
-        var sousTotal = document.getElementById('sousTotal[' + id + ']');
-        var total = document.getElementById('total');
-        priceH.value = price;
+        var id          = $(this).attr("name");
+        var price       = parseInt($(this).val());
+        var priceH      = document.getElementById('priceH[' + id + ']');
+        var qte         = document.getElementById('quantity[' + id + ']').value;
+        var sousTotal   = document.getElementById('sousTotal[' + id + ']');
+        var total       = document.getElementById('total');
+        priceH.value    = price;
         sousTotal.value = parseFloat(qte) * parseFloat(price);
         var st = $('.sousTotal');
         var tt = 0;
@@ -363,11 +375,11 @@
         var id = $(this).attr("name");
         console.log(id);
         
-        var qte = $(this).val();
-        var quantityH = document.getElementById('quantityH[' + id + ']');
-        var price = document.getElementById('price[' + id + ']').value;
-        var sousTotal = document.getElementById('sousTotal[' + id + ']');
-        var total = document.getElementById('total');
+        var qte         = $(this).val();
+        var quantityH   = document.getElementById('quantityH[' + id + ']');
+        var price       = document.getElementById('price[' + id + ']').value;
+        var sousTotal   = document.getElementById('sousTotal[' + id + ']');
+        var total       = document.getElementById('total');
         quantityH.value = qte;
         sousTotal.value = parseFloat(price) * parseFloat(qte);
         var st = $('.sousTotal');
@@ -533,4 +545,5 @@
       $('.js-example-basic-single').select2();
     });
   </script>
+  <script src="{{ asset('build/app.js') }}"></script>
 {% endblock %}

@@ -20,71 +20,34 @@ class CustomerCommandeRepository extends ServiceEntityRepository
         parent::__construct($registry, CustomerCommande::class);
     }
 
-    public function commandesClients(CustomerCommandeSearch $search)
+    // public function commandesClients(CustomerCommandeSearch $search)
+    public function commandesClients(int $exerciceId)
     {
       $query = $this->createQueryBuilder('c')
+                    ->join('c.exercice', 'e')
+                    ->andWhere('e.id = :exerciceId')
                     ->andWhere('c.status = :status')
                     ->andWhere('c.is_deleted = false')
+                    ->setParameter('exerciceId', $exerciceId)
                     ->setParameter('status', "LIVREE")
                     ->orderBy('c.date', 'DESC')
                     ;
 
-      if($search->getCustomer()){
-        $query = $query
-          ->andWhere('c.customer = :customer')
-          ->andWhere('c.is_deleted = :status')
-          ->setParameter('status', false)
-          ->setParameter('customer', $search->getCustomer()->getId());
-      }
 
-      if($search->getProducts()->count() > 0){
-        foreach($search->getProducts() as $k => $option){
-          $query = $query
-          ->andWhere(":product$k MEMBER OF clt.customerCommandeDetails")
-          ->setParameter("product$k", $option);
-        }
-      }
-
-      if($search->getReference()){
-        $query = $query
-          ->andWhere('c.reference LIKE :reference')
-          ->andWhere('c.is_deleted = :status')
-          ->setParameter('status', false)
-          ->setParameter('reference', '%'.$search->getReference().'%');
-      }
-
-      return $query->getQuery();
+      return $query->getQuery()->getResult();
     }
 
-    public function commandesClientsAPreparer(CustomerCommandeSearch $search)
+    public function commandesClientsAPreparer()
     {
-      $query = $this->createQueryBuilder('c')
+      return $this->createQueryBuilder('c')
                     ->andWhere('c.status = :status')
                     ->andWhere('c.is_deleted = false')
                     ->setParameter('status', "ENREGISTREE")
                     ->orderBy('c.date', 'DESC')
-                    ;
-
-      if($search->getCustomer()){
-        $query = $query
-          ->andWhere('c.customer = :customer')
-          ->andWhere('c.is_deleted = :status')
-          ->setParameter('status', false)
-          ->setParameter('customer', $search->getCustomer()->getId());
-      }
-
-      if($search->getProducts()->count() > 0){
-        foreach($search->getProducts() as $k => $option){
-          $query = $query
-          ->andWhere(":product$k MEMBER OF clt.customerCommandeDetails")
-          ->setParameter("product$k", $option);
-        }
-      }
-
-      return $query->getQuery();
+                    ->getQuery();
     }
 
-    public function dayCommande($date)
+    public function venteDuJour($date)
     {
       return $this->createQueryBuilder('c')
           ->andWhere('c.date LIKE :date')
@@ -111,10 +74,42 @@ class CustomerCommandeRepository extends ServiceEntityRepository
         ;
     }
 
-    public function monthlySelling($dateActuelle)
+    public function montantTotalHorsTaxeDeToutesLesVenteDUnMois($dateActuelle)
     {
         return $this->createQueryBuilder('c')
             ->select('SUM(c.total_amount), c.date')
+            ->where('c.date LIKE :dateActuelle')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('c.status = :commandeStatus')
+            ->groupBy('c.date')
+            ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function montantNetAPayerDeToutesLesVenteDUnMois($dateActuelle)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('SUM(c.net_a_payer), c.date')
+            ->where('c.date LIKE :dateActuelle')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('c.status = :commandeStatus')
+            ->groupBy('c.date')
+            ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function totalDesRemiseDeToutesLesVenteDUnMois($dateActuelle)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('SUM(c.remise), c.date')
             ->where('c.date LIKE :dateActuelle')
             ->andWhere('c.is_deleted = :status')
             ->andWhere('c.status = :commandeStatus')

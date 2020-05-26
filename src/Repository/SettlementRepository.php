@@ -158,6 +158,23 @@ class SettlementRepository extends ServiceEntityRepository
     }
 
 
+    public function toutesLesEntreesDuJour($dateActuelle)
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.commande', 'c')
+            ->where('s.date LIKE :dateActuelle')
+            ->andWhere('s.is_deleted = :status')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('c.status = :commandeStatus')
+            ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
     public function versementsDuJour($date)
     {
       return $this->createQueryBuilder('s')

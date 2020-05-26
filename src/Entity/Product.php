@@ -86,7 +86,7 @@ class Product
 
     // * @ORM\Column(type="integer", unsigned=true)
     /**
-     * @ORM\Column(columnDefinition="integer unsigned")
+     * @ORM\Column(columnDefinition="float")
      */
     private $stock;
 
@@ -248,12 +248,12 @@ class Product
         return $stock;
     }
 
-    public function getStock(): ?int
+    public function getStock(): ?float
     {
         return $this->stock;
     }
 
-    public function setStock(int $stock): self
+    public function setStock(float $stock): self
     {
         $this->stock = $stock;
 

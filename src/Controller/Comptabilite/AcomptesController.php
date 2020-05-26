@@ -92,7 +92,7 @@ class AcomptesController extends AbstractController
           }
         }
       }
-      return $this->render('Admin/Comptabilite/enregistrer-acompte-client.html.twig', [
+      return $this->render('Comptabilite/enregistrer-acompte-client.html.twig', [
         'current'   => 'accounting',
         'customers'   => $customers,
       ]);
@@ -163,7 +163,7 @@ class AcomptesController extends AbstractController
           }
         }
       }
-      return $this->render('Admin/Comptabilite/enregistrer-acompte-fournisseur.html.twig', [
+      return $this->render('Comptabilite/enregistrer-acompte-fournisseur.html.twig', [
         'current'   => 'accounting',
         'providers' => $providers,
       ]);

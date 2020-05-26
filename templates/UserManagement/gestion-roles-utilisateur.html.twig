@@ -60,7 +60,7 @@
                   </div>
                 </td>
                 <td>
-                  Avec ce rôle, l'utilisateur peut gérer toute la comptabilité du magasin
+                  Avec ce rôle, l'utilisateur peut avoir accès à certaines informations de la comptabilité du magasin.
                 </td>
               </tr>
               <tr>
@@ -72,6 +72,28 @@
                 </td>
                 <td>
                   Dispose des rôles ROLE_VENTE, ROLE_APPROVISIONNEMENT. Peut aussi ajouter et éditer des produits. Il peut aussi enregistrer des échéances de paiement
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" name="roles[]" id="customSwitch5" value="ROLE_STOCK_INITIAL" {% if 'ROLE_STOCK_INITIAL' in user.roles %} checked {% endif %}>
+                    <label class="custom-control-label" for="customSwitch5">ROLE_STOCK_INITIAL</label>
+                  </div>
+                </td>
+                <td>
+                  Permettre la modification du stock initial de produits.
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" name="roles[]" id="customSwitch6" value="ROLE_SOLDE_INITIAL" {% if 'ROLE_SOLDE_INITIAL' in user.roles %} checked {% endif %}>
+                    <label class="custom-control-label" for="customSwitch6">ROLE_SOLDE_INITIAL</label>
+                  </div>
+                </td>
+                <td>
+                  Permettre la saisie des créances, arriérés, avances clients et fournisseurs après enregistrement d'un client ou d'un fournisseur
                 </td>
               </tr>
             </tbody>

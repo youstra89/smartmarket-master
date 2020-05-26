@@ -22,7 +22,7 @@ class CustomerCommandeDetails
     private $unit_price;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $quantity;
 
@@ -83,6 +83,11 @@ class CustomerCommandeDetails
      */
     private $sold_by;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $benefice;
+
 
     public function __construct()
     {
@@ -108,12 +113,12 @@ class CustomerCommandeDetails
         return $this;
     }
 
-    public function getQuantity(): ?int
+    public function getQuantity(): ?float
     {
         return $this->quantity;
     }
 
-    public function setQuantity(int $quantity): self
+    public function setQuantity(float $quantity): self
     {
         $this->quantity = $quantity;
 
@@ -248,6 +253,18 @@ class CustomerCommandeDetails
     public function setSoldBy(int $sold_by): self
     {
         $this->sold_by = $sold_by;
+
+        return $this;
+    }
+
+    public function getBenefice(): ?int
+    {
+        return $this->benefice;
+    }
+
+    public function setBenefice(int $benefice): self
+    {
+        $this->benefice = $benefice;
 
         return $this;
     }

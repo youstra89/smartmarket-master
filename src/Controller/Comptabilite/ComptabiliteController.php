@@ -72,7 +72,8 @@ class ComptabiliteController extends AbstractController
         // dd($resultat);
 
         $exercices = $manager->getRepository(ComptaExercice::class)->findAll();
-        return $this->render('Admin/Comptabilite/index.html.twig', [
+        $exercices = array_reverse($exercices);
+        return $this->render('Comptabilite/index.html.twig', [ 
           'current'            => 'accounting',
           'exercices'          => $exercices,
           'creancesClients'    => $creancesClients,
@@ -92,7 +93,7 @@ class ComptabiliteController extends AbstractController
 
         $comptes = $manager->getRepository(ComptaCompte::class)->findAll();
 
-        return $this->render('Admin/Comptabilite/gestion-des-comptes.html.twig', [
+        return $this->render('Comptabilite/gestion-des-comptes.html.twig', [
           'current' => 'accounting',
           'comptes' => $comptes,
         ]);
@@ -121,7 +122,7 @@ class ComptabiliteController extends AbstractController
         return $this->redirectToRoute('gestion_comptes');
       }
         
-      return $this->render('Admin/Comptabilite/compte-add.html.twig', [
+      return $this->render('Comptabilite/compte-add.html.twig', [
         'current' => 'accounting',
         'form'    => $form->createView()
       ]);
@@ -148,7 +149,7 @@ class ComptabiliteController extends AbstractController
         return $this->redirectToRoute('gestion_comptes');
       }
         
-      return $this->render('Admin/Comptabilite/compte-edit.html.twig', [
+      return $this->render('Comptabilite/compte-edit.html.twig', [
         'current' => 'accounting',
         'compte'  => $compte,
         'form'    => $form->createView()
@@ -162,7 +163,7 @@ class ComptabiliteController extends AbstractController
     public function exercices(Request $request, EntityManagerInterface $manager)
     {
       $exercice = $manager->getRepository(ComptaExercice::class)->findAll();
-      return $this->render('Admin/Comptabilite/info-exercice.html.twig', [
+      return $this->render('Comptabilite/info-exercice.html.twig', [
         'current'  => 'accounting',
         'exercice' => $exercice
       ]);
@@ -258,7 +259,7 @@ class ComptabiliteController extends AbstractController
           return $this->redirectToRoute('etat_entreprise');
         }
       }
-      return $this->render('Admin/Comptabilite/enregistrer-bilan-ouverture.html.twig', [
+      return $this->render('Comptabilite/enregistrer-bilan-ouverture.html.twig', [
         'current'        => 'accounting',
         'comptesActifs'  => $comptesActifs,
         'comptesPassifs' => $comptesPassifs,
@@ -277,7 +278,7 @@ class ComptabiliteController extends AbstractController
       $classesActifs  = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "actif");
       $classesPassifs = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "passif");
 
-      return $this->render('Admin/Comptabilite/bilan-initial.html.twig', [
+      return $this->render('Comptabilite/bilan-initial.html.twig', [
         'current'        => 'accounting',
         'exercice'        => $exercice,
         'comptesActifs'  => $comptesActifs,
@@ -300,7 +301,7 @@ class ComptabiliteController extends AbstractController
       $sommeProduits  = $manager->getRepository(ComptaCompteExercice::class)->sommeDesComptesResultatExercice(2, $id);
       // dump($sommeCharges);
 
-      return $this->render('Admin/Comptabilite/bilan-final.html.twig', [
+      return $this->render('Comptabilite/bilan-final.html.twig', [
         'current'        => 'accounting',
         'exercice'        => $exercice,
         'comptesActifs'  => $comptesActifs,
@@ -320,7 +321,7 @@ class ComptabiliteController extends AbstractController
       $classesCharges  = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("resultat", "charges");
       $classesProduits = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("resultat", "produits");
 
-      return $this->render('Admin/Comptabilite/resultat-exercice.html.twig', [
+      return $this->render('Comptabilite/resultat-exercice.html.twig', [
         'current'         => 'accounting',
         'exercice'        => $exercice,
         'comptesCharges'  => $comptesCharges,
@@ -336,7 +337,7 @@ class ComptabiliteController extends AbstractController
     public function journal_d_un_exercice(ComptaExercice $exercice, int $id, EntityManagerInterface $manager)
     {
       $ecritures = $manager->getRepository(ComptaEcriture::class)->ecrituresDeLExercice($exercice);
-      return $this->render('Admin/Comptabilite/journal.html.twig', [
+      return $this->render('Comptabilite/journal.html.twig', [
         'current'   => 'accounting',
         'exercice'  => $exercice,
         'ecritures' => $ecritures,
@@ -417,7 +418,7 @@ class ComptabiliteController extends AbstractController
       $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
       $reference = $fonctions->generateReferenceEcriture($manager);
       $comptes  = $manager->getRepository(ComptaCompteExercice::class)->comptesDuBilanOuDuResultat("tous", null, $id);
-      return $this->render('Admin/Comptabilite/ecrire-dans-journal.html.twig', [
+      return $this->render('Comptabilite/ecrire-dans-journal.html.twig', [
         'current'  => 'accounting',
         'exercice' => $exercice,
         'reference' => $reference,

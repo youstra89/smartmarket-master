@@ -72,6 +72,7 @@
 						<li class="{% if current == 'products' %}fh5co-active{% endif %}"><a href="{{ path('product') }}">Marchandises</a></li>
 						{% if is_granted('ROLE_VENTE') %}
 						    <li class="{% if current == 'sells' %}fh5co-active{% endif %}"><a href="{{ path('sell') }}">Ventes</a></li>
+						    <li class="{% if current == 'avoir' %}fh5co-active{% endif %}"><a href="{{ path('avoir') }}">Avoir</a></li>
 						{% endif %}	
 						{% if is_granted('ROLE_APPROVISIONNEMENT') %}
 							<li class="{% if current == 'purchases' %}fh5co-active{% endif %}"><a href="{{ path('purchase') }}">Commandes</a></li>
@@ -81,7 +82,7 @@
 						{% endif %}	
 						{% if is_granted('ROLE_SUPER_ADMIN') %}
 							<li class="{% if current == 'users' %}fh5co-active{% endif %}"><a href="{{ path('users') }}">Utilisateurs</a></li>
-							<li class="{% if current == 'info' %}fh5co-active{% endif %}"><a href="{{ path('informations') }}">Admin</a></li>
+							<li class="{% if current == 'info' %}fh5co-active{% endif %}"><a href="{{ path('informations') }}">Paramètres</a></li>
 						{% endif %}	
 						<li class="{% if current == 'account' %}fh5co-active{% endif %}"><a href="{{ path('profile') }}">Mon compte</a></li>
 						<li><a href="{{ path('logout') }}">Déconnexion</a></li>
@@ -158,19 +159,21 @@
 									</div>
 								</div>
 							</a>
-							<a href="{{ path('accounting') }}">
-								<div class="col-md-6">
-									<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
-										<div class="fh5co-icon">
-											<i class="icon-params"></i>
-										</div>
-										<div class="fh5co-text">
-											<h3>Comptabilité</h3>
-											<p>Suivez toutes les entrées de devises dans</p>
+							{% if is_granted('ROLE_COMPTABLE') %}
+								<a href="{{ path('accounting') }}">
+									<div class="col-md-6">
+										<div class="fh5co-feature animate-box" data-animate-effect="fadeInLeft">
+											<div class="fh5co-icon">
+												<i class="icon-params"></i>
+											</div>
+											<div class="fh5co-text">
+												<h3>Comptabilité</h3>
+												<p>Suivez toutes les entrées de devises dans</p>
+											</div>
 										</div>
 									</div>
-								</div>
-							</a>
+								</a>
+							{% endif %}
 						</div>
 					</div>
 				{% endblock %}

@@ -163,6 +163,11 @@ class User implements UserInterface, \Serializable
      */
     private $connexions;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Activite", mappedBy="user")
+     */
+    private $activites;
+
 
     public function __construct()
     {
@@ -172,6 +177,7 @@ class User implements UserInterface, \Serializable
         $this->customerCommandes = new ArrayCollection();
         $this->settlements       = new ArrayCollection();
         $this->connexions = new ArrayCollection();
+        $this->activites = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -591,6 +597,37 @@ class User implements UserInterface, \Serializable
             // set the owning side to null (unless already changed)
             if ($connexion->getUser() === $this) {
                 $connexion->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Activite[]
+     */
+    public function getActivites(): Collection
+    {
+        return $this->activites;
+    }
+
+    public function addActivite(Activite $activite): self
+    {
+        if (!$this->activites->contains($activite)) {
+            $this->activites[] = $activite;
+            $activite->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeActivite(Activite $activite): self
+    {
+        if ($this->activites->contains($activite)) {
+            $this->activites->removeElement($activite);
+            // set the owning side to null (unless already changed)
+            if ($activite->getUser() === $this) {
+                $activite->setUser(null);
             }
         }
 

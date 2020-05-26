@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Modification d'un pays - {{ country.name }}{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Modification d'un pays - <strong>{{ country.name }}</strong> </h2>
+  {{ include('Country/_country.html.twig', {button: 'Editer'}) }}
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+      // disable the button
+      btn.disabled = true;
+      // submit the form    
+      btn.form.submit();
+    }
+  </script>
+{% endblock %}

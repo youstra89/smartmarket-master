@@ -6,12 +6,17 @@ security:
                 class: App\Entity\User
                 property: username
     role_hierarchy: 
+        ROLE_SOLDE_INITIAL:     ROLE_USER
+        ROLE_STOCK_INITIAL:     ROLE_USER
         ROLE_COMPTABLE:         ROLE_USER
         ROLE_VENTE:             ROLE_USER
         ROLE_APPROVISIONNEMENT: ROLE_USER
         ROLE_ADMIN:             [ROLE_VENTE, ROLE_APPROVISIONNEMENT]
-        ROLE_SUPER_ADMIN:       [ROLE_ADMIN, ROLE_COMPTABLE, ROLE_APPROVISIONNEMENT, ROLE_ALLOWED_TO_SWITCH]
+        ROLE_SUPER_ADMIN:       [ROLE_ADMIN, ROLE_COMPTABLE, ROLE_APPROVISIONNEMENT, ROLE_SOLDE_INITIAL, ROLE_STOCK_INITIAL, ROLE_ALLOWED_TO_SWITCH]
     firewalls:
+        # js_router:
+        #     pattern: ^/(js\/routing)
+        #     security: false
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false

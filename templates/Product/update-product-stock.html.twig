@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Mise à jour du stock de {{ product.label }}{% endblock %}
+
+
+{% block notifications %}{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Mise à jour du stock de <strong>{{ product.label }}</strong></h2>
+  <form action="" method="post">
+    <div class="row form-group">
+      <div class="col-md-4">
+        <label for="stock">Stock</label>
+        <input type="number" name="stock" id="stock" value="{{ product.stock }}" class="form-control" required>
+      </div>
+      <div class="col-md-8">
+        <label for="motif">Motif de la mise à jour</label>
+        <input type="text" name="motif" id="motif" value="" class="form-control" placeholder="Pourquoi voulez-vous modifier le stock ?" required>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+		    <input type="hidden" name="token" value="{{ csrf_token('update_product_stock') }}"/>
+        <button class="btn-lg btn-info">Valider</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+
+{% block title %}
+  Paiement de créance initiale de {{ customer.nom }}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+
+{% block body %}
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Mise à jour de créance initiale de <strong>{{ customer.nom }}</strong></h2>
+  <p>Reste à payer de créance initiale <strong>{{ customer.creanceInitiale|number_format(0, ',', ' ') }} F</strong></p>
+  <form class="" action="" method="post">
+    <div class="row">
+      <div class="col-md-4">
+        <label for="mode">Mode de paiement</label>
+        <select name="mode" id="mode" class="form-control" required>
+          <option value="1">Espèce</option>
+          <option value="2">Virement</option>
+          {% if customer.acompte > 0 %}
+            <option value="3">Acompte client</option>
+          {% endif %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="date">Date de règlement</label>
+        <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label for="date">Montant règlement</label>
+        <input type="integer" name="amount" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        {% if app.request.attributes.get('from') is defined %}
+          <input type="hidden" name="from" value="accounting">
+        {% endif %}
+      </div>
+    </div><br>
+    <div class="row">
+      <div class="col-md-4">
+        <input type="hidden" name="token" value="{{ csrf_token('token_reglement_creance_initiale') }}">
+        <button type="submit" name="button" class="btn-lg btn-primary" onclick="submitForm(this);">Enregistrer</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
+
+
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

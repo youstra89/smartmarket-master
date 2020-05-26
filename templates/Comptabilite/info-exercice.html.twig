@@ -1,0 +1,179 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Index Comptabilité{% endblock %}
+
+
+{% block stylesheets %}
+<style>
+  span{
+      font-size:15px;
+  }
+
+  .box{
+      padding:60px 0px;
+  }
+
+  .box-part{
+      background:#E0E0E0;
+      border-radius:0;
+      padding:60px 10px;
+      margin:30px 0px;
+  }
+  .text{
+      margin:20px 0px;
+  }
+
+  .fa{
+      color:#4183D7;
+  }
+</style>
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Comptabilité détaillée</h2>
+  <div class="row">	 
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Comptes</h4>
+        </div>        
+        <div class="text">
+          <span>Gérer les comptes (bilan et résultats)</span>
+        </div>           
+        <a href="{{ path('gestion_comptes') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Bilans initiaux</h4>
+        </div>        
+        <div class="text">
+          <span>Bilans d'ouverture de tous les mois.</span>
+        </div>          
+        <a href="{{ path('monthly.accounting') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Bilans finaux</h4>
+        </div>        
+        <div class="text">
+          <span>Bilans de clôture d'exercice de tous les mois.</span>
+        </div>         
+        <a href="{{ path('echeances') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>
+        </div>
+    </div>
+  </div>
+  <div class="row">   
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Journal</h4>
+        </div>        
+        <div class="text">
+          <span>Voir/Ecrire dans le journal.</span>
+        </div>         
+        <a href="{{ path('accounting_arriere') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Grand livre</h4>
+        </div>        
+        <div class="text">
+          <span>Le grand livre des comptes du bilan</span>
+        </div>     
+        <a href="{{ path('accounting_creance') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>         
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Balance</h4>
+        </div>        
+        <div class="text">
+          <span>Balance des comptes</span>
+        </div>     
+        <a href="{{ path('etat_entreprise') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>         
+      </div>
+    </div>
+  </div>	
+  <div class="row">   
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Résultat</h4>
+        </div>        
+        <div class="text">
+          <span>Les résultats de tous les mois d'exercice.</span>
+        </div>         
+        <a href="{{ path('accounting_arriere') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">   
+      <div class="box-part text-center">      
+        <i class="fa fa-instagram fa-3x" aria-hidden="true"></i>         
+        <div class="title">
+          <h4>Graphique</h4>
+        </div>        
+        <div class="text">
+          <span>Quelques grafiques pour un suivi dans le temps</span>
+        </div>     
+        <a href="{{ path('accounting_creance') }}" class="btn-primary btn-sm">
+          Accéder
+        </a>         
+      </div>
+    </div>
+  </div>
+{% endblock %}
