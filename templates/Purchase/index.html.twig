@@ -83,6 +83,9 @@
                     {% if commande.ended == false %}
                       <a href="{{ path('provider_settlement', {id: commande.id}) }}"data-toggle="tooltip" title="Enregistrer un versement"><i class="icon-plus"></i></a>
                     {% endif %}
+                    {% if commande.status == "COMMANDEE" and is_granted('ROLE_ADMIN') %}
+                      <a href="{{ path('receive_provider_commande', {id: commande.id}) }}"data-toggle="tooltip" title="Recevoir la commande"><i class="icon-news"></i></a>
+                    {% endif %}
                   </td>
                 </tr>
               {% endfor %}

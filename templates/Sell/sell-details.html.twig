@@ -78,17 +78,6 @@
       {% endif %}
     </div>
     {% set totalRetour = 0 %}
-    {% if commande.returnedProducts is not empty %}
-      <div class="col-md-4">
-        <h3>Retour de marchandises</h3>
-        {% for item in commande.returnedProducts %}
-          {# {% for prod in commande.product if item.product.id == prod.id %} #}
-            {# {% set totalRetour = totalRetour + (item.quantity * prod.unitPrice) %} #}
-            <li>{{ item.quantity }} {{ item.product.label }}</li>
-          {# {% endfor %} #}
-        {% endfor %}
-      </div>
-    {% endif %}
   </div><br><br>
   <div class="row">
     <div class="">

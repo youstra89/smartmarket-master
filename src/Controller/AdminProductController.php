@@ -5,6 +5,8 @@ namespace App\Controller;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Mark;
+use App\Entity\Stock;
+use App\Entity\Store;
 use App\Entity\Family;
 use App\Entity\Product;
 use App\Entity\Activite;
@@ -14,10 +16,10 @@ use App\Entity\Informations;
 use App\Entity\ProductSearch;
 use App\Entity\ComptaExercice;
 use App\Form\ProductSearchType;
-use App\Controller\FonctionsController;
-use Doctrine\ORM\EntityManagerInterface;
 
 // Include Dompdf required namespaces
+use App\Controller\FonctionsController;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Contracts\Cache\ItemInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -65,9 +67,9 @@ class AdminProductController extends AbstractController
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
-        $manager   = $this->getDoctrine()->getManager();
-        $last_product  = $manager->getRepository(Product::class)->last_saved_product();
-        $reference = $fonctions->generateReference("product", $last_product);
+        $manager      = $this->getDoctrine()->getManager();
+        $last_product = $manager->getRepository(Product::class)->last_saved_product();
+        $reference    = $fonctions->generateReference("product", $last_product);
         // dump($reference);
         if($form->isSubmitted() && $form->isValid())
         {
@@ -109,11 +111,24 @@ class AdminProductController extends AbstractController
           $product->setAveragePurchasePrice($product->getPurchasingPrice());
           $product->setAverageSellingPrice($product->getUnitPrice());
           $product->setAveragePackageSellingPrice($product->getUnitPrice() * $product->getUnite());
-
           $manager->persist($product);
+
+          // Après l'enregistrement d'un dépôt, on va initialiser le stock de chaque produit
+          $stores = $manager->getRepository(Store::class)->findAll();
+          foreach ($stores as $value) {
+            if($value->getIsDeleted() == 0){
+              $stock = new Stock();
+              $stock->setProduct($product);
+              $stock->setStore($value);
+              $stock->setQuantity(0);
+              $value->getIsRoot() == 1 ? $stock->setIsRoot(1) : $stock->setIsRoot(0);
+              $manager->persist($stock);
+            }
+          }
+
           try{
             $manager->flush();
-            $this->addFlash('success', 'Enregistrement de <strong>'.$label.'</strong> réussie.');
+            $this->addFlash('success', 'Enregistrement du produit <strong>'.$label.'</strong> réussie.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());

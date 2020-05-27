@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -135,6 +137,11 @@ class Product
      */
     private $average_package_selling_price;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Stock", mappedBy="product")
+     */
+    private $stocks;
+
 
     public function __construct()
     {
@@ -142,6 +149,7 @@ class Product
         $this->unit_price = 0;
         $this->is_deleted = false;
         $this->created_at = new \DateTime();
+        $this->stocks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -246,6 +254,15 @@ class Product
 
         }
         return $stock;
+    }
+
+    public function getTotalStock()
+    {
+        $total = 0;
+        foreach ($this->stocks as $value) {
+            $total = $total + $value->getQuantity();
+        }
+        return $total;
     }
 
     public function getStock(): ?float
@@ -436,6 +453,37 @@ class Product
     public function setFamily(?Family $family): self
     {
         $this->family = $family;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Stock[]
+     */
+    public function getStocks(): Collection
+    {
+        return $this->stocks;
+    }
+
+    public function addStock(Stock $stock): self
+    {
+        if (!$this->stocks->contains($stock)) {
+            $this->stocks[] = $stock;
+            $stock->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStock(Stock $stock): self
+    {
+        if ($this->stocks->contains($stock)) {
+            $this->stocks->removeElement($stock);
+            // set the owning side to null (unless already changed)
+            if ($stock->getProduct() === $this) {
+                $stock->setProduct(null);
+            }
+        }
 
         return $this;
     }

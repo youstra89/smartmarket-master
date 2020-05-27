@@ -32,7 +32,7 @@
 {% block body %}
   <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Types de dépenses</h2>
-  <a href="{{ path('typedepense.add') }}" class="btn-sm btn-primary">Ajouter un type de dépense</a>
+  <a href="{{ path('typedepense_add') }}" class="btn-sm btn-primary">Ajouter un type de dépense</a>
   <div class="row row-bottom-padded-md mb-5">
     {% set i = 0 %}
     {% for item in typedepenses %}
@@ -42,7 +42,7 @@
           <h5 class="card-title" style="margin: 0px">{{ item.label }}</h5>
           <h6 class="card-subtitle text-muted" style="margin: 0px">Type de dépense {{ i }}</h6>
           {% if item.typeSysteme == 0 %}
-            <a href="{{ path('typedepense.edit', {id: item.id}) }}" class="card-link">Edition</a>
+            <a href="{{ path('typedepense_edit', {id: item.id}) }}" class="card-link">Edition</a>
           {% endif %}
         </div>
       </div>

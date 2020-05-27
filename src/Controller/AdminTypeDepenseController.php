@@ -29,7 +29,7 @@ class AdminTypeDepenseController extends AbstractController
     }
 
     /**
-     * @Route("/add", name="typedepense.add")
+     * @Route("/add", name="typedepense_add")
      * @IsGranted("ROLE_COMPTABLE")
      */
     public function add(Request $request, EntityManagerInterface $manager)
@@ -59,7 +59,7 @@ class AdminTypeDepenseController extends AbstractController
     }
           
     /**
-     * @Route("/edit/{id}", name="typedepense.edit")
+     * @Route("/edit/{id}", name="typedepense_edit")
      * @IsGranted("ROLE_COMPTABLE")
      * @param TypeDepense $typedepense
      */

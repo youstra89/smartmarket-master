@@ -116,14 +116,6 @@
         </table>
       </div><br><br>
       {% set totalRetour = 0 %}
-      {% if commande.returnedProducts is not empty %}
-          {% for item in commande.returnedProducts %}
-            {# {% for prod in commande.product if item.product.id == prod.id %} #}
-              {% set totalRetour = totalRetour + (item.quantity * prod.unitPrice) %}
-              {# <li>{{ item.quantity }} {{ item.product.label }}</li> #}
-            {# {% endfor %} #}
-          {% endfor %}
-      {% endif %}
       <div class="row">
         <div class="col-lg-6 col-md-6 col-sm-12">
           <h3>Règlements</h3>
