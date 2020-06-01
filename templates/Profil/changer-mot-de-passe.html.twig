@@ -30,7 +30,7 @@
       {% if user.pwdChangedAt is empty %}
         <p>Jamais modifié</p>
       {% else %}
-        {{ user.pwdChangedAt|date('d-m-y à H:i') }}
+        <strong>{{ user.pwdChangedAt|date('d-m-Y') }}</strong> à <strong>{{ user.pwdChangedAt|date('H:i:s') }}</strong>
       {% endif %}
     </div>
   </div><br>

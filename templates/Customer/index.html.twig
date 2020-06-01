@@ -119,10 +119,7 @@
               <a href="{{ path('customer.edit', {id: customer.id}) }}" title="Modifier info client"><i class="icon-edit"></i></a>&nbsp;&nbsp;&nbsp;
               {# <a href="{{ path('prepare_sell_for_customer', {id: customer.id}) }}" title="Préparer une commande"><i class="icon-plus"></i></a>&nbsp;&nbsp;&nbsp; #}
               <a href="{{ path('customer_info', {id: customer.id}) }}" title="Voir les détails"><i class="icon-params"></i></a>&nbsp;&nbsp;&nbsp;
-              {% if is_granted("ROLE_SOLDE_INITIAL") %}
-                <a href="{{ path('update_customer_initial_solde', {id: customer.id}) }}" title="Modifier le solde initial de ce client"><i class="icon-xing"></i></a>
-                &nbsp;&nbsp;&nbsp;
-              {% endif %}
+              <a href="{{ path('ajouter_acompte_clients', {id: customer.id}) }}" title="Recevoir un acompte de ce client"><i class="icon-xing"></i></a>&nbsp;&nbsp;&nbsp;
               {% if customer.creanceInitiale > 0 %}
                 <a href="{{ path('paiement_creance_initiale', {id: customer.id}) }}" title="Règelement créance initiale"><i class="icon-time"></i></a>
               {% endif %}

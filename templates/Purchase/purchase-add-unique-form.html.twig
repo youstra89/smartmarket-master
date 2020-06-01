@@ -208,7 +208,7 @@
       // A chaque fois qu'on sélectionne un produit
       $('#products').on('change',function(e){
         $.ajax({
-          url: '/ventes/select-product/' + this.value,
+          url: '/ventes/select-product/' + this.value + '/' + 1,
           type: 'GET',
           dataType: 'json',
           success: function (result) {                
@@ -236,7 +236,7 @@
         if($(this).val().length >= 5){
           var ref = $(this).val();
           $.ajax({
-            url: '/ventes/select-product-by-reference/' + ref,
+            url: '/ventes/select-product-by-reference/' + ref + '/' + 1,
             type: 'GET',
             dataType: 'json',
             success: function (result) { 

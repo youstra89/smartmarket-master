@@ -44,7 +44,7 @@ class AdminDepenseController extends AbstractController
     public function add(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
         $depense = new Depense();
-        $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+        $exercice  = $fonctions->exercice_en_cours($manager);
         $form = $this->createForm(DepenseType::class, $depense);
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
@@ -60,7 +60,7 @@ class AdminDepenseController extends AbstractController
             $depense->setCreatedBy($this->getUser());
             $manager->persist($depense);
             $typeDepenseId = $depense->getType()->getId();
-            $fonctions->ecritureDeDepensesDansLeJournalComptable($manager, $typeDepenseId, $depense->getAmount(), $mode, $depense, $depense->getDescription(), $exercice);
+            // $fonctions->ecritureDeDepensesDansLeJournalComptable($manager, $typeDepenseId, $depense->getAmount(), $mode, $depense, $depense->getDescription(), $exercice);
             // dd($depense->getType());
             try{
               $manager->flush();

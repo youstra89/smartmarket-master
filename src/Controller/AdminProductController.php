@@ -48,13 +48,14 @@ class AdminProductController extends AbstractController
       //   $item->expiresAfter(10);
       //   return sleep(3);
       // });
-      
+      $stores = $manager->getRepository(Store::class)->findAll();
       $products = $manager->getRepository(Product::class)->findAll();
       $stopwatch->stop("produits");
 
       return $this->render('Product/index.html.twig', [
         'current'  => 'products',
-        'products' => $products
+        'products' => $products,
+        'stores'   => $stores
       ]);
     }
 
@@ -148,86 +149,88 @@ class AdminProductController extends AbstractController
      */
     public function add_multiple_products(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions, FonctionsComptabiliteController $fonctionsComptables)
     {
-        $families     = $manager->getRepository(Family  ::class)->findAll();
-        $categories   = $manager->getRepository(Category::class)->findAll();
-        $marks        = $manager->getRepository(Mark    ::class)->findAll();
-        $last_product = $manager->getRepository(Product ::class)->last_saved_product();
-        $manager   = $this->getDoctrine()->getManager();
-        // dump($reference);
-        if($request->isMethod('post'))
+      return $this->redirectToRoute('product');
+
+      $families     = $manager->getRepository(Family  ::class)->findAll();
+      $categories   = $manager->getRepository(Category::class)->findAll();
+      $marks        = $manager->getRepository(Mark    ::class)->findAll();
+      $last_product = $manager->getRepository(Product ::class)->last_saved_product();
+      $manager   = $this->getDoctrine()->getManager();
+      // dump($reference);
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        // return new Response(var_dump($data));
+        if(!empty($data['token']))
         {
-          $data = $request->request->all();
-          // return new Response(var_dump($data));
-          if(!empty($data['token']))
-          {
-            $token = $data['token'];
-            if($this->isCsrfTokenValid('insert_products', $token)){
-              $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
-              $data              = $request->request->all();
-              $familiesP         = $data["families"];
-              $categoriesP       = $data["categories"];
-              $marksP            = $data["marks"];
-              $descriptions      = $data["descriptions"];
-              $stocks            = $data["stocks"];
-              $purchasing_prices = $data["purchasing_prices"];
-              $selling_prices    = $data["selling_prices"];
-              $unites            = $data["unites"];
+          $token = $data['token'];
+          if($this->isCsrfTokenValid('insert_products', $token)){
+            $exercice  = $fonctionsComptables->exercice_en_cours($manager);
+            $data              = $request->request->all();
+            $familiesP         = $data["families"];
+            $categoriesP       = $data["categories"];
+            $marksP            = $data["marks"];
+            $descriptions      = $data["descriptions"];
+            $stocks            = $data["stocks"];
+            $purchasing_prices = $data["purchasing_prices"];
+            $selling_prices    = $data["selling_prices"];
+            $unites            = $data["unites"];
 
-              foreach ($unites as $key => $value) {
-                if(
-                  !empty($categoriesP[$key]) and 
-                  !empty($stocks[$key]) and 
-                  !empty($purchasing_prices[$key]) and 
-                  !empty($selling_prices[$key])
-                ){
-                  $product = new Product();
-                  $mark     = $this->obtenirLObjetAdequat($marks, (int) $marksP[$key]);
-                  $category = $this->obtenirLObjetAdequat($categories, (int) $categoriesP[$key]);
-                  $family   = $this->obtenirLObjetAdequat($families, (int) $familiesP[$key]);
-                  $product->setMark($mark);
-                  $product->setFamily($family);
-                  $product->setCategory($category);
-                  $product->setPurchasingPrice($purchasing_prices[$key]);
-                  $product->setUnitPrice($selling_prices[$key]);
-                  $product->setAveragePurchasePrice($purchasing_prices[$key]);
-                  $product->setAverageSellingPrice($selling_prices[$key]);
-                  $product->setUnite($value);
-                  $product->setStock($stocks[$key]);
-                  $product->setSecurityStock(0);
-                  $product->setDescription($descriptions[$key]);
-                  $product->setAveragePackageSellingPrice($selling_prices[$key] * $value);
-                  $product->setCreatedBy($this->getUser());
-                  $manager->persist($product);
-                  $tab[] = $product;
-                }
+            foreach ($unites as $key => $value) {
+              if(
+                !empty($categoriesP[$key]) and 
+                !empty($stocks[$key]) and 
+                !empty($purchasing_prices[$key]) and 
+                !empty($selling_prices[$key])
+              ){
+                $product = new Product();
+                $mark     = $this->obtenirLObjetAdequat($marks, (int) $marksP[$key]);
+                $category = $this->obtenirLObjetAdequat($categories, (int) $categoriesP[$key]);
+                $family   = $this->obtenirLObjetAdequat($families, (int) $familiesP[$key]);
+                $product->setMark($mark);
+                $product->setFamily($family);
+                $product->setCategory($category);
+                $product->setPurchasingPrice($purchasing_prices[$key]);
+                $product->setUnitPrice($selling_prices[$key]);
+                $product->setAveragePurchasePrice($purchasing_prices[$key]);
+                $product->setAverageSellingPrice($selling_prices[$key]);
+                $product->setUnite($value);
+                $product->setStock($stocks[$key]);
+                $product->setSecurityStock(0);
+                $product->setDescription($descriptions[$key]);
+                $product->setAveragePackageSellingPrice($selling_prices[$key] * $value);
+                $product->setCreatedBy($this->getUser());
+                $manager->persist($product);
+                $tab[] = $product;
               }
-
-              $nbr = count($tab);
-              $montant = 0;
-              $reference = $fonctions->generateReference("product", $last_product, $nbr);
-              foreach ($reference as $key => $value) {
-                $tab[$key]->setReference($reference[$key]);
-                $montant = $montant + $tab[$key]->getStock() * $tab[$key]->getUnite() * $tab[$key]->getAveragePurchasePrice();
-              }
-              // dd($montant);
-              try{
-                $fonctionsComptables->ecriture_de_l_enregistrement_du_stock_initial_dans_le_journal_comptable($manager, $montant, $exercice);
-                $manager->flush();
-                $this->addFlash('success', 'Enregistrement de <strong>'.$nbr.' produits</strong> réussie.');
-              } 
-              catch(\Exception $e){
-                $this->addFlash('danger', $e->getMessage());
-              } 
-              return $this->redirectToRoute('product');
             }
+
+            $nbr = count($tab);
+            $montant = 0;
+            $reference = $fonctions->generateReference("product", $last_product, $nbr);
+            foreach ($reference as $key => $value) {
+              $tab[$key]->setReference($reference[$key]);
+              $montant = $montant + $tab[$key]->getStock() * $tab[$key]->getUnite() * $tab[$key]->getAveragePurchasePrice();
+            }
+            // dd($montant);
+            try{
+              // $fonctionsComptables->ecriture_de_l_enregistrement_du_stock_initial_dans_le_journal_comptable($manager, $montant, $exercice);
+              $manager->flush();
+              $this->addFlash('success', 'Enregistrement de <strong>'.$nbr.' produits</strong> réussie.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            } 
+            return $this->redirectToRoute('product');
           }
         }
-        return $this->render('Product/add-multiple-products.html.twig', [
-          'current'    => 'products',
-          'marks'      => $marks,
-          'families'   => $families,
-          'categories' => $categories,
-        ]);
+      }
+      return $this->render('Product/add-multiple-products.html.twig', [
+        'current'    => 'products',
+        'marks'      => $marks,
+        'families'   => $families,
+        'categories' => $categories,
+      ]);
     }
 
     public function obtenirLObjetAdequat(array $array, int $id)
@@ -316,6 +319,7 @@ class AdminProductController extends AbstractController
      */
     public function update_product_stock(Request $request, EntityManagerInterface $manager, Product $product)
     {
+      $ancienStock = $product->getStocks()[0]->getQuantity();
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
@@ -324,22 +328,21 @@ class AdminProductController extends AbstractController
           $token = $data['token'];
           if($this->isCsrfTokenValid('update_product_stock', $token)){
             $data  = $request->request->all();
-            $stock = $data["stock"];
+            $quantity = $data["stock"];
             $motif = $data["motif"];
-            if($stock == null or empty($motif)){
+            if($quantity == null or empty($motif)){
               $this->addFlash('danger', "Formulaire incomplé. Veuillez remplir tous les champs.");
               return $this->redirectToRoute('product');
             }
-            $ancienStock = $product->getStock();
             $activite = new Activite();
             $activite->setDate(new \DateTime());
             $activite->setUser($this->getUser());
-            $activite->setDescription("Mise à jour de stock de ".$product->label()." ".$ancienStock."  => ".$stock.". Motif: ".$motif);
+            $activite->setDescription("Mise à jour de stock de ".$product->label()." ".$ancienStock."  => ".$quantity.". Motif: ".$motif);
             $manager->persist($activite);
 
-            $product->setStock($stock);
-            $product->setUpdatedAt(new \DateTime());
-            $product->setUpdatedBy($this->getUser());
+            $product->getStocks()[0]->setQuantity($quantity);
+            $product->getStocks()[0]->setUpdatedAt(new \DateTime());
+            $product->getStocks()[0]->setUpdatedBy($this->getUser());
 
             try{
               $manager->flush();
@@ -358,6 +361,7 @@ class AdminProductController extends AbstractController
       return $this->render('Product/update-product-stock.html.twig', [
         'current' => 'products',
         'product' => $product,
+        'stock' => $ancienStock,
       ]);
     }
 

@@ -2,14 +2,15 @@
 // src/Controller/LuckyController.php
 namespace App\Controller;
 
+use App\Entity\Acompte;
 use App\Entity\Activite;
 use App\Entity\Provider;
 use App\Form\ProviderType;
 use App\Entity\ComptaExercice;
 use App\Entity\ProviderSettlement;
 use App\Controller\FonctionsController;
-use Doctrine\ORM\EntityManagerInterface;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Controller\FonctionsComptabiliteController;
@@ -47,7 +48,7 @@ class AdminProviderController extends AbstractController
         $reference = $fonctions->generateReference("provider", $last_provider);
         if($form->isSubmitted() && $form->isValid())
         {
-          $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+          $exercice  = $fonctionsComptables->exercice_en_cours($manager);
           $nom = $provider->getNom();
           $acompte = $provider->getAcompte();
           $arriere = $provider->getArriereInitial();
@@ -55,13 +56,13 @@ class AdminProviderController extends AbstractController
             $this->addFlash('danger', "Les valeurs de <strong>Avances</strong> et / ou <strong>Arriéré</strong> doivent être supérieur à zéro");
             return $this->redirectToRoute('provider.add');
           }
-          // Lors de l'enregistrement d'un nouveau nouveau client, s'il y a des avances et ou des créances, il faut les ajouter aux ecritures comptables
-          if($acompte > 0){
-            $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $acompte, $exercice, new \DateTime(), $nom, true, "fournisseur");
-          }
-          if($arriere > 0){
-            $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $arriere, $exercice, new \DateTime(), $nom, false, "fournisseur");
-          }
+          // // Lors de l'enregistrement d'un nouveau nouveau client, s'il y a des avances et ou des créances, il faut les ajouter aux ecritures comptables
+          // if($acompte > 0){
+          //   $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $acompte, $exercice, new \DateTime(), $nom, true, "fournisseur");
+          // }
+          // if($arriere > 0){
+          //   $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $arriere, $exercice, new \DateTime(), $nom, false, "fournisseur");
+          // }
           $provider->setCreatedBy($this->getUser());
           $manager->persist($provider);
           try{
@@ -87,34 +88,34 @@ class AdminProviderController extends AbstractController
      */
     public function edit(Request $request, EntityManagerInterface $manager, Provider $provider)
     {
-        $form = $this->createForm(ProviderType::class, $provider);
-        $form->handleRequest($request);
-        if($form->isSubmitted() && $form->isValid())
-        {
-          $provider->setUpdatedAt(new \DateTime());
-          $provider->setUpdatedBy($this->getUser());
-          $manager->persist($provider);
-          try{
-            $manager->flush();
-            $this->addFlash('success', 'Mise à jour de <strong>'.$provider->getFirstname().' '.$provider->getLastname().'</strong> réussie.');
-          } 
-          catch(\Exception $e){
-            $this->addFlash('danger', $e->getMessage());
-          } 
-          return $this->redirectToRoute('provider');
-        }
-        return $this->render('Provider/provider-edit.html.twig', [
-          'current' => 'purchases',
-          'provider' => $provider,
-          'form'    => $form->createView()
-        ]);
+      $form = $this->createForm(ProviderType::class, $provider);
+      $form->handleRequest($request);
+      if($form->isSubmitted() && $form->isValid())
+      {
+        $provider->setUpdatedAt(new \DateTime());
+        $provider->setUpdatedBy($this->getUser());
+        $manager->persist($provider);
+        try{
+          $manager->flush();
+          $this->addFlash('success', 'Mise à jour de <strong>'.$provider->getFirstname().' '.$provider->getLastname().'</strong> réussie.');
+        } 
+        catch(\Exception $e){
+          $this->addFlash('danger', $e->getMessage());
+        } 
+        return $this->redirectToRoute('provider');
+      }
+      return $this->render('Provider/provider-edit.html.twig', [
+        'current' => 'purchases',
+        'provider' => $provider,
+        'form'    => $form->createView()
+      ]);
     }
 
 
     /**
-     * @Route("/modification-creances-et-acomptes-initiaux-fournisseur/{id}", name="update_provider_initial_solde")
+     * @Route("/modification-creances-et-acomptes-initiaux-fournisseur/{id}", name="ajouter_acompte_fournisseurs")
      */
-    public function update_provider_initial_solde(Request $request, EntityManagerInterface $manager, Provider $provider, int $id, FonctionsComptabiliteController $fonctions)
+    public function ajouter_acompte_fournisseurs(Request $request, EntityManagerInterface $manager, Provider $provider, int $id, FonctionsComptabiliteController $fonctions)
     {
       if($request->isMethod('post'))
       {
@@ -123,34 +124,32 @@ class AdminProviderController extends AbstractController
         if(!empty($data['token']))
         {
           $token = $data['token'];
-          if($this->isCsrfTokenValid('token_definition_arriere_initial', $token)){
-            $acompte = (int) $data['acompte'];
-            $arriere = (int) $data['arriere'];
-            $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
-            $nom = $provider->getNom();
-            $activite = new Activite();
-            $activite->setDate(new \DateTime());
-            $activite->setUser($this->getUser());
-            $activite->setDescription("Mise à jour d'arriérés et/ou avances initiales versé chez le fournisseur ".$nom);
-            $manager->persist($activite);
+          if($this->isCsrfTokenValid('enregistrment_acompte_fournisseur', $token)){
+            $date           = new \DateTime($data['date']);
+            $montantAcompte = (int) $data['acompte'];
+            $commentaire    = empty($data['comment']) ? null: $data['comment'];
+            $exercice  = $fonctions->exercice_en_cours($manager);
 
-            if($arriere > 0){
-              $fonctions->ecriture_de_la_mise_a_jour_des_avances_ou_des_creances_initiales($manager, $provider->getArriereInitial(), $arriere, $exercice, new \DateTime(), $nom, "arriere", "fournisseur");
+            if($montantAcompte > 0){
+              $acompte = new Acompte();
+              $acompte->setProvider($provider);
+              $acompte->setDate($date);
+              $acompte->setExercice($exercice);
+              $acompte->setCommentaire($commentaire);
+              $acompte->setCreatedBy($this->getUser());
+              $manager->persist($acompte);
+              $provider->setAcompte($provider->getAcompte() + $montantAcompte);
+              try{
+                $manager->flush();
+                $this->addFlash('success', 'Enregistrement d\'acompte de <strong>'.number_format($montantAcompte, 0, ',', ' ').' F</strong> versé chez le fournisseur <strong>'.$provider->getNom().'</strong> réussi.');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+              } 
             }
-            if($acompte > 0){
-              $fonctions->ecriture_de_la_mise_a_jour_des_avances_ou_des_creances_initiales($manager, $provider->getAcompte(), $acompte, $exercice, new \DateTime(), $nom, "acompte", "fournisseur");
+            else{
+              $this->addFlash('warning', "Montant saisi incorrect. Il ne doit pas être égal à 0");
             }
-            
-            $provider->setAcompte($acompte);
-            $provider->setArriereInitial($arriere);
-
-            try{
-              $manager->flush();
-              $this->addFlash('success', 'Mise à jour des arriérés initiaux de <strong>'.$provider->getNom().'</strong> réussies.');
-            } 
-            catch(\Exception $e){
-              $this->addFlash('danger', $e->getMessage());
-            } 
             return $this->redirectToRoute('provider');
           }
           else{
@@ -159,7 +158,7 @@ class AdminProviderController extends AbstractController
         }
       }
 
-      return $this->render('Provider/update-provider-initial-solde.html.twig', [
+      return $this->render('Provider/provider-add-acompte.html.twig', [
           'current' => 'purchases',
           'provider' => $provider,
         ]);
@@ -195,7 +194,7 @@ class AdminProviderController extends AbstractController
               $this->addFlash('danger', 'Le montant saisie est supérieur au total de la créance initiale');
               return $this->redirectToRoute('paiement_arriere_initial', ["id" => $id]);  
             }
-            $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+            $exercice  = $fonctions->exercice_en_cours($manager);
             $user = $this->getUser();
             $settlement = new ProviderSettlement();
             $settlement->setDate($date);

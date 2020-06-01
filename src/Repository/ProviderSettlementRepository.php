@@ -138,6 +138,20 @@ class ProviderSettlementRepository extends ServiceEntityRepository
         return substr_replace("0000",$result, -strlen($result));
     }
 
+    public function toutesLesReglementsFournisseursDuJour($dateActuelle)
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.commande', 'c')
+            ->where('p.date LIKE :dateActuelle')
+            ->andWhere('p.is_deleted = :status')
+            ->andWhere('c.is_deleted = :status')
+            ->setParameter('status', false)  
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Settlement[] Returns an array of Settlement objects
     //  */

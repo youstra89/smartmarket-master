@@ -53,7 +53,7 @@
             <td>{{ entrees[m.date]|number_format(0, ',', ' ') }} F</td>
             {# <td>{{ benefices[m.date]['benefice']|number_format(0, ',', ' ') }} F</td> #}
             <td>
-              <a href="{{ path('dayly.accounting', {mois: m['date']}) }}" class=" circle arrow small">Plus de détails</a>
+              <a href="{{ path('compte_journalier', {mois: m['date']}) }}" class=" circle arrow small">Plus de détails</a>
             </td>
           </tr>
         {% endfor %}

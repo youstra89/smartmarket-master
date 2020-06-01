@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\Acompte;
 use App\Entity\Activite;
 use App\Entity\Customer;
 use App\Entity\Settlement;
@@ -51,7 +52,7 @@ class AdminCustomerController extends AbstractController
         $reference = $fonctions->generateReference("customer", $last_customer);
         if($form->isSubmitted() && $form->isValid())
         {
-          $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+          $exercice  = $fonctionsComptables->exercice_en_cours($manager);
 
           /** @var UploadedFile $imageFile */
           $imageFile = $form->get('photo')->getData();
@@ -86,12 +87,12 @@ class AdminCustomerController extends AbstractController
             return $this->redirectToRoute('customer.add');
           }
           // Lors de l'enregistrement d'un nouveau nouveau client, s'il y a des avances et ou des créances, il faut les ajouter aux ecritures comptables
-          if($acompte > 0){
-            $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $acompte, $exercice, new \DateTime(), $nom, true, "client");
-          }
-          if($creance > 0){
-            $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $creance, $exercice, new \DateTime(), $nom, false, "client");
-          }
+          // if($acompte > 0){
+          //   $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $acompte, $exercice, new \DateTime(), $nom, true, "client");
+          // }
+          // if($creance > 0){
+          //   $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $creance, $exercice, new \DateTime(), $nom, false, "client");
+          // }
           $customer->setCreatedBy($this->getUser());
           $manager->persist($customer);
           try{
@@ -207,7 +208,7 @@ class AdminCustomerController extends AbstractController
               $this->addFlash('danger', 'Le montant saisie est supérieur au total de la créance initiale');
               return $this->redirectToRoute('paiement_creance_initiale', ["id" => $id]);  
             }
-            $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+            $exercice  = $fonctions->exercice_en_cours($manager);
             $user = $this->getUser();
             $reference = $adminSellController->generateInvoiceReference($manager);
             $settlement = new Settlement();
@@ -221,7 +222,7 @@ class AdminCustomerController extends AbstractController
             $manager->persist($settlement);
 
             $customer->setCreanceInitiale($customer->getCreanceInitiale() - $amount);
-            $fonctions->ecriture_de_reglements_clients_dans_le_journal_comptable($manager, $mode, $amount, $exercice, $date, $settlement, true);
+            // $fonctions->ecriture_de_reglements_clients_dans_le_journal_comptable($manager, $mode, $amount, $exercice, $date, $settlement, true);
 
             try{
               $manager->flush();
@@ -246,9 +247,9 @@ class AdminCustomerController extends AbstractController
 
 
     /**
-     * @Route("/modification-creances-et-acomptes-initiaux-client/{id}", name="update_customer_initial_solde")
+     * @Route("/modification-creances-et-acomptes-initiaux-client/{id}", name="ajouter_acompte_clients")
      */
-    public function update_customer_initial_solde(Request $request, EntityManagerInterface $manager, Customer $customer, int $id, FonctionsComptabiliteController $fonctions)
+    public function ajouter_acompte_clients(Request $request, EntityManagerInterface $manager, Customer $customer, int $id, FonctionsComptabiliteController $fonctions)
     {
       if($request->isMethod('post'))
       {
@@ -257,32 +258,31 @@ class AdminCustomerController extends AbstractController
         if(!empty($data['token']))
         {
           $token = $data['token'];
-          if($this->isCsrfTokenValid('token_definition_creance_initiale', $token)){
-            $acompte = (int) $data['acompte'];
-            $creance = (int) $data['creance'];
-            $nom = $customer->getNom();
-            $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
-            $activite = new Activite();
-            $activite->setDate(new \DateTime());
-            $activite->setUser($this->getUser());
-            $activite->setDescription("Mise à jour de créances et/ou avance initiales du client ".$nom);
-            $manager->persist($activite);
-            if($creance > 0){
-              $fonctions->ecriture_de_la_mise_a_jour_des_avances_ou_des_creances_initiales($manager, $customer->getCreanceInitiale(), $creance, $exercice, new \DateTime(), $nom, "creance", "client");
+          if($this->isCsrfTokenValid('enregistrment_acompte_client', $token)){
+            $date           = new \DateTime($data['date']);
+            $montantAcompte = (int) $data['acompte'];
+            $commentaire    = empty($data['comment']) ? null: $data['comment'];
+            $exercice  = $fonctions->exercice_en_cours($manager);
+            if($montantAcompte > 0){
+              $acompte = new Acompte();
+              $acompte->setCustomer($customer);
+              $acompte->setDate($date);
+              $acompte->setExercice($exercice);
+              $acompte->setCommentaire($commentaire);
+              $acompte->setCreatedBy($this->getUser());
+              $manager->persist($acompte);
+              $customer->setAcompte($customer->getAcompte() + $montantAcompte);
+              try{
+                $manager->flush();
+                $this->addFlash('success', 'Enregistrement d\'acompte de <strong>'.number_format($montantAcompte, 0, ',', ' ').' F</strong> pour le client <strong>'.$customer->getNom().'</strong> réussi.');
+              } 
+              catch(\Exception $e){
+                $this->addFlash('danger', $e->getMessage());
+              } 
             }
-            if($acompte > 0){
-              $fonctions->ecriture_de_la_mise_a_jour_des_avances_ou_des_creances_initiales($manager, $customer->getAcompte(), $acompte, $exercice, new \DateTime(), $nom, "acompte", "client");
+            else{
+              $this->addFlash('warning', "Montant saisi incorrect. Il ne doit pas être égal à 0");
             }
-            $customer->setAcompte($acompte);
-            $customer->setCreanceInitiale($creance);
-            // dd($res);
-            try{
-              $manager->flush();
-              $this->addFlash('success', 'Mise à jour des créances initialessells de <strong>'.$customer->getNom().'</strong> réussi.');
-            } 
-            catch(\Exception $e){
-              $this->addFlash('danger', $e->getMessage());
-            } 
             return $this->redirectToRoute('customer');
           }
           else{
@@ -291,7 +291,7 @@ class AdminCustomerController extends AbstractController
         }
       }
 
-      return $this->render('Customer/update-customer-initial-solde.html.twig', [
+      return $this->render('Customer/customer-add-acompte.html.twig', [
           'current' => 'sells',
           'customer' => $customer,
         ]);

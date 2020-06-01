@@ -69,18 +69,19 @@
           <label for="debit">Débit</label>
           <select name="debit" id="debit" class="form-control mb-4 js-example-basic-single">
             <option value="">Choisir le compte à débiter</option>
-            {% for item in comptes %}
+            {% for item in comptes if item.compte.classe.type.id == 1 or item.compte.classe.type.id == 2 %}
               <option value="{{ item.id }}">{{ item.compte.numero }} - {{ item.compte.label }}</option>
             {% endfor %}
           </select>
         </div>
       </div>
+      {# {{dump(comptes)}} #}
       <div class="col-md-6">
         <div class="form-group">
           <label for="credit">Crédit</label>
           <select name="credit" id="credit" class="form-control mb-4 js-example-basic-single">
             <option value="">Choisir le compte à créditer</option>
-            {% for item in comptes %}
+            {% for item in comptes if item.compte.classe.type.id == 1 or item.compte.classe.type.id == 2 %}
               <option value="{{ item.id }}">{{ item.compte.numero }} - {{ item.compte.label }}</option>
             {% endfor %}
           </select>

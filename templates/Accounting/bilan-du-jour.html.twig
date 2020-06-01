@@ -175,6 +175,10 @@
                     <td class="formatage-montant">{{ totalAcompte|number_format(2, ',', ' ') }} F</td>
                   </tr>
                   <tr>
+                    <td colspan="3">Total avoirs</td>
+                    <td class="formatage-montant">{{ (totalAvoirs)|number_format(2, ',', ' ') }} F</td>
+                  </tr>
+                  <tr>
                     <td colspan="3">Crédit accordé</td>
                     <td class="formatage-montant">{{ (totalNetAPayer - totalEntrees)|number_format(2, ',', ' ') }} F</td>
                   </tr>
@@ -186,7 +190,7 @@
                 <tfoot>
                   <tr>
                     <td colspan="3">Reste</td>
-                    <td class="formatage-montant">{{ (totalEntrees - depensesDuJour)|number_format(2, ',', ' ') }} F</td>
+                    <td class="formatage-montant">{{ (totalEntrees - depensesDuJour - totalAvoirs)|number_format(2, ',', ' ') }} F</td>
                   </tr>
                 </tfoot>
               </table>

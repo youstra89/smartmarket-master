@@ -47,7 +47,7 @@
   <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Journal de l'exercice de <strong>{{ exercice.label }}</strong></h2>
   {% if exercice.acheve == 0 %}
-    <a href="{{ path('ecrire_dans_journal', {id: exercice.id}) }}" class="btn-primary btn-sm">Ecrire dans le journal</a>
+    <a href="{{ path('ecrire_dans_journal', {id: exercice.id}) }}" class="btn-primary btn-sm">Ecrire dans le journal</a><br><br>
   {% endif %}
   <div class="row">
     <div class="table-responsive">

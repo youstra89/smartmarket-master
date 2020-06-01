@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            @font-face {
+                font-family: 'Elegance';
+                font-weight: normal;
+                font-style: normal;
+                font-variant: normal;
+                src: url("http://eclecticgeek.com/dompdf/fonts/Elegance.ttf") format("truetype");
+            }
+
+            /** Define the margins of your page **/
+            @page {
+                margin: 100px 50px;
+            }
+
+            header {
+                position: fixed;
+                top: -60px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+
+                /** Extra personal styles **/
+                color: gray;
+                text-align: left;
+                padding-left: 20px;
+                font-size: .9em
+            }
+
+            footer {
+                position: fixed; 
+                bottom: -60px; 
+                left: 0px; 
+                right: 0px;
+                height: 50px; 
+
+                /** Extra personal styles **/
+                color: darkGray;
+                text-align: center;
+                font-size: 0.5em;
+            }
+
+            table{
+              width: 100%
+            }
+
+            table, th, td {
+              /* border: 1px solid black; */
+            }
+
+            /* tr:nth-child(even) {background-color: #CCC}
+            tr:nth-child(odd) {background-color: #FFF} */
+
+            td{
+              /* border: 1px solid black; */
+              border-collapse: collapse;
+              font-size: 1.5em
+            }
+
+            .numero{
+              text-align: center;
+            }
+
+            .invoice-header{
+            }
+
+            .info-enterprise{
+              width: 58%;
+              display: inline-block;
+              vertical-align : top;
+              margin-top: 1px;
+            }
+
+            .info-provider{
+              width: 40%;
+              display: inline-block;
+              float: right;
+              vertical-align : top;
+              margin-top: 1px;
+            }
+
+            .row{
+              margin: 0px;
+              padding: 0px;
+              width: 100%;
+            }
+
+            .col{
+              width: 32%;
+              display: inline-block;
+            }
+
+            p{
+              margin: 0px;
+              padding: 5px;
+            }
+
+            .info{
+              font-weight: bold;
+            }
+
+            tbody{
+              font-size: .7em;
+            }
+
+            .title{
+              text-align: center;
+              font-family: 'Elegance';
+              font-size: 1.3em;
+              padding-top: 10px;
+              margin-bottom: 0px;
+              padding-bottom: 0px;
+            }
+
+            .settlement{
+              width: 95%;
+              font-size: 1em;
+            }
+        </style>
+        <meta charset="UTF-8">
+        <title>Bon de sortie N°{{ approvisionnement.reference }}  | Smart Market</title>
+    </head>
+    <body>
+        {# Inclusion de l'entête de du pied de page #}
+        {{ include('header.html.twig') }}
+        <!-- Wrap the content of your PDF inside a main tag -->
+        <main>
+            {# <p style="page-break-after: always;">
+                Content Page 1
+            </p>
+            <p style="page-break-after: never;">
+                Content Page 2
+            </p> #}
+          <div class="content">
+            <h1 class="title">
+              Bon de sortie N°{{ approvisionnement.reference }} 
+            </h1>
+            <div class="reference">
+              <div class="invoice-header">
+                <div class="info-enterprise" style="">
+                  <h2>Approvisionnement de stock</h2>
+                  <div class="reference-commande">
+                    <strong>Date de commande:</strong>
+                    <span>{{ approvisionnement.date|date('d-m-Y') }}</span><br>
+                    <strong>Source :</strong>
+                    <span>{{ approvisionnement.source.name }}</span><br>
+                    <strong>Destination :</strong>
+                    <span>{{ approvisionnement.destination.name }}</span><br>
+                    <strong>Statut :</strong>
+                    <span>{{ approvisionnement.status }}</span><br>
+                  </div>
+                </div>
+                <div class="info-provider" style="">
+                  {# <h2>Fournisseur </h2> #}
+                </div>
+              </div><br><br>
+            </div>
+            <div class="table-responsive">
+              {% set i = 0 %}
+              <table class="table" cellspacing="0" border="0">
+                <thead>
+                  <tr>
+                    <th style="text-align: left">Réf</th>
+                    <th style="text-align: left">Désignation</th>
+                    <th style="text-align: left">Quantité</th>
+                  </tr>
+                </thead>
+                {% for item in approvisionnement.detailsApprovisionnements %}
+                  {% set i = i + 1 %}
+                  {% set color = "" %}
+                  {% if (i % 2) == 0 %}
+                      {% set color = 'white' %}
+                  {% else %}
+                      {% set color = '#EEEEEE' %}
+                  {% endif %}
+                    <tbody>
+                      <tr bgcolor="{{ color }}">
+                        <td>{{ item.product.reference }}</td>
+                        <td>{{ item.product.label }}</td>
+                        <td>{{ item.quantity }}</td>
+                      </tr>
+                    </tbody>
+                {% endfor %}
+              </table>
+            </div><br><br><br>
+            <div class="row">
+              <div style="text-align: right; font-style: italic">
+                <p class="annee">Editée le <strong>{{ 'now'|date('d-m-Y') }}</strong> à <strong>{{ 'now'|date('H:i:s') }}</strong> par <strong>{{ app.user.username }}</strong></strong></p>
+              </div>
+            </div>
+          </div>
+        </main>
+    </body>
+</html>

@@ -90,7 +90,7 @@ class CustomerCommandeRepository extends ServiceEntityRepository
         ;
     }
 
-    public function montantNetAPayerDeToutesLesVenteDUnMois($dateActuelle)
+    public function montant_net_a_payer_de_toutes_les_ventes_de_la_date($dateActuelle)
     {
         return $this->createQueryBuilder('c')
             ->select('SUM(c.net_a_payer), c.date')
@@ -98,6 +98,20 @@ class CustomerCommandeRepository extends ServiceEntityRepository
             ->andWhere('c.is_deleted = :status')
             ->andWhere('c.status = :commandeStatus')
             ->groupBy('c.date')
+            ->setParameter('status', false)  
+            ->setParameter('commandeStatus', "LIVREE")  
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function toutes_les_ventes_du($dateActuelle)
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.date LIKE :dateActuelle')
+            ->andWhere('c.is_deleted = :status')
+            ->andWhere('c.status = :commandeStatus')
             ->setParameter('status', false)  
             ->setParameter('commandeStatus', "LIVREE")  
             ->setParameter('dateActuelle', $dateActuelle.'%')

@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Statistiques | Smart Market{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  {# <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br> #}
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Statistiques</h2>
+  <div class="table-responsive">
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      // $(".alert").alert('close');
+    })
+  </script>
+{% endblock %}

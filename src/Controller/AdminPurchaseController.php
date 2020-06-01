@@ -31,7 +31,7 @@ class AdminPurchaseController extends AbstractController
 {
   /**
    * @Route("/", name="purchase")
-   * @IsGranted("ROLE_APPROVISIONNEMENT")
+   * @IsGranted("ROLE_ACHAT")
    */
   public function index(Request $request, EntityManagerInterface $manager, PaginatorInterface $paginator)
   {
@@ -54,14 +54,15 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/unique-form-provider-order", name="unique_form_provider_order")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     * @IsGranted("ROLE_ACHAT")
      */
     public function unique_form_provider_order(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
       $providerCommande = new ProviderCommande();
       $form             = $this->createForm(ProviderCommandeType::class, $providerCommande);
-      $products         = $manager->getRepository(Product       ::class)->findAll();
-      $exercice         = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $products         = $manager->getRepository(Product::class)->findAll();
+      $exercice         = $fonctions->exercice_en_cours($manager);
+
       $form->handleRequest($request);
       if($form->isSubmitted() && $form->isValid())
       {
@@ -158,8 +159,8 @@ class AdminPurchaseController extends AbstractController
           $forwarding_cost = $providerCommande->getForwardingCost();
           $additional_fees = $providerCommande->getAdditionalFees();
 
-          $fonctions->ecritureDAchatDansLeJournalComptable($manager, $netAPayer, $tva, $exercice, $date, $providerCommande);
-          $fonctions->ecritureDesChargesDUnAchatDansLeJournalComptable($manager, $transport, $dedouanement, $currency_cost, $forwarding_cost, $additional_fees, $providerCommande, $exercice);
+          // $fonctions->ecritureDAchatDansLeJournalComptable($manager, $netAPayer, $tva, $exercice, $date, $providerCommande);
+          // $fonctions->ecritureDesChargesDUnAchatDansLeJournalComptable($manager, $transport, $dedouanement, $currency_cost, $forwarding_cost, $additional_fees, $providerCommande, $exercice);
           try{
             $manager->flush();
             $this->addFlash('success', '<li>Enregistrement de la commande fournisseur <strong>N°'.$commande->getReference().'</strong> du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li>');
@@ -184,7 +185,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/annuler-la-commande-en-cours/{id}", name="provider.commande.reset")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     * @IsGranted("ROLE_ACHAT")
      */
     public function reset_commande(EntityManagerInterface $manager, int $id)
     {
@@ -195,69 +196,17 @@ class AdminPurchaseController extends AbstractController
 
 
     /**
-     * @Route("/prix-de-revient-des-marchandises-d-une-commande/{id}", name="purchase_selling_price")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
-     * @param ProviderCommande $commande
-     */
-    public function prix_de_revient(Request $request, EntityManagerInterface $manager, ProviderCommande $commande, int $id)
-    {
-      // $products = $commande->getProviderCommandeDetails;
-      if($request->isMethod('post'))
-      {
-        $data = $request->request->all();
-        $token = $data['token'];
-        if($this->isCsrfTokenValid('prix_de_vente', $token)){
-          $prices = $data['price'];
-          // return new Response(var_dump($price));
-          foreach ($prices as $key => $value) {
-            if ($value == 0) {
-              $this->addFlash('danger', 'Echec, la marge bénéficiaire ne doit pas être nulle.');
-              return $this->redirectToRoute('purchase_selling_price', ['id' => $id]);
-            }
-            else {
-              $commandeItem = $manager->getRepository(ProviderCommandeDetails::class)->find($key);
-              $fixedPrice   = $commandeItem->getMinimumSellingPrice() + $value;
-              $commandeItem->setFixedAmount($fixedPrice);
-
-              // On va aussi déterminer le prix de vente minimum de tout les stock
-              $product   = $commandeItem->getProduct();
-              $quantity  = $commandeItem->getQuantity();
-              $stockAvantCommande = $product->getStock() - $quantity;
-
-              $produit1  = $stockAvantCommande * $product->getAverageSellingPrice();
-              $produit2  = $quantity * $fixedPrice;
-              $prixMoyen = ($produit1 + $produit2) / $product->getStock();
-              $prixMoyen = (int) round($prixMoyen);
-              $product->setAverageSellingPrice($prixMoyen);
-              $product->setAveragePackageSellingPrice($prixMoyen * $product->getUnite());
-            }
-          }
-          try{
-            $manager->flush();
-            $this->addFlash('success', 'Enregistrement des prix de vente de la commande fournisseur du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> résussi.');
-          } 
-          catch(\Exception $e){
-            $this->addFlash('danger', $e->getMessage());
-          }
-          return $this->redirectToRoute('purchase');
-        }
-      }
-
-      return $this->render('Purchase/purchase-selling-price.html.twig', [
-        'current'  => 'purchases',
-        'commande' => $commande
-      ]);
-    }
-
-
-    /**
      * @Route("/reception-de-commande-fournisseur/{id}", name="receive_provider_commande")
      * @IsGranted("ROLE_ADMIN")
      * @param ProviderCommande $commande
      */
     public function receive_provider_commande(Request $request, EntityManagerInterface $manager, ProviderCommande $commande, int $id)
     {
-      // $products = $commande->getProviderCommandeDetails;
+      if ($commande->getStatus() == "RECUE") {
+        $this->addFlash('warning', 'Cette commande a déjà été reçue.');
+        return $this->redirectToRoute('purchase');
+      }
+
       $stores = $manager->getRepository(Store::class)->findAll();
       if($request->isMethod('post'))
       {
@@ -283,7 +232,7 @@ class AdminPurchaseController extends AbstractController
             }
             else {
               $commande->setReceptionDate($date);
-              $commande->setStatus("LIVREE");
+              $commande->setStatus("RECUE");
               $commandeItem    = $manager->getRepository(ProviderCommandeDetails::class)->find($key);
               $newSellingPrice = $commandeItem->getMinimumSellingPrice() + $value;
               $commandeItem->setFixedAmount($newSellingPrice);
@@ -355,7 +304,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/details-de-commande-fournisseur/{id}", name="provider.order.details")
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     * @IsGranted("ROLE_ACHAT")
      * @param ProviderCommande $commande
      */
     public function provider_order_details(ProviderCommande $commande)
@@ -369,7 +318,7 @@ class AdminPurchaseController extends AbstractController
 
     /**
      * @Route("/reglement-de-l-achat/{id}", name="provider_settlement", requirements={"id"="\d+"})
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     * @IsGranted("ROLE_ACHAT")
      * @param ProvidererCommande $commande
      */
     public function provider_settlements(Request $request, int $id, ProviderCommande $commande, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
@@ -378,7 +327,7 @@ class AdminPurchaseController extends AbstractController
         $this->addFlash('warning', 'Cette commande est déjà soldée.');
         return $this->redirectToRoute('purchase');
       }
-      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $exercice  = $fonctions->exercice_en_cours($manager);
       $exerciceId = $exercice->getId();
 
       $reglements = $commande->getSettlements();
@@ -480,7 +429,7 @@ class AdminPurchaseController extends AbstractController
           $settlement->setCommande($commande);
           $manager->persist($settlement);
           try{
-            $fonctions->ecritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
+            // $fonctions->ecritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
             $manager->flush();
           } 
           catch(\Exception $e){
@@ -505,7 +454,7 @@ class AdminPurchaseController extends AbstractController
     /**
      * @Route("/bon-de-commande/{id}", name="bon_commande", requirements={"id"="\d+"})
      * @param ProviderCommande $commande
-     * @IsGranted("ROLE_APPROVISIONNEMENT")
+     * @IsGranted("ROLE_ACHAT")
      */
     public function bon_de_commande(EntityManagerInterface $manager, ProviderCommande $commande, int $id)
     {

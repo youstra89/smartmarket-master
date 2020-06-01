@@ -83,12 +83,24 @@ class Store
      */
     private $deleted_by;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\CustomerCommande", mappedBy="store")
+     */
+    private $customerCommandes;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Approvisionnement", mappedBy="source")
+     */
+    private $approvisionnements;
+
     public function __construct()
     {
         $this->is_root    = 0;
         $this->is_deleted = false;
         $this->created_at = new \DateTime();
         $this->stocks     = new ArrayCollection();
+        $this->customerCommandes = new ArrayCollection();
+        $this->approvisionnements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -267,6 +279,68 @@ class Store
     public function setIsRoot(bool $is_root): self
     {
         $this->is_root = $is_root;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CustomerCommande[]
+     */
+    public function getCustomerCommandes(): Collection
+    {
+        return $this->customerCommandes;
+    }
+
+    public function addCustomerCommande(CustomerCommande $customerCommande): self
+    {
+        if (!$this->customerCommandes->contains($customerCommande)) {
+            $this->customerCommandes[] = $customerCommande;
+            $customerCommande->setStore($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCustomerCommande(CustomerCommande $customerCommande): self
+    {
+        if ($this->customerCommandes->contains($customerCommande)) {
+            $this->customerCommandes->removeElement($customerCommande);
+            // set the owning side to null (unless already changed)
+            if ($customerCommande->getStore() === $this) {
+                $customerCommande->setStore(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Approvisionnement[]
+     */
+    public function getApprovisionnements(): Collection
+    {
+        return $this->approvisionnements;
+    }
+
+    public function addApprovisionnement(Approvisionnement $approvisionnement): self
+    {
+        if (!$this->approvisionnements->contains($approvisionnement)) {
+            $this->approvisionnements[] = $approvisionnement;
+            $approvisionnement->setSource($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApprovisionnement(Approvisionnement $approvisionnement): self
+    {
+        if ($this->approvisionnements->contains($approvisionnement)) {
+            $this->approvisionnements->removeElement($approvisionnement);
+            // set the owning side to null (unless already changed)
+            if ($approvisionnement->getSource() === $this) {
+                $approvisionnement->setSource(null);
+            }
+        }
 
         return $this;
     }

@@ -1,0 +1,354 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+  <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+{% endblock %}
+
+
+{% block title %}
+  Approvisionnement d'un dépôt à partir du {{ store.name }}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Approvisionnement d'un dépôt à partir du <strong>{{ store.name }}</strong></h2>
+  <form class="text-sm">
+    <legend>Ajoute de produit au pannier</legend>
+    <div class="row">
+      <div class="form-group col-md-6 col-sm-6 col-xs-6">
+        <label for="reference" class="col-form-label">Référence de produit</label>
+        <input type="text" name="reference" class="form-control" id="reference" value="PR">
+      </div>
+      <div class="form-group col-md-6 col-sm-6 col-xs-6">
+        <label for="products" class="col-form-label">Produits</label>
+        {# <select name="products" id="products" class="form-control"> #}
+        <select name="products" id="products" class="form-control mb-4 js-example-basic-single">
+          <option value="">Sélectionnez un produit</option>
+          {% for item in stocks if item.quantity > 0 %}
+            <option value="{{ item.product.id }}">{{ item.product.reference }} --- {{ item.product.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-md-4 col-sm-4 col-xs-4">
+        <label for="venduPar" class="col-form-label">Vente par:</label>
+        <select name="venduPar" id="venduPar" class="form-control" required>
+          <option value="1" selected>Unité</option>
+          <option value="2">Carton / paquet</option>
+        </select>
+      </div>
+      <div class="form-group col-md-4 col-sm-4 col-xs-4">
+        <label for="quantity" class="col-form-label">Quantité:</label>
+        <input type="number" class="form-control" id="quantity" value="1" min="1" required>
+      </div>
+      <div class="form-group col-md-4 col-sm-4 col-xs-4">
+        <label for="price" class="col-form-label">Prix unitaire:</label>
+        <input type="number" class="form-control" id="price" value="" required>
+      </div>
+    </div>
+    <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
+    <div class="modal-footer">
+      <input type="hidden" name="productId" id="productId" value="">
+      <input type="hidden" name="averageSellingPrice" id="averageSellingPrice" value="">
+      <input type="hidden" name="averagePackageSellingPrice" id="averagePackageSellingPrice" value="">
+      <input type="hidden" name="prixUnitaire" id="prixUnitaire" value="">
+      <input type="hidden" name="nombreUnite" id="nombreUnite" value="">
+      <input type="hidden" name="productLabel" id="productLabel" value="">
+      <input type="hidden" name="productStock" id="productStock" value="">
+      <input type="hidden" name="storeId" id="storeId" value="{{ store.id }}">
+      <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
+    </div>
+  </form>
+  <form class="form" action="" method="post" id="myForm">
+    <br>
+    <div class="row">
+      <div class="form-group col-md-4">
+        <label for="date">Date de l'approvisionnement</label><br>
+        <input type="date" name="date" id="date" class="form-control" value="{{ 'now'|date('Y-m-d') }}" required>
+      </div>
+      <div class="form-group col-md-4">
+        <label for="destinationId">Dépôt de destinantion</label><br>
+        <select name="destinationId" id="destinationId" class="form-control" required>
+          <option value="">Sélectionner un dépôt</option>
+          {% for item in stores if item.id != store.id and store.isDeleted == 0 %}
+            <option value="{{ item.id }}">{{ item.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div><br><br>
+    {% set i = 0 %}
+    <div class="table-responsive">
+      <table class="table" id="myTable">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix Unitaire</th>
+            <th>Sous total</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        {% set total = 0 %}
+        <tbody>
+          {# <tr><td>Reference</td><td>label</td><td><input type="number" class="quantity" id="quantities[]" name="quantities[]" value="" required readonly></td><td><input type="number" class="price" id="prices[]" name="prices[]" value="" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[]" name="sousTotal[]" value="" readonly><input type="hidden" name="products[]" value=""></td><td><i class="icon-trash" title="Retirer de la vente en cours"></i></td></tr> #}
+          <tr></tr>
+        </tbody>
+      </table>
+    </div>
+    <hr style="border: 3px;">
+    <input type="hidden" name="token" value="{{ csrf_token('approvisionner_depot') }}"/>
+    <input type="submit" class="btn-danger btn-lg" id="save" value="Enregistrer" onclick="submitForm(this);">
+  </form>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      var total = $("#total").val();
+      var productsId = [];
+      var storeId = $("#storeId").val();
+      console.log("L'id du store est " + storeId);
+      
+      // var test = $('#test').data("isTest")
+      // A chaque fois qu'on sélectionne un produit
+      $('#products').on('change',function(e){
+        $.ajax({
+          url: '/ventes/select-product/' + this.value + '/' + storeId,
+          type: 'GET',
+          dataType: 'json',
+          success: function (result) { 
+              var vente_par = $("#venduPar").val();
+              $("#price").val(result.unit_price);
+              if(vente_par == 2){
+                $("#price").val(result.unit_price * result.unite);
+              }          
+              $("#productId").val(result.id);
+              $("#reference").val(result.reference);
+              $("#productLabel").val(result.label);
+              $("#prixUnitaire").val(result.unit_price);
+              $("#averageSellingPrice").val(result.average_selling_price);
+              $("#averagePackageSellingPrice").val(result.average_package_selling_price);
+              $("#nombreUnite").val(result.unite);
+              $("#productStock").val(result.stock);
+              $("#quantity").val(1);
+              $("#quantity").focus();
+              $("#quantity").select();
+              $("#notif p").text('');
+          },
+          error: function (xhr, status, error) {
+            $("#products").val(null);
+            $("#price").val(null);
+            $("#quantity").val(1);
+            $("#notif p").text('Désolé ! Le serveur de données a rencontré un problème.');
+            console.log(error)
+          }
+        });
+      });
+
+
+      $("#reference").on("keyup change paste input", function(){
+        if($(this).val().length >= 5){
+          var ref = $(this).val();
+          $.ajax({
+            url: '/ventes/select-product-by-reference/' + ref + '/' + storeId,
+            type: 'GET',
+            dataType: 'json',
+            success: function (result) { 
+              if(result.length != 0 && result.stock != 0) 
+              {
+                var vente_par = $("#venduPar").val();
+                $("#price").val(result.unit_price);
+                if(vente_par == 2){
+                  $("#price").val(result.unit_price * result.unite);
+                } 
+                $("#productId").val(result.id);
+                $("#productLabel").val(result.label);
+                $("#prixUnitaire").val(result.unit_price);
+                $("#averageSellingPrice").val(result.average_selling_price);
+                $("#averagePackageSellingPrice").val(result.average_package_selling_price);
+                $("#nombreUnite").val(result.unite);
+                $("#productStock").val(result.stock);
+                $("#quantity").val(1);
+                $("#quantity").focus();
+                $("#quantity").select();
+                $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
+                $("#notif p").text('');
+              } 
+              else if(result.length != 0 && result.stock == 0) {
+                $("#notif p").text('Stock de (' + result.label + ') épuisé.');
+              } 
+              else{
+                $("#notif p").text('Référence (' + ref + ') incorrecte.');
+              }
+            },
+            error: function (xhr, status, error) {
+              $("#products").val(null);
+              $("#price").val(null);
+              $("#quantity").val(1);
+              $("#notif p").text('Référence (' + ref + ') incorrecte.');
+              console.log(error)
+            }
+          });
+        } else {
+          $(".nomFr").val('');
+          $(".pnomFr").val('');
+          $(".dateNaissance").val('');
+        }
+      });
+
+      // $("#venduPar").on("change", function(){
+      //   var price = $("#prixUnitaire").val();
+      //   var unite = $("#nombreUnite").val();
+      //   var quantity = $("#quantity").val();
+      //   $("#price").val(price * unite * quantity);
+      // });
+
+      // A chaque fois que la quantité change
+      $('#add_product').on('click', function(e){
+        var id                  = parseInt($("#productId").val());
+        var reference           = $("#reference").val();
+        var unite               = parseInt($("#nombreUnite").val());
+        var venduPar            = parseInt($("#venduPar").val());
+        var label               = $("#productLabel").val();
+        var stock               = parseInt($("#productStock").val());
+        var price               = parseInt($("#price").val());
+        var quantity            = parseFloat($("#quantity").val());        
+        var averageSellingPrice = parseInt($("#averageSellingPrice").val());        
+        var averagePackageSellingPrice = parseInt($("#averagePackageSellingPrice").val());        
+        // console.log(averageSellingPrice, averagePackageSellingPrice);
+        
+        if(quantity == undefined || quantity == null || quantity == 0){
+          $("#notif p").text('La quantité à vendre n\'a pas été précisée.');
+          return false;
+        }
+        if((quantity % 0.5) != 0){
+          $("#notif p").text('Quantité saisie incorrecte. Veuillez rééssayer');
+          return false;
+        }
+        // return false;
+
+        if(jQuery.inArray(id, productsId) !== -1){
+          $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');
+        }
+        else{
+          if(quantity <= stock){
+            productsId.push(id);
+            console.log(productsId);
+            var sousTotal = quantity * price; 
+            var vente_par = unite == 1 ? 1 : venduPar;               
+            // $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td></td></tr>');
+            $("#myTable tbody tr:last").after('<tr id="tableLineId' + id + '"><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="setQuantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="setPrice" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" id="ventePar[' + id + ']" name="ventePar[' + id + ']" value="' + vente_par + '"><input type="hidden" name="products[]" value="' + id + '"></td><td><i class="icon-trash" id="' + id + '" title="Retirer ' + label + ' de la vente en cours" onclick="$.fn.deleteProduct(' + id + ')"></i></td></tr>');
+            $("#products").val(null);
+            $("#reference").val("PR");
+            $("#price").val(null);
+            $("#quantity").val(1);
+            $('#products option[value="'+ id +'"]').remove();
+            $("#notif p").text('');
+            $("#total").val($.fn.calculateTotal())
+            var t = eval($("#total").val())
+            var tva = eval($("#tva").val()) / 100
+            var taxe = eval(t * tva)
+            var remise = parseInt($("#remise").val())
+            $("#montantTva").val(taxe)
+            $("#ttc").val(t + taxe)
+            $("#net").val(t + taxe - remise)
+            $("#venduPar").val(1)
+          }
+          else{
+            $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');
+          }
+        }
+        return false;
+      });
+
+      $.fn.calculateTotal = function()
+      {
+        var sousTotaux = $('.sousTotal');
+        var total = 0;
+        for (let i = 0; i < sousTotaux.length; i++) {
+          const element = sousTotaux[i];
+          total += eval(element.value)
+        }
+
+        console.log("Le total fait " + total);
+        return total;
+      }
+
+      $.fn.deleteProduct = function(id)
+      {
+        // Au clique sur le bouton de suppression dans la liste des produits de la commande en cours,
+        // 1. On retire l'id du produit du tableau des ids de produit productsId
+        productsId = $.grep(productsId, function(value){
+          return value != id
+        });
+
+        // 2. On ajoute le produit retiré au select (menu déroulant) des produits dans la boîte modal d'ajout de produit
+        $.ajax({
+          url: '/ventes/select-product/' + id + '/' + storeId,
+          type: 'GET',
+          dataType: 'json',
+          success: function (result) { 
+            console.log(result);
+            $('#products option:last').after('<option value="' + result.id + '">' + result.reference + ' --- ' + result.label + '</option>');
+          },
+          error: function (xhr, status, error) {
+            console.log(error)
+          }
+        });
+        
+        // 3. On supprime la ligne (l'élément tr) du produit du tableau visible dans le navigateur
+        $('#tableLineId' + id).remove()
+
+        // 4. On calcule à nouveau le total de la commande
+        $("#total").val($.fn.calculateTotal())
+        var t = eval($("#total").val())
+        var tva = eval($("#tva").val()) / 100
+        var taxe = eval(t * tva)
+        var remise = parseInt($("#remise").val())
+        $("#montantTva").val(taxe)
+        $("#ttc").val(t + taxe)
+        $("#net").val(t + taxe - remise)
+      }
+
+      $('.js-example-basic-single').select2();
+    });
+
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+{% endblock %}

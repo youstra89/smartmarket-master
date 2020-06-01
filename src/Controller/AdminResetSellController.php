@@ -36,7 +36,7 @@ class AdminResetSellController extends AbstractController
 
       if($request->isMethod('post'))
       {
-        $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+        $exercice  = $fonctions->exercice_en_cours($manager);
         $data = $request->request->all();
         $token  = $data['token'];
         if($this->isCsrfTokenValid('returned_products', $token)){
@@ -104,7 +104,7 @@ class AdminResetSellController extends AbstractController
 
             // dump(["totalHT" => $total, "totalMR" => $totalMarchandise, "RMR" => $remise, "Acompte" => $acompte, "Résul" => $resultat, "bene" => $benefice, "tva" => $montantTva]);
             // die();
-            $fonctions->ecriture_du_retour_de_marchandises_apres_une_vente($manager, $exercice, $totalMarchandise, $montantTva, $resultat, $commande);
+            // $fonctions->ecriture_du_retour_de_marchandises_apres_une_vente($manager, $exercice, $totalMarchandise, $montantTva, $resultat, $commande);
             // dd($commande->getCustomer()->getAcompte());
             // On va tester la valeur de $process
             if ($process == false) {
@@ -123,7 +123,7 @@ class AdminResetSellController extends AbstractController
           else{
             $this->addFlash('danger', "Le formulaire n'est pas correctement rempli. Veuillez reprendre la procédure.");
           }
-          return $this->redirectToRoute('customer.order.details', ["id" => $id]);
+          return $this->redirectToRoute('customer_order_details', ["id" => $id]);
         }
       }
       return $this->render('Sell/reset-sell.html.twig', [

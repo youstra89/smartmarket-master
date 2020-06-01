@@ -2,9 +2,12 @@
 // src/Controller/LuckyController.php
 namespace App\Controller;
 
+use DateInterval;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use NumberFormatter;
+use App\Entity\Stock;
+use App\Entity\Store;
 use App\Entity\Product;
 use App\Entity\Customer;
 use App\Entity\Echeance;
@@ -13,7 +16,6 @@ use App\Entity\ComptaCompte;
 use App\Entity\Informations;
 use App\Entity\ComptaExercice;
 use App\Entity\CustomerCommande;
-use App\Entity\ComptaCompteExercice;
 use App\Entity\CustomerCommandeSearch;
 use App\Entity\CustomerCommandeDetails;
 use App\Form\CustomerCommandeSearchType;
@@ -24,7 +26,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Controller\FonctionsComptabiliteController;
-use DateInterval;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -37,11 +38,11 @@ class AdminSellController extends AbstractController
      * @Route("/", name="sell")
      * @IsGranted("ROLE_VENTE")
      */
-    public function index(Request $request, EntityManagerInterface $manager)
+    public function index(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
-      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $exercice  = $fonctions->exercice_en_cours($manager);
       $exerciceId = $exercice->getId();
-      $commandes = $manager->getRepository(CustomerCommande::class)->commandesClients($exerciceId);
+      $commandes  = $manager->getRepository(CustomerCommande::class)->commandesClients($exerciceId);
 
       return $this->render('Sell/index.html.twig', [
         'current'   => 'sells',
@@ -75,47 +76,47 @@ class AdminSellController extends AbstractController
 
 
     /**
-     * @Route("/select-product/{id}", name="get_product", options={"expose"=true})
+     * @Route("/select-product/{id}/{storeId}", name="get_product", options={"expose"=true})
      * @IsGranted("ROLE_VENTE")
      */
-    public function get_product(Request $request, EntityManagerInterface $manager, int $id)
+    public function get_product(Request $request, EntityManagerInterface $manager, int $id, int $storeId)
     {
-      $product = $manager->getRepository(Product::class)->find($id);
+      $stock = $manager->getRepository(Stock::class)->getStockBystoreIdAndProductId($id, $storeId);
       $data = [
-        "id"                            => $product->getId(),
-        "reference"                     => $product->getReference(),
-        "label"                         => $product->label(),
-        "stock"                         => $product->getStock(),
-        "unite"                         => $product->getUnite(),
-        "unit_price"                    => $product->getUnitPrice(),
-        "purchasing_price"              => $product->getPurchasingPrice() * $product->getUnite(),
-        "average_selling_price"         => $product->getAverageSellingPrice(),
-        "average_package_selling_price" => $product->getAveragePackageSellingPrice(),
+        "id"                            => $stock->getProduct()->getId(),
+        "reference"                     => $stock->getProduct()->getReference(),
+        "label"                         => $stock->getProduct()->label(),
+        "stock"                         => $stock->getQuantity(),
+        "unite"                         => $stock->getProduct()->getUnite(),
+        "unit_price"                    => $stock->getProduct()->getUnitPrice(),
+        "purchasing_price"              => $stock->getProduct()->getPurchasingPrice() * $stock->getProduct()->getUnite(),
+        "average_selling_price"         => $stock->getProduct()->getAverageSellingPrice(),
+        "average_package_selling_price" => $stock->getProduct()->getAveragePackageSellingPrice(),
       ];
 
       return new JsonResponse($data);
     }
 
     /**
-     * @Route("/select-product-by-reference/{reference}", name="get_product_by_reference", options={"expose"=true})
+     * @Route("/select-product-by-reference/{reference}/{storeId}", name="get_product_by_reference", options={"expose"=true})
      * @IsGranted("ROLE_VENTE")
      */
-    public function get_product_by_reference(Request $request, EntityManagerInterface $manager, string $reference)
+    public function get_product_by_reference(Request $request, EntityManagerInterface $manager, string $reference, int $storeId)
     {
-      $product = $manager->getRepository(Product::class)->findByReference($reference)[0];
+      $stock = $manager->getRepository(Stock::class)->findByReferenceAndStoreId($reference, $storeId);
       $data = [];
-      if(!empty($product))
+      if(!empty($stock))
       {
         $data = [
-          "id"                            => $product->getId(),
-          "reference"                     => $product->getReference(),
-          "label"                         => $product->label(),
-          "stock"                         => $product->getStock(),
-          "unite"                         => $product->getUnite(),
-          "unit_price"                    => $product->getUnitPrice(),
-          "purchasing_price"              => $product->getPurchasingPrice() * $product->getUnite(),
-          "average_selling_price"         => $product->getAverageSellingPrice(),
-          "average_package_selling_price" => $product->getAveragePackageSellingPrice(),
+          "id"                            => $stock->getProduct()->getId(),
+          "reference"                     => $stock->getProduct()->getReference(),
+          "label"                         => $stock->getProduct()->label(),
+          "stock"                         => $stock->getQuantity(),
+          "unite"                         => $stock->getProduct()->getUnite(),
+          "unit_price"                    => $stock->getProduct()->getUnitPrice(),
+          "purchasing_price"              => $stock->getProduct()->getPurchasingPrice() * $stock->getProduct()->getUnite(),
+          "average_selling_price"         => $stock->getProduct()->getAverageSellingPrice(),
+          "average_package_selling_price" => $stock->getProduct()->getAveragePackageSellingPrice(),
         ];
       }
 
@@ -123,14 +124,20 @@ class AdminSellController extends AbstractController
     }
 
     /**
-     * @Route("/unique-form-for-selling", name="unique_form_for_selling")
+     * @Route("/unique-form-for-selling/{id}", name="unique_form_for_selling")
      * @IsGranted("ROLE_VENTE")
      */
-    public function unique_form_for_selling(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
+    public function unique_form_for_selling(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions, Store $store, int $id)
     {
-      $customers = $manager->getRepository(Customer::class)->findAll();
-      $products  = $manager->getRepository(Product::class)->findAll();
-      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $customers = $manager->getRepository(Customer      ::class)->findAll();
+      $stocks    = $manager->getRepository(Stock         ::class)->storeProducts($id);
+      $exercice  = $fonctions->exercice_en_cours($manager);
+
+      $hasAccess = $this->isGranted('ROLE_DEPOT');
+      if($id != 1 and $hasAccess == 0){
+        $this->addFlash('danger', 'Vous n\'êtes pas autorisés à vendre à partir de ce dépôt.');
+        return $this->redirectToRoute('sell');
+      }
 
       if($request->isMethod('post'))
       {
@@ -141,25 +148,24 @@ class AdminSellController extends AbstractController
           $token = $data['token'];
           if($this->isCsrfTokenValid('vente', $token)){
             $data = $request->request->all();
-            if(empty($data['date']))
-            {
+            if(empty($data['date'])){
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
-              return $this->redirectToRoute('unique_form_for_selling');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
             else{
               $date = new \DateTime($data["date"]);
               if($date < $exercice->getDateDebut() or $date > $exercice->getDateFin()){
                 $this->addFlash('danger', 'Impossible de continuer. La date saisie ne fait pas partie de la période d\'exercice en cours.');
-                return $this->redirectToRoute('unique_form_for_selling');
+                return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
               }
             }
             if(empty($data["customer"])){
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans client.');
-              return $this->redirectToRoute('unique_form_for_selling');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
-            $customerId         = (int)$data["customer"];
-            $paiementParCreance = (int)$data["creance"];
-            $paiementParCreance = (int)$data["creance"];
+            $storeId            = $id;
+            $customerId         = (int) $data["customer"];
+            $paiementParCreance = (int) $data["creance"];
             $date               = new \DateTime($data["date"]);
             $prices             = $data["prices"];
             $remise             = (int) $data["remise"];
@@ -170,19 +176,18 @@ class AdminSellController extends AbstractController
             $venduPar           = $data["ventePar"];
             $quantities         = $data["quantities"];
 
-            if($amount > $net)
-            {
+            if($amount > $net){
               $this->addFlash('danger', 'Le montant saisie est supérieur au montant total de la commande.');
-              return $this->redirectToRoute('unique_form_for_selling');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
-            if($paiementParCreance === 1 && $customerId === 1 or $customerId === 1 and $amount < $net)
-            {
+
+            if($paiementParCreance === 1 && $customerId === 1 or $customerId === 1 and $amount < $net){
               $this->addFlash('danger', 'Aucune créance n\'est accordée aux clients ordinaires. Veuillez saisir le montant total de la commande pour ce client.');
-              return $this->redirectToRoute('unique_form_for_selling');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
             elseif($paiementParCreance === 2 and $amount < $net){
               $this->addFlash('danger', 'Aucune créance n\'est accordée. Veuillez saisir le montant total de la commande pour ce client.');
-              return $this->redirectToRoute('unique_form_for_selling');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
 
             // if($customerId === 1 and (int)$data["creance"] === 1){
@@ -194,10 +199,9 @@ class AdminSellController extends AbstractController
             //   return $this->redirectToRoute('unique_form_for_selling');
             // }
             // dd($customerId, $paiementParCreance, $net, $amount);
-            if(empty($data["products"]))
-            {
+            if(empty($data["products"])){
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans avoir ajouter des produits.');
-              return $this->redirectToRoute('unique_form_for_selling');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
             else {
               // dd($venduPar);
@@ -212,6 +216,7 @@ class AdminSellController extends AbstractController
               }
               $customerCommande->setReference($reference);
               $customerCommande->setExercice($exercice);
+              $customerCommande->setStore($store);
               $customerCommande->setSeller($seller);
               $customerCommande->setRemise($remise);
               $customerCommande->setDate($date);
@@ -230,8 +235,8 @@ class AdminSellController extends AbstractController
               $prixDAchatGlobal = 0;
               $commandeGlobalCost = 0;
               foreach ($prices as $key => $value) {
-                $product  = $manager->getRepository(Product::class)->find($key);
-                $unite    = $product->getUnite();
+                $stock  = $manager->getRepository(Stock::class)->getStockBystoreIdAndProductId($key, $storeId);
+                $unite    = $stock->getProduct()->getUnite();
                 $ventePar = $venduPar[$key];
                 $quantity = $quantities[$key];
 
@@ -241,45 +246,45 @@ class AdminSellController extends AbstractController
                   $value = $value / $unite;
                 }
                 $subtotal = $value * $quantity;
-                $stockQte = $product->getStock() - $quantity;
+                $stockQte = $stock->getQuantity() - $quantity;
 
                 if($quantity <= 0){
-                  $this->addFlash('danger', 'Quantité de <strong>'.$product->label().'</strong> incorrecte.');
+                  $this->addFlash('danger', 'Quantité de <strong>'.$stock->getProduct()->label().'</strong> incorrecte.');
                   // return new Response(var_dump("Quantité"));
-                  return $this->redirectToRoute('unique_form_for_selling');
+                  return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
                 }
                 
                 if($value <= 0){
-                  $this->addFlash('danger', 'Prix de <strong>'.$product->label().'</strong> incorrect.');
+                  $this->addFlash('danger', 'Prix de <strong>'.$stock->getProduct()->label().'</strong> incorrect.');
                   // return new Response(var_dump("Prix"));
-                  return $this->redirectToRoute('unique_form_for_selling');
+                  return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
                 }
                 
                 if($stockQte < 0){
-                  $this->addFlash('danger', 'Quantité de <strong>'.$product->label().'</strong> indisponible en stock.');
+                  $this->addFlash('danger', 'Quantité de <strong>'.$stock->getProduct()->label().'</strong> indisponible en stock.');
                   // return new Response(var_dump("Stock"));
-                  return $this->redirectToRoute('unique_form_for_selling');
+                  return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
                 }
                 // On enregistre d'abord les détails de commande
                 $commandeProduit    = new CustomerCommandeDetails();
-                $beneficeSurProduit = ($value - $product->getAveragePurchasePrice()) * $quantity;
+                $beneficeSurProduit = ($value - $stock->getProduct()->getAveragePurchasePrice()) * $quantity;
                 $commandeProduit->setCommande($customerCommande);
-                $commandeProduit->setProduct($product);
+                $commandeProduit->setProduct($stock->getProduct());
                 $commandeProduit->setQuantity($quantity);
                 $commandeProduit->setUnitPrice($value);
                 $commandeProduit->setSubtotal($subtotal);
                 $commandeProduit->setBenefice($beneficeSurProduit);
                 $commandeProduit->setSoldBy($ventePar);
                 $commandeProduit->setCreatedBy($this->getUser());
-                $prixDAchatGlobal = $prixDAchatGlobal + $product->getAveragePurchasePrice() * $quantity;
+                $prixDAchatGlobal = $prixDAchatGlobal + $stock->getProduct()->getAveragePurchasePrice() * $quantity;
                 $commandeGlobalCost = $commandeGlobalCost + $subtotal;
                 $manager->persist($commandeProduit);
                 
                 // Ensuite, on met à jour le stock
-                $product->setStock($stockQte);
-                $product->setLastSeller($seller);
-                $product->setUpdatedAt(new \DateTime());
-                $tab[] = $product->getStockUnite();
+                $stock->setQuantity($stockQte);
+                $stock->getProduct()->setLastSeller($seller);
+                $stock->getProduct()->setUpdatedAt(new \DateTime());
+                $tab[] = $stock->getProduct()->getTotalStock();
               }
               // dd($product->getStock());
               $resultat = $commandeGlobalCost - $prixDAchatGlobal - $remise;
@@ -309,23 +314,20 @@ class AdminSellController extends AbstractController
               $result = $this->generate_new_settlement($manager, $customerCommande, $amount, $mode, $date);
               if($result[0] == 500){
                 $this->addFlash('danger', $result[1]);
-                return $this->redirectToRoute('unique_form_for_selling');
+                return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
               }
               $settlement = $result[2];
-              $fonctions->ecriture_de_vente_dans_le_journal_comptable($manager, $prixDAchatGlobal, $resultat, $tva, $exercice, $date, $customerCommande);
-              $fonctions->ecriture_du_resultat_de_vente_journal_comptable($manager, $resultat, $exercice, $date, $customerCommande);
-              $fonctions->ecriture_de_reglements_clients_dans_le_journal_comptable($manager, $mode, $amount, $exercice, $date, $settlement);
-              // die();
+              // die($stock->getQuantity());
               try{
                 $manager->flush();
                 // dd($res1, $res2);
                 // $commandeId = $manager->getRepository(CustomerCommande::class)->findOneByReference($reference)->getId();
                 $this->addFlash('success', '<li>Enregistrement de la vente N°<strong>'.$customerCommande->getReference().'</strong> réussie.</li>');
-                return $this->redirectToRoute('customer.order.details', ['id' => $customerCommande->getId()]);
+                return $this->redirectToRoute('customer_order_details', ['id' => $customerCommande->getId()]);
               } 
               catch(\Exception $e){
                 $this->addFlash('danger', $e->getMessage());
-                return $this->redirectToRoute('unique_form_for_selling');
+                return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
               }
             }
           }
@@ -338,7 +340,8 @@ class AdminSellController extends AbstractController
       
       return $this->render('Sell/unique-form-for-selling.html.twig', [
         'current'   => 'sells',
-        'products'  => $products,
+        'store'     => $store,
+        'stocks'    => $stocks,
         'customers' => $customers,
       ]);
     }
@@ -350,9 +353,9 @@ class AdminSellController extends AbstractController
     public function edit_sell(Request $request, EntityManagerInterface $manager, int $id, CustomerCommande $commande, FonctionsComptabiliteController $fonctions)
     {
       if(count($commande->getSettlements()) > 1)
-        return $this->redirectToRoute('customer.order.details', ["id" => $id]);
+        return $this->redirectToRoute('customer_order_details', ["id" => $id]);
       elseif($commande->getDate()->format('d-m-Y') !== (new \DateTime())->format('d-m-Y'))
-        return $this->redirectToRoute('customer.order.details', ["id" => $id]);
+        return $this->redirectToRoute('customer_order_details', ["id" => $id]);
 
       if($request->isMethod('post'))
       {
@@ -424,7 +427,7 @@ class AdminSellController extends AbstractController
               $commande->setUpdatedAt(new \DateTime());
               $commande->setUpdatedBy($this->getUser());
               try{
-                $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
+                // $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
                 $manager->flush();
                 $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
               } 
@@ -455,10 +458,10 @@ class AdminSellController extends AbstractController
      * @IsGranted("ROLE_VENTE")
      * @param Customer $customer
      */
-    public function prepare_sell_for_customer(Request $request, EntityManagerInterface $manager, Customer $customer, int $id)
+    public function prepare_sell_for_customer(Request $request, EntityManagerInterface $manager, Customer $customer, int $id, FonctionsComptabiliteController $fonctions)
     {
       $products = $manager->getRepository(Product::class)->findAll();
-      $exercice = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $exercice  = $fonctions->exercice_en_cours($manager);
 
       if($request->isMethod('post'))
       {
@@ -646,7 +649,7 @@ class AdminSellController extends AbstractController
         $this->addFlash('warning', 'Cette commande est déjà soldée.');
         return $this->redirectToRoute('sell');
       }
-      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $exercice  = $fonctions->exercice_en_cours($manager);
       // Lorsque la commande est liée à un client, on cherche tous règlements effectués.
       // // $total = array_sum(array_map('getValue', $reglements));
       $reglements = $commande->getSettlements();
@@ -700,14 +703,14 @@ class AdminSellController extends AbstractController
           $settlement = $result[2];
           
           try{
-            $fonctions->ecriture_de_reglements_clients_dans_le_journal_comptable($manager, $mode, $amount, $exercice, $date, $settlement);
+            // $fonctions->ecriture_de_reglements_clients_dans_le_journal_comptable($manager, $mode, $amount, $exercice, $date, $settlement);
             $manager->flush();
             $this->addFlash('success', 'Règlement enregistré avec succès.');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
           }
-          return $this->redirectToRoute('customer.order.details', ['id' => $id]);
+          return $this->redirectToRoute('customer_order_details', ['id' => $id]);
         }
         else{
           $this->addFlash('danger', 'Jéton de sécurité invalide. Vous avez certement mis trop de temps sur cette page.');
@@ -781,16 +784,17 @@ class AdminSellController extends AbstractController
      */
     public function edit_settlement(Request $request, int $id, Settlement $settlement, EntityManagerInterface $manager)
     {
+      die();
       $commande   = $settlement->getCommande();
       $commandeId = $commande->getId();
       $dernierVersement = $manager->getRepository(Settlement::class)->lastSettlement($commandeId);
       if ($dernierVersement !== $settlement) {
         $this->addFlash('danger', 'Vous ne pouvez modifier que le dernier versement.');
-        return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+        return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
       }
       // elseif ($commande->getEnded() === true) {
       //   $this->addFlash('danger', 'Impossible de continuer, car cette commande est déjà soldée.');
-      //   return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+      //   return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
       // }
       if($request->isMethod('post'))
       {
@@ -811,24 +815,24 @@ class AdminSellController extends AbstractController
           $soldee = false;
           if(empty($date)){
             $this->addFlash('danger', 'Saisir une valuer pour la date.');
-            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+            return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
           }
           if(empty($amount) or $amount < 0){
             $this->addFlash('danger', 'Montant incorrect. Saisir une valeur supérieure à 0.');
             // return new Response("Montant nul ou négatif");
-            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+            return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
           }
 
           $newTotal = $amount + $total;
           if(!empty($dernierVersement) and $dernierVersement->getDate() > $date)
           {
             $this->addFlash('danger', 'Impossible d\'enregistrer ce versement car la date est antérieure au dernier versement ('. $dernierVersement->getDate()->format('d-m-Y') .').');
-            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+            return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
           }
           elseif($newTotal > $commande->getNetAPayer())
           {
             $this->addFlash('danger', 'Montant incorrect. La somme des règlements est supérieure au montant total da la commande.');
-            return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+            return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
           }
           elseif($newTotal < $commande->getNetAPayer())
           {
@@ -852,7 +856,7 @@ class AdminSellController extends AbstractController
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
           }
-          return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+          return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
         }
       }
       return $this->render('Sell/edit-settlement.html.twig', [
@@ -886,7 +890,7 @@ class AdminSellController extends AbstractController
     }
 
     /**
-     * @Route("/details-vente/{id}", name="customer.order.details")
+     * @Route("/details-vente/{id}", name="customer_order_details")
      * @param CustomerCommande $commande
      * @IsGranted("ROLE_VENTE")
      */

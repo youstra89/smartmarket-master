@@ -57,52 +57,54 @@
 {% block body %}
   <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Stock de marchandises du dépôt <strong>{{ store.name }}</strong></h2>
+  <a href="{{ path('approvisionner_depot', {id: store.id}) }}" class="btn-lg btn-primary">Approvisionner un dépôt à partir du <strong>{{ store.name }}</strong></a>
+  <a href="{{ path('unique_form_for_selling', {id: store.id}) }}" class="btn-lg btn-info">Vendre à partir du <strong>{{ store.name }}</a>
+  <br><br>
   <div class="table-responsive">
-      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
-        <thead>
-          <tr>
-            <th>N°</th>
-            <th>Référence</th>
-            <th>Catégorie</th>
-            <th>Marque</th>
-            <th>Description</th>
-            <th>Stock</th>
-            <th>Prix unitaire</th>
-            {# <th>Actions</th> #}
+    <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Référence</th>
+          <th>Catégorie</th>
+          <th>Marque</th>
+          <th>Description</th>
+          <th>Stock</th>
+          <th>Prix unitaire</th>
+          {# <th>Actions</th> #}
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th>N°</th>
+          <th>Référence</th>
+          <th>Catégorie</th>
+          <th>Marque</th>
+          <th>Description</th>
+          <th>Stock</th>
+          <th>Prix unitaire</th>
+          {# <th>Actions</th> #}
+        </tr>
+      </tfoot>
+      <tbody>
+        {% set i = 0 %}
+        {% for product in store.stocks %}
+          {% set i = i + 1 %}
+          <tr {% if product.quantity == 0 %}class="bg-danger"{% elseif product.quantity < product.product.securityStock %}class="bg-warning"{% endif %}>
+            <td>{{ i }}</td>
+            <td>{{ product.product.reference }}</td>
+            <td>{{ product.product.category.name }}</td>
+            <td>{% if product.product.mark %} {{ product.product.mark.label }} {% endif %}</td>
+            <td>{{ product.product.description }}</td>
+            <td>{{ product.stockUnite }}</td>
+            <td>{{ product.product.unitPrice|number_format(0, ',', ' ') }} F</td>
+            {# <td>
+              <a href="{{ path('product_edit', {id: product.product.id}) }}" title="Modifier ce produit"><i class="icon-edit"></i></a>
+            </td> #}
           </tr>
-        </thead>
-        <tfoot>
-          <tr>
-            <th>N°</th>
-            <th>Référence</th>
-            <th>Catégorie</th>
-            <th>Marque</th>
-            <th>Description</th>
-            <th>Stock</th>
-            <th>Prix unitaire</th>
-            {# <th>Actions</th> #}
-          </tr>
-        </tfoot>
-        <tbody>
-          {% set i = 0 %}
-          {% for product in store.stocks %}
-            {% set i = i + 1 %}
-            <tr {% if product.quantity == 0 %}class="bg-danger"{% elseif product.quantity < product.product.securityStock %}class="bg-warning"{% endif %}>
-              <td>{{ i }}</td>
-              <td>{{ product.product.reference }}</td>
-              <td>{{ product.product.category.name }}</td>
-              <td>{% if product.product.mark %} {{ product.product.mark.label }} {% endif %}</td>
-              <td>{{ product.product.description }}</td>
-              <td>{{ product.stockUnite }}</td>
-              <td>{{ product.product.unitPrice|number_format(0, ',', ' ') }} F</td>
-              {# <td>
-                <a href="{{ path('product_edit', {id: product.product.id}) }}" title="Modifier ce produit"><i class="icon-edit"></i></a>
-              </td> #}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 {% endblock %}
 

@@ -19,6 +19,49 @@ class StockRepository extends ServiceEntityRepository
         parent::__construct($registry, Stock::class);
     }
 
+    public function storeProducts(int $storeId)
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.product', 'p')
+            ->join('s.store', 'st')
+            ->andWhere('st.id = :storeId')
+            ->setParameter('storeId', $storeId)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function getStockBystoreIdAndProductId(int $productId, int $storeId)
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.product', 'p')
+            ->join('s.store', 'st')
+            ->andWhere('p.id = :productId')
+            ->andWhere('st.id = :storeId')
+            ->setParameter('productId', $productId)
+            ->setParameter('storeId', $storeId)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
+    public function findByReferenceAndStoreId(string $reference, int $storeId)
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.product', 'p')
+            ->join('s.store', 'st')
+            ->andWhere('p.reference = :reference')
+            ->andWhere('st.id = :storeId')
+            ->setParameter('reference', $reference)
+            ->setParameter('storeId', $storeId)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult()[0]
+        ;
+    }
+
     // /**
     //  * @return Stock[] Returns an array of Stock objects
     //  */

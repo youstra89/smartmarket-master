@@ -38,14 +38,14 @@ class ComptabiliteController extends AbstractController
         if($checker->getAccess() == true){
           return $this->redirectToRoute('login');
         }
-        $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+        
         $creancesClients    = 0;
         $dettesFournisseurs = 0;
         $stockMarchandises  = 0;
         $products = $manager->getRepository(Product::class)->findAll();
         foreach ($products as $item) {
           if ($item->getIsDeleted() == 0) {
-            $stockMarchandises = $stockMarchandises + $item->getStock() * $item->getAveragePurchasePrice();
+            $stockMarchandises = $stockMarchandises + $item->getTotalStock(2) * $item->getAveragePurchasePrice();//178 493 932 - 181 338 865
           }
         }
 
@@ -206,6 +206,7 @@ class ComptabiliteController extends AbstractController
           $exercice->setDateDebut($dateDebut);
           $exercice->setDateFin($dateFin);
           $exercice->setLabel($labelExercice);
+          $exercice->setMois($dateDebut->format("m-Y"));
           $exercice->setCreatedBy($this->getUser());
           $manager->persist($exercice);
 
@@ -364,19 +365,19 @@ class ComptabiliteController extends AbstractController
           $date      = new \DateTime($data["date"]);
           $reference = $data["reference"];
           $label     = $data["label"];
-          $debit     = (int) $data["debit"];
-          $credit    = (int) $data["credit"];
+          $debitId   = (int) $data["debit"];
+          $creditId  = (int) $data["credit"];
           $montant   = (int) $data["montant"];
           $tva       = (int) $data["tva"];
 
           // On va vérifier que l'opération se passe entre deux comptes différents
-          if($debit == $credit){
+          if($debitId == $creditId){
             $this->addFlash('danger', "Opération impossible. Le mouvement se passe dans le même compte.");
             return $this->redirectToRoute('ecrire_dans_journal', ["id" => $id]);      
           }
           else{
-            $debit  = $manager->getRepository(ComptaCompteExercice::class)->find($debit);
-            $credit = $manager->getRepository(ComptaCompteExercice::class)->find($credit);
+            $debit  = $manager->getRepository(ComptaCompteExercice::class)->find($debitId);
+            $credit = $manager->getRepository(ComptaCompteExercice::class)->find($creditId);
           }
 
           // Après cela; on vérifie le solde du compte qui doit être débiter. Si le solde est supérieur ou égal au montant saisie alors, on continue.
@@ -399,12 +400,41 @@ class ComptabiliteController extends AbstractController
           $ecriture->setCreatedBy($this->getUser());
           $manager->persist($ecriture);
 
-          //Ici, on va maintenant retirer le montant du compte à débiter et l'ajouter au compte à créditer
-          $nouveauMontantCompteADebiter  = $debit->getMontantFinal() - $montant;
-          $nouveauMontantCompteACrediter = $credit->getMontantFinal() + $montant;
+          /**
+           * Ici, on va maintenant débiter et créditer les comptes qu'il faut. Quatre cas peuvent se présenter.
+           *    1 - Le compte à débiter est un compte de l'actif et le compte à créditer est aussi un compte de l'actif
+           *    2 - Le compte à débiter est un compte de l'actif mais le compte à créditer est un compte du passif
+           *    3 - Le compte à débiter est un compte du passif et le compte à créditer est aussi un compte du passif
+           *    4 - Le compte à débiter est un compte du passif mais le compte à créditer est aussi un compte de l'actif
+           */
+          $typeCompteADebiter = $debit->getCompte()->getClasse()->getType()->getId();
+          $typeCompteACrediter = $credit->getCompte()->getClasse()->getType()->getId();
+          if($typeCompteADebiter === $typeCompteACrediter and $typeCompteACrediter === 1){
+            $nouveauMontantCompteADebiter  = $debit->getMontantFinal() + $montant;
+            $nouveauMontantCompteACrediter = $credit->getMontantFinal() - $montant;
+          }
+          elseif($typeCompteADebiter === $typeCompteACrediter and $typeCompteACrediter === 2){
+            $nouveauMontantCompteADebiter  = $debit->getMontantFinal() - $montant;
+            $nouveauMontantCompteACrediter = $credit->getMontantFinal() + $montant;
+          }
+
+          if($typeCompteADebiter !== $typeCompteACrediter and $typeCompteADebiter === 1){
+            $nouveauMontantCompteADebiter  = $debit->getMontantFinal() + $montant;
+            $nouveauMontantCompteACrediter = $credit->getMontantFinal() + $montant;
+          }
+          elseif($typeCompteADebiter !== $typeCompteACrediter and $typeCompteADebiter === 2){
+            $nouveauMontantCompteADebiter  = $debit->getMontantFinal() - $montant;
+            $nouveauMontantCompteACrediter = $credit->getMontantFinal() - $montant;
+          }
+
           $debit->setMontantFinal($nouveauMontantCompteADebiter);
           $credit->setMontantFinal($nouveauMontantCompteACrediter);
+          if($nouveauMontantCompteACrediter < 0 or $nouveauMontantCompteADebiter < 0){
+            $this->addFlash('danger', "La somme indiquée ne peut être débitée/créditée des comptes sélectionnés.");
+            return $this->redirectToRoute('ecrire_dans_journal', ["id" => $id]);    
 
+          }
+          dd($debit->getMontantFinal(), $credit->getMontantFinal());
           try{
             $manager->flush();
             $this->addFlash('success', "Enregistrement de l'écriture N°<strong>".$reference."</strong> réussi.");

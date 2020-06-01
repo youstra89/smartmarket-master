@@ -7,7 +7,7 @@
 
 
 {% block title %}
-  Enregistrement de vente
+  Enregistrement de vente à partir du {{ store.name }}
 {% endblock %}
 
 
@@ -37,7 +37,7 @@
 
 
 {% block body %}
-  <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une nouvelle vente</h2>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une nouvelle vente à partir du <strong>{{ store.name }}</strong></h2>
   <form class="text-sm">
     <legend>Ajoute de produit au pannier</legend>
     <div class="row">
@@ -50,8 +50,8 @@
         {# <select name="products" id="products" class="form-control"> #}
         <select name="products" id="products" class="form-control mb-4 js-example-basic-single">
           <option value="">Sélectionnez un produit</option>
-          {% for product in products if product.stock > 0 %}
-            <option value="{{ product.id }}">{{ product.reference }} --- {{ product.label }}</option>
+          {% for product in stocks if product.quantity > 0 %}
+            <option value="{{ product.product.id }}">{{ product.product.reference }} --- {{ product.product.label }}</option>
           {% endfor %}
         </select>
       </div>
@@ -82,6 +82,7 @@
       <input type="hidden" name="nombreUnite" id="nombreUnite" value="">
       <input type="hidden" name="productLabel" id="productLabel" value="">
       <input type="hidden" name="productStock" id="productStock" value="">
+      <input type="hidden" name="storeId" id="storeId" value="{{ store.id }}">
       <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
     </div>
   </form>
@@ -188,11 +189,12 @@
     $(document).ready(function(){
       var total = $("#total").val();
       var productsId = [];
+      var storeId = $("#storeId").val();;
       // var test = $('#test').data("isTest")
       // A chaque fois qu'on sélectionne un produit
       $('#products').on('change',function(e){
         $.ajax({
-          url: '/ventes/select-product/' + this.value,
+          url: '/ventes/select-product/' + this.value + '/' + storeId,
           type: 'GET',
           dataType: 'json',
           success: function (result) { 
@@ -212,24 +214,26 @@
               $("#quantity").val(1);
               $("#quantity").focus();
               $("#quantity").select();
-              $("#notif p").text('');
+              $("#notif p").text(result.reference + ' --- ' + result.label);
+              $("#notif p").css("color", "green");
           },
           error: function (xhr, status, error) {
             $("#products").val(null);
             $("#price").val(null);
             $("#quantity").val(1);
             $("#notif p").text('Désolé ! Le serveur de données a rencontré un problème.');
+            $("#notif p").css("color", "red");
             console.log(error)
           }
         });
       });
 
 
-      $("#reference").on("keyup change paste input", function(){
+      $("#reference").on("paste input", function(){
         if($(this).val().length >= 5){
           var ref = $(this).val();
           $.ajax({
-            url: '/ventes/select-product-by-reference/' + ref,
+            url: '/ventes/select-product-by-reference/' + ref + '/' + storeId,
             type: 'GET',
             dataType: 'json',
             success: function (result) { 
@@ -251,13 +255,16 @@
                 $("#quantity").focus();
                 $("#quantity").select();
                 $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
-                $("#notif p").text('');
+                $("#notif p").text(result.reference + ' --- ' + result.label);
+                $("#notif p").css("color", "green");
               } 
               else if(result.length != 0 && result.stock == 0) {
                 $("#notif p").text('Stock de (' + result.label + ') épuisé.');
+                $("#notif p").css("color", "red");
               } 
               else{
                 $("#notif p").text('Référence (' + ref + ') incorrecte.');
+                $("#notif p").css("color", "red");
               }
             },
             error: function (xhr, status, error) {
@@ -265,6 +272,7 @@
               $("#price").val(null);
               $("#quantity").val(1);
               $("#notif p").text('Référence (' + ref + ') incorrecte.');
+              $("#notif p").css("color", "red");
               console.log(error)
             }
           });
@@ -298,34 +306,41 @@
         
         if(price == undefined || price == null || price == 0){
           $("#notif p").text('Le prix de vente n\'a pas été précisé.');
+          $("#notif p").css("color", "red");
           return false;
         }
         if(price < averageSellingPrice && unite == 1){
           $("#notif p").text(label + ' ne peut être vendu en deça de ' + averageSellingPrice + 'F.');
+          $("#notif p").css("color", "red");
           return false;
         }
         if(unite != 1){
           if(price < averageSellingPrice && venduPar == 1){
             $("#notif p").text(label + ' ne peut être vendu en deça de ' + averageSellingPrice + 'F.');
+            $("#notif p").css("color", "red");
             return false;
           }
           if(price < averagePackageSellingPrice && venduPar == 2){
             $("#notif p").text(label + ' ne peut être vendu en deça de ' + averagePackageSellingPrice + 'F.');
+            $("#notif p").css("color", "red");
             return false;
           }
         }
         if(quantity == undefined || quantity == null || quantity == 0){
           $("#notif p").text('La quantité à vendre n\'a pas été précisée.');
+          $("#notif p").css("color", "red");
           return false;
         }
         if((quantity % 0.5) != 0){
           $("#notif p").text('Quantité saisie incorrecte. Veuillez rééssayer');
+          $("#notif p").css("color", "red");
           return false;
         }
         // return false;
 
         if(jQuery.inArray(id, productsId) !== -1){
           $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');
+          $("#notif p").css("color", "red");
         }
         else{
           if(quantity <= stock){
@@ -353,6 +368,7 @@
           }
           else{
             $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');
+            $("#notif p").css("color", "red");
           }
         }
         return false;
@@ -521,12 +537,12 @@
 
         // 2. On ajoute le produit retiré au select (menu déroulant) des produits dans la boîte modal d'ajout de produit
         $.ajax({
-          url: '/ventes/select-product/' + id,
+          url: '/ventes/select-product/' + id + '/' + storeId,
           type: 'GET',
           dataType: 'json',
           success: function (result) { 
             console.log(result);
-            $('#products option:last').after('<option value="' + result.id + '">' + result.label + '</option>');
+            $('#products option:last').after('<option value="' + result.id + '">' + result.reference + ' --- ' + result.label + '</option>');
           },
           error: function (xhr, status, error) {
             console.log(error)

@@ -4,9 +4,13 @@ namespace App\Controller;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\Avoir;
+use App\Entity\Acompte;
+use App\Entity\Cloture;
 use App\Entity\Depense;
 use App\Entity\Settlement;
 use App\Entity\Informations;
+use App\Entity\ComptaExercice;
 use App\Entity\CustomerCommande;
 use App\Entity\ProviderCommande;
 use App\Entity\ProviderSettlement;
@@ -17,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Controller\FonctionsComptabiliteController;
 
 /**
  * @Route("/admin/comptabilite")
@@ -51,7 +56,7 @@ class AdminAccountingController extends AbstractController
         // dd($ventes);
         if(empty($ventes)){
           $this->addFlash('danger', 'La date saisie n\'est pas correcte.');
-          return $this->redirectToRoute('dayly.accounting');
+          return $this->redirectToRoute('compte_journalier');
         }
         return $this->render('Accounting/ventes-du-jour.html.twig', [
           'ventes'  => $ventes,
@@ -75,7 +80,7 @@ class AdminAccountingController extends AbstractController
         // return new Response(var_dump($ventes));
         if(empty($entrees)){
           $this->addFlash('danger', 'La date saisie n\'est pas correcte.');
-          return $this->redirectToRoute('dayly.accounting');
+          return $this->redirectToRoute('compte_journalier');
         }
         return $this->render('Accounting/entrees-du-jour.html.twig', [
           'entrees'  => $entrees,
@@ -85,7 +90,7 @@ class AdminAccountingController extends AbstractController
     }
 
     /**
-     * @Route("/comptabilite-journaliere", name="dayly.accounting")
+     * @Route("/comptabilite-journaliere", name="compte_journalier")
      */
     public function comptabilite_journaliere(Request $request, EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
@@ -95,29 +100,31 @@ class AdminAccountingController extends AbstractController
         $mois = $request->get('mois');
         if(empty($mois))
           $mois = (new \DateTime())->format('Y-m');
-        $ventes    = $manager->getRepository(CustomerCommande       ::class)->montantTotalHorsTaxeDeToutesLesVenteDUnMois($mois);
-        $totalNetAPayer    = $manager->getRepository(CustomerCommande       ::class)->montantNetAPayerDeToutesLesVenteDUnMois($mois);
-        $totalRemises    = $manager->getRepository(CustomerCommande       ::class)->totalDesRemiseDeToutesLesVenteDUnMois($mois);
-        $entrees   = $manager->getRepository(Settlement             ::class)->entreesDuMois($mois);
-        $benefices = $manager->getRepository(CustomerCommandeDetails::class)->benefice_journalier($mois);
-        // dump($entrees);
+        $ventes         = $manager->getRepository(CustomerCommande       ::class)->montantTotalHorsTaxeDeToutesLesVenteDUnMois($mois);
+        $totalNetAPayer = $manager->getRepository(CustomerCommande       ::class)->montant_net_a_payer_de_toutes_les_ventes_de_la_date($mois);
+        $totalRemises   = $manager->getRepository(CustomerCommande       ::class)->totalDesRemiseDeToutesLesVenteDUnMois($mois);
+        $entrees        = $manager->getRepository(Settlement             ::class)->entreesDuMois($mois);
+        $clotures       = $manager->getRepository(Cloture                ::class)->jours_clotures($mois);
+        $benefices      = $manager->getRepository(CustomerCommandeDetails::class)->benefice_journalier($mois);
+        dump($clotures);
         if(empty($ventes)){
-          $this->addFlash('error', 'La date sélectionnée n\'est pas correcte.');
-          // return $this->redirectToRoute('dayly.accounting');
+          $this->addFlash('danger', 'La date sélectionnée n\'est pas correcte.');
+          // return $this->redirectToRoute('compte_journalier');
         }
 
         $dates = $this->differentesDates($ventes, $entrees);
         $mois = $this->dateEnFrancais($mois, false);
 
         return $this->render('Accounting/comptabilite-journaliere.html.twig', [
-          'dates'     => $dates,
-          'ventes'    => $ventes,
-          'entrees'   => $entrees,
-          'totalNetAPayer'   => $totalNetAPayer,
+          'dates'          => $dates,
+          'ventes'         => $ventes,
+          'entrees'        => $entrees,
+          'totalNetAPayer' => $totalNetAPayer,
           'totalRemises'   => $totalRemises,
-          'mois'      => $mois,
-          'benefices' => $benefices,
-          'current'   => 'accounting',
+          'mois'           => $mois,
+          'benefices'      => $benefices,
+          'clotures'       => $clotures,
+          'current'        => 'accounting',
         ]);
     }
 
@@ -135,7 +142,7 @@ class AdminAccountingController extends AbstractController
     }
 
     /**
-     * @Route("/comptabilite-mensuelle", name="monthly.accounting")
+     * @Route("/comptabilite-mensuelle", name="compte_mensuel")
      */
     public function comptabilite_mensuelle(EntityManagerInterface $manager, CheckConnectedUser $checker)
     {
@@ -291,13 +298,128 @@ class AdminAccountingController extends AbstractController
      */
     public function bilan_du_jour(EntityManagerInterface $manager, $date)
     {
-        $info           = $manager->getRepository(Informations    :: class)->find(1);
-        $settlements    = $manager->getRepository(Settlement      :: class)->toutesLesEntreesDuJour($date);
-        $depensesDuJour = $manager->getRepository(Depense      :: class)->depense_mensuelle($date);
-        $totalNetAPayer = $manager->getRepository(CustomerCommande::class)->montantNetAPayerDeToutesLesVenteDUnMois($date);
-        // dd($depensesDuJour);
-        $date = $this->dateEnFrancais($date);
+      $info           = $manager->getRepository(Informations    :: class)->find(1);
+      $settlements    = $manager->getRepository(Settlement      :: class)->toutesLesEntreesDuJour($date);
+      $depensesDuJour = $manager->getRepository(Depense      :: class)->depense_mensuelle($date);
+      $totalNetAPayer = $manager->getRepository(CustomerCommande::class)->montant_net_a_payer_de_toutes_les_ventes_de_la_date($date);
+      $avoirs = $manager->getRepository(Avoir::class)->avoirsDuJour($date);
+      $date = $this->dateEnFrancais($date);
 
+      $totalEntrees = 0;
+      $totalCaisse  = 0;
+      $totalBanque  = 0;
+      $totalAcompte = 0;
+      $totalSM      = 0;
+      foreach ($settlements as $value) {
+        $mode = $value->getModepaiement();
+        $montant = $value->getAmount();
+        if($mode == 1)
+          $totalCaisse = $totalCaisse + $montant;
+        if($mode == 2)
+          $totalBanque = $totalBanque + $montant;
+        if($mode == 3)
+          $totalAcompte = $totalAcompte + $montant;
+        if($mode == 4)
+          $totalSM = $totalSM + $montant;
+      }
+      $totalEntrees = $totalCaisse + $totalBanque + $totalSM;
+
+      $totalAvoirs = 0;
+      foreach ($avoirs as $value) {
+        $totalAvoirs = $totalAvoirs + $value->getMontant();
+      }
+
+      // Configure Dompdf according to your needs
+      $pdfOptions = new Options();
+      $pdfOptions->set('defaultFont', 'Arial');
+      
+      // Instantiate Dompdf with our options
+      $dompdf = new Dompdf($pdfOptions);
+      
+      // Retrieve the HTML generated in our twig file
+      $html = $this->renderView('Accounting/bilan-du-jour.html.twig', [
+        'current'        => 'accounting',
+        'info'           => $info,
+        'date'           => $date,
+        'totalAvoirs'    => $totalAvoirs,
+        'totalCaisse'    => $totalCaisse,
+        'totalBanque'    => $totalBanque,
+        'totalAcompte'   => $totalAcompte,
+        'totalEntrees'   => $totalEntrees,
+        'totalSM'        => $totalSM,
+        'depensesDuJour' => $depensesDuJour[0]["somme"],
+        'settlements'    => $settlements,
+        'totalNetAPayer' => $totalNetAPayer[0][1],
+      ]);
+      
+      // Load HTML to Dompdf
+      $dompdf->loadHtml($html);
+      //"dompdf/dompdf": "^0.8.3",
+      
+      // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+      $dompdf->setPaper('A4', 'landscape');
+      $dompdf->setPaper('A4', 'portrait');
+
+      // Render the HTML as PDF
+      $dompdf->render();
+
+      // Output the generated PDF to Browser (force download)
+      $dompdf->stream("point-des-entrees-et-sortie-du".$date.".pdf", [
+          "Attachment" => false
+      ]);
+    }
+
+    
+    /**
+     * @Route("/cloturer-les-activites-du-jour/{date}", name="cloturer_activites_du_jour")
+     */
+    public function cloturer_activites_du_jour(Request $request, EntityManagerInterface $manager, $date, FonctionsComptabiliteController $fonctions)
+    {
+      $token = $request->get('_csrf_token');
+      $dateCloture = new \DateTime($date);
+      $cloture = $manager->getRepository(Cloture::class)->findOneByDate($dateCloture);
+      if(!empty($cloture)){
+        $this->addFlash('danger', 'Les activités du <strong>'.$date.'</strong> ont déjà été clôturées.');
+        return $this->redirectToRoute('compte_journalier');
+      }
+
+      if($this->isCsrfTokenValid('cloturer_activites', $token))
+      {
+        $ecrituresComptables = [];
+        $settlements            = $manager->getRepository(Settlement        ::class)->toutesLesEntreesDuJour($date);
+        $reglementsFournisseurs = $manager->getRepository(ProviderSettlement::class)->toutesLesReglementsFournisseursDuJour($date);
+        $depensesDuJour         = $manager->getRepository(Depense           ::class)->depensesDuMois($date);
+        // $totalDesVentes         = $manager->getRepository(CustomerCommande  ::class)->montant_net_a_payer_de_toutes_les_ventes_de_la_date($date);
+        $ventesDUnJour          = $manager->getRepository(CustomerCommande  ::class)->toutes_les_ventes_du($date);
+        // $totalDesAchats         = $manager->getRepository(ProviderCommande  ::class)->montant_net_a_payer_de_toutes_les_achats_de_la_date($date);
+        $achatsDUnJour          = $manager->getRepository(ProviderCommande  ::class)->tous_les_achats_du($date);
+        $acomptes               = $manager->getRepository(Acompte           ::class)->acomptesDuJour($date);
+        $avoirs                 = $manager->getRepository(Avoir             ::class)->avoirsDuJour($date);
+        $exercice               = $manager->getRepository(ComptaExercice    ::class)->trouverExerciceDUneDate($date)[0];
+        $dateFr = $this->dateEnFrancais($date);
+
+        // Total des créances du jour, des bénéfices et des remises
+        $totalCreances  = 0;
+        $totalBenefices = 0;
+        $totalRemises   = 0;
+        $totalDesVentes = 0;
+        foreach ($ventesDUnJour as $vente) {
+          $$totalDesVentes = $totalDesVentes + $vente->getNetAPayer();
+          $$totalRemises   = $totalRemises + $vente->getRemise();
+          $$totalCreances  = $totalCreances + $vente->getNetAPayer() - $vente->getTotalSettlments();
+          $$totalBenefices = $totalBenefices + $vente->getTotalBenefices();
+
+          $ecrituresDeVente     = $fonctions->ecriture_de_vente_dans_le_journal_comptable($manager, $vente->getNetAPayer(), $vente->getTotalBenefices(), $vente->getTva(), $exercice, $vente->getDate(), $vente);
+          $ecrituresDeResultats = $fonctions->ecriture_du_resultat_de_vente_journal_comptable($manager, $vente->getTotalBenefices(), $exercice, $vente->getDate(), $vente);
+          foreach ($ecrituresDeVente as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+          foreach ($ecrituresDeResultats as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+        }
+        
+        //On fais le total général des entrées et le total des entrées selon le mode de paiement
         $totalEntrees = 0;
         $totalCaisse  = 0;
         $totalBanque  = 0;
@@ -305,7 +427,14 @@ class AdminAccountingController extends AbstractController
         $totalSM      = 0;
         foreach ($settlements as $value) {
           $mode = $value->getModepaiement();
+          $dateReglement = $value->getDate();
           $montant = $value->getAmount();
+
+          $reglements = $fonctions->ecriture_de_reglements_clients_dans_le_journal_comptable($manager, $mode, $montant, $exercice, $dateReglement, $value);
+          foreach ($reglements as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+
           if($mode == 1)
             $totalCaisse = $totalCaisse + $montant;
           if($mode == 2)
@@ -316,44 +445,134 @@ class AdminAccountingController extends AbstractController
             $totalSM = $totalSM + $montant;
         }
         $totalEntrees = $totalCaisse + $totalBanque + $totalSM;
+        
+        // Total des avoirs du jour
+        $totalAvoirs = 0;
+        foreach ($avoirs as $avoir) {
+          $totalAvoirs = $totalAvoirs + $avoir->getMontant();
+          $ecrituresDesAvoirs = $fonctions->ecriture_du_retour_de_marchandises_apres_une_vente($manager, $exercice, $totalMarchandise, $montantTva, $resultat, $commande);
+          foreach ($ecrituresDesAvoirs as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+        }
 
-        // Configure Dompdf according to your needs
-        $pdfOptions = new Options();
-        $pdfOptions->set('defaultFont', 'Arial');
+        // Total des dépenses du jour
+        $totalDepenses = 0;
+        foreach ($depensesDuJour as $depense) {
+          $totalDepenses = $totalDepenses + $depense->getAmount();
+          $ecrituresDesDepenses = $fonctions->ecritureDeDepensesDansLeJournalComptable($manager, $depense->getType()->getId(), $depense->getAmount(), $mode, $depense, $depense->getDescription(), $exercice);
+          foreach ($ecrituresDesDepenses as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+        }
         
-        // Instantiate Dompdf with our options
-        $dompdf = new Dompdf($pdfOptions);
-        
-        // Retrieve the HTML generated in our twig file
-        $html = $this->renderView('Accounting/bilan-du-jour.html.twig', [
-          'current'        => 'accounting',
-          'info'           => $info,
-          'date'           => $date,
-          'totalCaisse'    => $totalCaisse,
-          'totalBanque'    => $totalBanque,
-          'totalAcompte'   => $totalAcompte,
-          'totalEntrees'   => $totalEntrees,
-          'totalSM'        => $totalSM,
-          'depensesDuJour' => $depensesDuJour[0]["somme"],
-          'settlements'    => $settlements,
-          'totalNetAPayer' => $totalNetAPayer[0][1],
-        ]);
-        
-        // Load HTML to Dompdf
-        $dompdf->loadHtml($html);
-        //"dompdf/dompdf": "^0.8.3",
-        
-        // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->setPaper('A4', 'portrait');
+        // Total des acomptes du jour
+        $totalAcomptesClients      = 0;
+        $totalAcomptesFournisseurs = 0;
+        foreach ($acomptes as $acompte) {
+          if(!empty($acompte->getCustomer())){
+            $nom = $acompte->getCustomer()->getNom();
+            $totalAcomptesClients = $totalAcomptesClients + $acompte->getMontant();
+            $ecrAcpt = $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $acompte->getMontant(), $exercice, new \DateTime(), $nom, true, "client");
+            $ecrituresComptables[] = $ecrAcpt[0];
+          }
+          elseif(!empty($acompte->getProvider())){
+            $nom = $acompte->getProvider()->getNom();
+            $totalAcomptesFournisseurs = $totalAcomptesFournisseurs + $acompte->getMontant();
+            $ecrAcpt = $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $acompte->getMontant(), $exercice, new \DateTime(), $nom, true, "forunisseur");
+            $ecrituresComptables[] = $ecrAcpt[0];
+          }
+        }
 
-        // Render the HTML as PDF
-        $dompdf->render();
+        // Total des créances du jour, des bénéfices et des remises
+        $totalArrieres  = 0;
+        $totalDesAchats = 0;
+        foreach ($achatsDUnJour as $achat) {
+          $tva             = $achat->getTva();
+          $dateCommande    = $achat->getDate();
+          $transport       = $achat->getTransport();
+          $dedouanement    = $achat->getDedouanement();
+          $currency_cost   = $achat->getCurrencyCost();
+          $forwarding_cost = $achat->getForwardingCost();
+          $additional_fees = $achat->getAdditionalFees();
+          $netAPayer       = $achat->getNetAPayer();
+          $totalDesAchats  = $totalDesAchats + $netAPayer;
 
-        // Output the generated PDF to Browser (force download)
-        $dompdf->stream("point-des-entrees-et-sortie-du".$date.".pdf", [
-            "Attachment" => false
-        ]);
+          $ecrituresDesAchats = $fonctions->ecritureDAchatDansLeJournalComptable($manager, $netAPayer, $tva, $exercice, $dateCommande, $achat);
+          $ecrituresDesChargesAchats = $fonctions->ecritureDesChargesDUnAchatDansLeJournalComptable($manager, $transport, $dedouanement, $currency_cost, $forwarding_cost, $additional_fees, $achat, $exercice);
+          $$totalArrieres  = $totalArrieres + $achat->getNetAPayer() - $achat->getTotalSettlments();
+          foreach ($ecrituresDesAchats as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+          foreach ($ecrituresDesChargesAchats as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+        }
+
+        $totalReglementsFournisseurs = 0;
+        foreach ($reglementsFournisseurs as $value) {
+          $mode = $value->getModepaiement();
+          $dateReglement = $value->getDate();
+          $montant = $value->getAmount();
+          $totalReglementsFournisseurs = $totalReglementsFournisseurs + $montant;
+
+          $reglements = $fonctions->ecritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $montant, $exercice, $dateReglement, $value);
+          foreach ($reglements as $ecr) {
+            $ecrituresComptables[] = $ecr;
+          }
+        }
+        
+        $cloture = new Cloture();
+        $cloture->setDate(new \DateTime($date));
+        $cloture->setExercice($exercice);
+        $cloture->setTotalAchats($totalDesAchats);
+        $cloture->setTotalAcompteClients($totalAcomptesClients);
+        $cloture->setTotalAcompteFournisseurs($totalAcomptesFournisseurs);
+        $cloture->setTotalEntrees($totalEntrees);
+        $cloture->setTotalArrieres($totalArrieres);
+        $cloture->setTotalBenefices($totalBenefices);
+        $cloture->setTotalCreances($totalCreances);
+        $cloture->setTotalDepenses($totalDepenses);
+        $cloture->setTotalEntreesBanque($totalBanque);
+        $cloture->setTotalEntreesCaisse($totalCaisse);
+        $cloture->setTotalEntreesServicesMoney($totalSM);
+        $cloture->setTotalRegelementAcompte($totalAcompte);
+        $cloture->setTotalReglementFournisseur($totalReglementsFournisseurs);
+        $cloture->setTotalRemises($totalRemises);
+        $cloture->setTotalVentes($totalDesVentes);
+        $cloture->setTotalAvoirs($totalAvoirs);
+        $cloture->setCreatedAt(new \DateTime());
+        $cloture->setCreatedBy($this->getUser());
+        $manager->persist($cloture);
+        // Obtient une liste de colonnes
+        foreach ($ecrituresComptables as $key => $row) {
+          $dateEJ[$key]  = $row->getDate()->format("Y-m-d");
+          $montantEJ[$key] = $row->getMontant();
+        }
+        array_multisort($dateEJ, SORT_ASC, $montantEJ, SORT_DESC, $ecrituresComptables);
+
+        $cpt = 1;
+        foreach ($ecrituresComptables as $value) {
+          $reference = $fonctions->generateReferenceEcriture($manager, $cpt);
+          $value->setNumero($reference);
+          $cpt++;
+        }
+        // dd($cloture, $ecrituresComptables);
+  
+        try{
+          $manager->flush();
+          $this->addFlash('success', 'Activités du <strong>'.$dateFr.'</strong> clôturer avec succèss. Vous ne pouvez plus apporter de changement aux activités de ce jour.');
+        } 
+        catch(\Exception $e){
+          $this->addFlash('danger', $e->getMessage());
+          return $this->redirectToRoute('compte_journalier');
+        }
+  
+      }
+      else{
+        $this->addFlash('danger', 'Impossible de continuer. Il faut cliquer sur le bon lien');
+      }
+      return $this->redirectToRoute('compte_journalier');
     }
 
 

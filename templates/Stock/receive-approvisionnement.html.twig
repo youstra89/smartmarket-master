@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+{% endblock %}
+
+
+{% block title %}
+  Réception de l'approvisionnement N°{{ approvisionnement.reference }} du {{ approvisionnement.date|date('d-m-Y') }}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Réception de l'approvisionnement <strong>N°{{ approvisionnement.reference }}</strong> du <strong>{{ approvisionnement.date|date('d-m-Y') }}</strong></h2>
+  <div class="row">
+    <div class="col-lg-4 col-md-4 col-sm-6">
+      <h2>Approvisionnement de stock</h2>
+      <div class="reference-commande">
+        <strong>Date de l'approvisionnement:</strong>
+        <span>{{ approvisionnement.date|date('d-m-Y') }}</span><br>
+        <strong>Source :</strong>
+        <span>{{ approvisionnement.source.name }}</span><br>
+        <strong>Destination :</strong>
+        <span>{{ approvisionnement.destination.name }}</span><br>
+      </div>
+    </div>
+  </div><br><br>
+  <div class="row">
+    <div class="">
+      <div class="table-responsive">
+        {% set i = 0 %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Référence</th>
+              <th>Produit</th>
+              <th>Quantité</th>
+            </tr>
+          </thead>
+          {% for item in approvisionnement.detailsApprovisionnements %}
+            {% set i = i + 1 %}
+              <tbody>
+                <tr>
+                  <td>{{ i }}</td>
+                  <td>{{ item.product.reference }}</td>
+                  <td>{{ item.product.label }}</td>
+                  <td>{{ item.quantity }}</td>
+                </tr>
+              </tbody>
+          {% endfor %}
+        </table>
+      </div><br>
+    </div>
+  </div>
+   <div class="row">
+    <form action="" method="post">
+      <div class="form-group col-md-4">
+        <label for="date"></label>
+        <input type="date" class="form-control" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}">
+      </div>
+      <div class="form-group col-md-3">
+        <input type="hidden" name="token" value="{{ csrf_token('reception_approvisionnement') }}"/>
+        <input type="submit" class="btn-danger btn-lg" id="save" value="Valider" onclick="submitForm(this);">
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    function submitForm(btn) {
+        // disable the button
+        btn.disabled = true;
+        // submit the form    
+        btn.form.submit();
+    }
+  </script>
+{% endblock %}

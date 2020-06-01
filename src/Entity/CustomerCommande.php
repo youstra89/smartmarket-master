@@ -142,6 +142,11 @@ class CustomerCommande
      */
     private $avoirs;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Store", inversedBy="customerCommandes")
+     */
+    private $store;
+
     public function __construct()
     {
         $this->product          = new ArrayCollection();
@@ -260,11 +265,21 @@ class CustomerCommande
     public function getTotalSettlments()
     {
         $total = 0;
-        foreach ($this->settlements as $key => $value) {
+        foreach ($this->settlements as $value) {
             $total = $total + $value->getAmount();
         }
 
         return $total;
+    }
+
+    public function getTotalBenefices()
+    {
+        $benefice = 0;
+        foreach ($this->product as $value) {
+            $benefice = $benefice + $value->getBenefice();
+        }
+
+        return $benefice;
     }
 
     /**
@@ -573,6 +588,18 @@ class CustomerCommande
                 $avoir->setCommande(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getStore(): ?Store
+    {
+        return $this->store;
+    }
+
+    public function setStore(?Store $store): self
+    {
+        $this->store = $store;
 
         return $this;
     }

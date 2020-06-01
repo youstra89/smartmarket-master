@@ -33,6 +33,20 @@ class AvoirRepository extends ServiceEntityRepository
       return $query->getQuery()->getResult();
     }
 
+    public function avoirsDuJour($dateActuelle)
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.commande', 'c')
+            ->where('a.created_at LIKE :dateActuelle')
+            ->andWhere('a.is_deleted = :status')
+            ->andWhere('c.is_deleted = :status')
+            ->setParameter('status', false)
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Avoir[] Returns an array of Avoir objects
     //  */

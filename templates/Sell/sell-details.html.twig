@@ -63,6 +63,9 @@
       <span>{{ commande.createdBy.username }}</span><br>
       <strong>Vendu le:</strong>
       <span>{{ commande.createdAt|date('d-m-Y') }} à {{ commande.createdAt|date('H:i:s') }}</span><br>
+      <strong>Vendu au:</strong>
+      <span>{{ commande.store.name }}</span><br>
+
     </div>
     <div class="col-md-4">
       <h3>Opérations</h3>
@@ -70,10 +73,10 @@
           {% set reglement = commande.settlements|last %}
           <a href="{{ path('ticket_de_ciasse', {id: commande.id, settlementId: reglement.id }) }}" class="btn-sm btn-large btn-success">Imprimer un ticket de caisse</a><br><br>
         {% endif %} #}
-      {% if is_granted("ROLE_ADMIN") and commande.avoirs is empty %}
+      {% if is_granted("ROLE_ADMIN") and commande.avoirs is empty and commande.store.id == 1 %}
         <a class="btn-sm btn-danger" href="{{ path('reset_sell', {id: commande.id}) }}">Retour de marchandises</a><br><br>
       {% endif %}
-      {% if is_granted("ROLE_ADMIN") and commande.settlements|length <= 1 and commande.date|date('d-m-Y') == 'now'|date('d-m-Y') %}
+      {% if is_granted("ROLE_ADMIN") and commande.settlements|length <= 1 and commande.date|date('d-m-Y') == 'now'|date('d-m-Y') and commande.store.id == 1 %}
         <a class="btn-sm btn-info" href="{{ path('edit_sell', {id: commande.id}) }}">Modifier la commande</a><br><br>
       {% endif %}
     </div>

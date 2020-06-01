@@ -639,4 +639,14 @@ class ProviderCommande
 
         return $this;
     }
+
+    public function getTotalSettlments()
+    {
+        $total = 0;
+        foreach ($this->settlements as $value) {
+            $total = $total + $value->getAmount();
+        }
+
+        return $total;
+    }
 }

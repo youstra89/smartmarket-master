@@ -98,6 +98,21 @@ class ComptaExercice
      */
     private $avoirs;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Acompte", mappedBy="exercice")
+     */
+    private $acomptes;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Cloture", mappedBy="exercice")
+     */
+    private $clotures;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $mois;
+
     public function __construct()
     {
         $this->acheve         = false;
@@ -108,6 +123,8 @@ class ComptaExercice
         $this->customerCommandes = new ArrayCollection();
         $this->providerCommandes = new ArrayCollection();
         $this->avoirs = new ArrayCollection();
+        $this->acomptes = new ArrayCollection();
+        $this->clotures = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -398,6 +415,80 @@ class ComptaExercice
                 $avoir->setExercice(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Acompte[]
+     */
+    public function getAcomptes(): Collection
+    {
+        return $this->acomptes;
+    }
+
+    public function addAcompte(Acompte $acompte): self
+    {
+        if (!$this->acomptes->contains($acompte)) {
+            $this->acomptes[] = $acompte;
+            $acompte->setExercice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAcompte(Acompte $acompte): self
+    {
+        if ($this->acomptes->contains($acompte)) {
+            $this->acomptes->removeElement($acompte);
+            // set the owning side to null (unless already changed)
+            if ($acompte->getExercice() === $this) {
+                $acompte->setExercice(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Cloture[]
+     */
+    public function getClotures(): Collection
+    {
+        return $this->clotures;
+    }
+
+    public function addCloture(Cloture $cloture): self
+    {
+        if (!$this->clotures->contains($cloture)) {
+            $this->clotures[] = $cloture;
+            $cloture->setExercice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCloture(Cloture $cloture): self
+    {
+        if ($this->clotures->contains($cloture)) {
+            $this->clotures->removeElement($cloture);
+            // set the owning side to null (unless already changed)
+            if ($cloture->getExercice() === $this) {
+                $cloture->setExercice(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getMois(): ?string
+    {
+        return $this->mois;
+    }
+
+    public function setMois(string $mois): self
+    {
+        $this->mois = $mois;
 
         return $this;
     }

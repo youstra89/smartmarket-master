@@ -79,10 +79,7 @@
             <td>{{ provider.country.name }}</td>
             <td>
               <a href="{{ path('provider.edit', {id: provider.id}) }}" title="Modifier info fournisseur"><i class="icon-edit"></i></a>&nbsp;&nbsp;&nbsp;
-              {% if is_granted("ROLE_SOLDE_INITIAL") %}
-                <a href="{{ path('update_provider_initial_solde', {id: provider.id}) }}" title="Modifier le solde initial de ce fournisseur"><i class="icon-xing"></i></a>
-                &nbsp;&nbsp;&nbsp;
-              {% endif %}
+              <a href="{{ path('ajouter_acompte_fournisseurs', {id: provider.id}) }}" title="Verser un acompte chez ce fournisseur"><i class="icon-xing"></i></a>&nbsp;&nbsp;&nbsp;
               {% if provider.arriereInitial > 0 %}
                 <a href="{{ path('paiement_arriere_initial', {id: provider.id}) }}" title="Règelement d'arriéré initiale"><i class="icon-time"></i></a>
               {% endif %}

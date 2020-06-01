@@ -36,6 +36,18 @@ class ComptaExerciceRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+
+    public function trouverExerciceDUneDate($date)
+    {
+        return $this->createQueryBuilder('e')
+            ->where(':date BETWEEN e.date_debut AND e.date_fin')
+            ->andWhere('e.is_deleted = :status')
+            ->setParameter('status', false)
+            ->setParameter('date', $date.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     // /**
     //  * @return ComptaExercice[] Returns an array of ComptaExercice objects
     //  */

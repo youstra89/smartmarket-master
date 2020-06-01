@@ -86,12 +86,6 @@ class Product
      */
     private $family;
 
-    // * @ORM\Column(type="integer", unsigned=true)
-    /**
-     * @ORM\Column(columnDefinition="float")
-     */
-    private $stock;
-
     /**
      * @ORM\Column(type="integer")
      */
@@ -142,14 +136,19 @@ class Product
      */
     private $stocks;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\DetailsApprovisionnement", mappedBy="product")
+     */
+    private $detailsApprovisionnements;
+
 
     public function __construct()
     {
-        $this->stock      = 0;
         $this->unit_price = 0;
         $this->is_deleted = false;
         $this->created_at = new \DateTime();
         $this->stocks = new ArrayCollection();
+        $this->detailsApprovisionnements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -235,46 +234,31 @@ class Product
         return $this;
     }
 
-    public function getStockUnite()
-    {
-        $stock = $this->stock;
-        // On va personnaliser cette méthode.
-        // Si le produit peut être décomposé en unité, alors on va donner le stock en tenant compte des unités.
-        if ($this->unite !== 1 and $this->stock != 0){
-            $nbrProduit = intdiv($this->stock, $this->unite);
-            $nbrUnite = $this->stock % $this->unite;
-            if($nbrProduit == 0 and $nbrUnite == 0)
-                $stock = 0;
-            elseif($nbrProduit == 0 and $nbrUnite != 0)
-                $stock = $nbrUnite." unités";
-            elseif($nbrProduit != 0 and $nbrUnite == 0)
-                $stock = $nbrProduit;
-            else
-                $stock = $nbrProduit."/".$nbrUnite." unités";
-
-        }
-        return $stock;
-    }
-
-    public function getTotalStock()
+    public function getTotalStock(int $typeRetour = 1)
     {
         $total = 0;
         foreach ($this->stocks as $value) {
             $total = $total + $value->getQuantity();
         }
-        return $total;
-    }
+        $qt = $total;
+        if ($typeRetour = 2){
+            return $qt;
+        }
 
-    public function getStock(): ?float
-    {
-        return $this->stock;
-    }
+        if ($this->unite !== 1 and $total != 0){
+            $nbrProduit = intdiv($total, $this->unite);
+            $nbrUnite = $total % $this->unite;
+            if($nbrProduit == 0 and $nbrUnite == 0)
+                $qt = 0;
+            elseif($nbrProduit == 0 and $nbrUnite != 0)
+                $qt = $nbrUnite." unités";
+            elseif($nbrProduit != 0 and $nbrUnite == 0)
+                $qt = $nbrProduit;
+            else
+                $qt = $nbrProduit."/".$nbrUnite." unités";
 
-    public function setStock(float $stock): self
-    {
-        $this->stock = $stock;
-
-        return $this;
+        }
+        return $qt;
     }
 
     public function getCreatedBy(): ?User
@@ -482,6 +466,37 @@ class Product
             // set the owning side to null (unless already changed)
             if ($stock->getProduct() === $this) {
                 $stock->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|DetailsApprovisionnement[]
+     */
+    public function getDetailsApprovisionnements(): Collection
+    {
+        return $this->detailsApprovisionnements;
+    }
+
+    public function addDetailsApprovisionnement(DetailsApprovisionnement $detailsApprovisionnement): self
+    {
+        if (!$this->detailsApprovisionnements->contains($detailsApprovisionnement)) {
+            $this->detailsApprovisionnements[] = $detailsApprovisionnement;
+            $detailsApprovisionnement->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDetailsApprovisionnement(DetailsApprovisionnement $detailsApprovisionnement): self
+    {
+        if ($this->detailsApprovisionnements->contains($detailsApprovisionnement)) {
+            $this->detailsApprovisionnements->removeElement($detailsApprovisionnement);
+            // set the owning side to null (unless already changed)
+            if ($detailsApprovisionnement->getProduct() === $this) {
+                $detailsApprovisionnement->setProduct(null);
             }
         }
 

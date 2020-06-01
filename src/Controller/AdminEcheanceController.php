@@ -142,7 +142,7 @@ class AdminEcheanceController extends AbstractController
       $commandeId = $echeance->getCommande()->getId();
       $datePrevue = ucwords(strftime("%A $format_jour %B %Y", strtotime($echeance->getDateEcheance()->format("Y-m-d"))));
 
-      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $exercice  = $fonctions->exercice_en_cours($manager);
       if ($echeance->getAmount() == 0) {
         $this->addFlash('danger', 'Montant d\'écheance incorrect. Le montant doit être supérieur à 0');
         return $this->redirectToRoute('echeances');
@@ -201,7 +201,7 @@ class AdminEcheanceController extends AbstractController
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());
           } 
-          return $this->redirectToRoute('customer.order.details', ['id' => $commandeId]);
+          return $this->redirectToRoute('customer_order_details', ['id' => $commandeId]);
         }
       }
           

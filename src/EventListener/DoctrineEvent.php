@@ -26,7 +26,7 @@ class DoctrineEvent implements EventSubscriber {
         $entity = $args->getEntity();
         //Si c'est bien une entité Contact qui va être "persisté"
         $date = new \DateTime();
-        $dateLimite = mktime(0, 0, 0, 05, 30, 2020);
+        $dateLimite = mktime(0, 0, 0, 05, 30, 2040);
         $dateActuelle = mktime(0, 0, 0, $date->format("m"), $date->format("d"), $date->format("Y"));
         if (($entity instanceof Product or $entity instanceof CustomerCommande or $entity instanceof ProviderCommande or $entity instanceof Settlement) and $dateActuelle > $dateLimite) {
             $this->fonction->flash();
@@ -43,7 +43,7 @@ class DoctrineEvent implements EventSubscriber {
         $changeset = $args->getEntityManager()->getUnitOfWork()->getEntityChangeSet($entity);
         //Si c'est bien une entité Contact qui va être modifié
         $date = new \DateTime();
-        $dateLimite = mktime(0, 0, 0, 05, 30, 2020);
+        $dateLimite = mktime(0, 0, 0, 05, 30, 2040);
         $dateActuelle = mktime(0, 0, 0, $date->format("m"), $date->format("d"), $date->format("Y"));
         if (($entity instanceof Product or $entity instanceof CustomerCommande or $entity instanceof ProviderCommande or $entity instanceof Settlement) and $dateActuelle > $dateLimite) {
             $this->fonction->flash();

@@ -6,7 +6,7 @@
 
 
 {% block title %}
-  Mise à jour d'arriérés initiaux de {{ provider.nom }}
+  Enregistrement d'acompte versé chez le fournisseur {{ provider.nom }}
 {% endblock %}
 
 
@@ -37,16 +37,20 @@
 
 
 {% block body %}
-  <h2 class="animate-box" data-animate-effect="fadeInLeft">Mise à jour d'arriérés initiaux de <strong>{{ provider.nom }}</strong></h2>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'acompte versé chez le fournisseur <strong>{{ provider.nom }}</strong></h2>
   <form class="" action="" method="post">
     <div class="row">
-      <div class="col-md-6">
-        <label for="acompte">Avance/Acompte versé chez le fournisseur</label>
-        <input type="number" name="acompte" value="{{ provider.acompte }}" class="form-control" required>
+      <div class="col-md-3">
+        <label for="acompte">Avance/Acompte versé</label>
+        <input type="number" name="acompte" id="acompte" placeholder="Saisissez la valeur de l'acompte versé" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <label for="date">Date</label>
+        <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d')}}" class="form-control" required>
       </div>
       <div class="col-md-6">
-        <label for="arriere">Arriérés enver le fournisseur</label>
-        <input type="number" name="arriere" value="{{ provider.arriereInitial }}" class="form-control" required>
+        <label for="comment">Commentaire</label>
+        <input type="text" name="comment" id="comment" placeholder="Vous pouvez laisser un commentaire sur ce versement" class="form-control">
       </div>
       <div class="col-md-4">
         {% if app.request.attributes.get('from') is defined %}
@@ -56,7 +60,7 @@
     </div><br>
     <div class="row">
       <div class="col-md-4">
-        <input type="hidden" name="token" value="{{ csrf_token('token_definition_arriere_initial') }}">
+        <input type="hidden" name="token" value="{{ csrf_token('enregistrment_acompte_fournisseur') }}">
         <button type="submit" name="button" class="btn-lg btn-primary" onclick="submitForm(this);">Enregistrer</button>
       </div>
     </div>

@@ -180,12 +180,18 @@ class Customer
      */
     private $observation;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Acompte", mappedBy="customer")
+     */
+    private $acomptes;
+
 
     public function __construct()
     {
         $this->is_deleted        = false;
         $this->created_at        = new \DateTime();
         $this->customerCommandes = new ArrayCollection();
+        $this->acomptes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -626,6 +632,37 @@ class Customer
     public function setObservation(?string $observation): self
     {
         $this->observation = $observation;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Acompte[]
+     */
+    public function getAcomptes(): Collection
+    {
+        return $this->acomptes;
+    }
+
+    public function addAcompte(Acompte $acompte): self
+    {
+        if (!$this->acomptes->contains($acompte)) {
+            $this->acomptes[] = $acompte;
+            $acompte->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAcompte(Acompte $acompte): self
+    {
+        if ($this->acomptes->contains($acompte)) {
+            $this->acomptes->removeElement($acompte);
+            // set the owning side to null (unless already changed)
+            if ($acompte->getCustomer() === $this) {
+                $acompte->setCustomer(null);
+            }
+        }
 
         return $this;
     }

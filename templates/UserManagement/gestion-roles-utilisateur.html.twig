@@ -1,6 +1,11 @@
 {% extends 'base.html.twig' %}
 
 {% block stylesheets %}
+  <style>
+    th, td{
+      vertical-align: middle;
+    }
+  </style>
 {% endblock %}
 
 
@@ -22,11 +27,11 @@
     <div class="row">
       <div class="col">
         <form action="#" method="post">
-          <table class="table table-borderless">
+          <table class="table table-bordered">
             <thead>
               <tr>
-                <th scope="col">Rôles</th>
-                <th scope="col">Descriptions</th>
+                <th scope="col" width="20%">Rôles</th>
+                <th scope="col" width="80%">Descriptions</th>
               </tr>
             </thead>
             </tbody>
@@ -44,8 +49,8 @@
               <tr>
                 <td>
                   <div class="custom-control custom-switch">
-                    <input type="checkbox" name="roles[]" id="customSwitch2" value="ROLE_APPROVISIONNEMENT" {% if 'ROLE_APPROVISIONNEMENT' in user.roles %} checked {% endif %}>
-                    <label class="custom-control-label" for="customSwitch2">ROLE_APPROVISIONNEMENT</label>
+                    <input type="checkbox" name="roles[]" id="customSwitch2" value="ROLE_ACHAT" {% if 'ROLE_ACHAT' in user.roles %} checked {% endif %}>
+                    <label class="custom-control-label" for="customSwitch2">ROLE_ACHAT</label>
                   </div>
                 </td>
                 <td>
@@ -65,13 +70,13 @@
               </tr>
               <tr>
                 <td>
-                  <div class="custom-control custom-switch">
+                  {# <div class="custom-control custom-switch"> #}
                     <input type="checkbox" name="roles[]" id="customSwitch4" value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in user.roles %} checked {% endif %}>
                     <label class="custom-control-label" for="customSwitch4">ROLE_ADMIN</label>
-                  </div>
+                  {# </div> #}
                 </td>
                 <td>
-                  Dispose des rôles ROLE_VENTE, ROLE_APPROVISIONNEMENT. Peut aussi ajouter et éditer des produits. Il peut aussi enregistrer des échéances de paiement
+                  Dispose des rôles ROLE_VENTE, ROLE_ACHAT. Peut aussi ajouter et éditer des produits. Il peut aussi enregistrer des échéances de paiement
                 </td>
               </tr>
               <tr>
@@ -88,12 +93,23 @@
               <tr>
                 <td>
                   <div class="custom-control custom-switch">
-                    <input type="checkbox" name="roles[]" id="customSwitch6" value="ROLE_SOLDE_INITIAL" {% if 'ROLE_SOLDE_INITIAL' in user.roles %} checked {% endif %}>
-                    <label class="custom-control-label" for="customSwitch6">ROLE_SOLDE_INITIAL</label>
+                    <input type="checkbox" name="roles[]" id="customSwitch6" value="ROLE_DEPOT" {% if 'ROLE_DEPOT' in user.roles %} checked {% endif %}>
+                    <label class="custom-control-label" for="customSwitch6">ROLE_DEPOT</label>
                   </div>
                 </td>
                 <td>
-                  Permettre la saisie des créances, arriérés, avances clients et fournisseurs après enregistrement d'un client ou d'un fournisseur
+                  Ce rôte permet à l'utilisateur d'effectuer toutes les opérations liées aux dépôts. Enregistrement de nouveaux dépôts, modification, approvisionner un dépôt à partir d'un autre...
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" name="roles[]" id="customSwitch7" value="ROLE_STATISTIQUES" {% if 'ROLE_STATISTIQUES' in user.roles %} checked {% endif %}>
+                    <label class="custom-control-label" for="customSwitch7">ROLE_STATISTIQUES</label>
+                  </div>
+                </td>
+                <td>
+                  Avec ce rôle, l'utilisateur peut voir les statistiques des ventes.
                 </td>
               </tr>
             </tbody>

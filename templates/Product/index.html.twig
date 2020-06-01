@@ -71,7 +71,7 @@
     <br><br>
   {% endif %}
   <div class="table-responsive">
-      <table class="table table-borderless" id="dataTable" width="100%" cellspacing="0">
+      <table class="table table-borderless" id="dataTable" width="auto" cellspacing="0">
         <thead>
           <tr>
             <th>N°</th>
@@ -79,7 +79,14 @@
             <th>Catégorie</th>
             <th>Marque</th>
             <th>Description</th>
-            <th>Stock</th>
+            {% if stores|length > 1 %}
+              {% for item in stores %}
+                <th>Stock {{ item.name }}</th>
+              {% endfor %}
+              <th>Stock total</th>
+            {% else %}
+              <th>Stock</th>
+            {% endif %}
             <th>Prix unitaire</th>
             <th>Actions</th>
           </tr>
@@ -91,7 +98,14 @@
             <th>Catégorie</th>
             <th>Marque</th>
             <th>Description</th>
-            <th>Stock</th>
+            {% if stores|length > 1 %}
+              {% for item in stores %}
+                <th>Stock {{ item.name }}</th>
+              {% endfor %}
+              <th>Stock total</th>
+            {% else %}
+              <th>Stock</th>
+            {% endif %}
             <th>Prix unitaire</th>
             <th>Actions</th>
           </tr>
@@ -100,22 +114,31 @@
           {% set i = 0 %}
           {% for product in products %}
             {% set i = i + 1 %}
-            <tr {% if product.stock == 0 %}class="bg-danger"{% elseif product.stock < product.securityStock %}class="bg-warning"{% endif %}>
+            <tr {% if product.getTotalStock(2) == 0 %}class="bg-danger"{% elseif product.getTotalStock(2) < product.securityStock %}class="bg-warning"{% endif %}>
               <td>{{ i }}</td>
               <td>{{ product.reference }}</td>
               <td>{{ product.category.name }}</td>
               <td>{% if product.mark %} {{ product.mark.label }} {% endif %}</td>
               <td>{{ product.description }}</td>
-              <td>{{ product.stockUnite }}</td>
+              {% if product.stocks|length > 1 %}
+                {% for item in product.stocks %}
+                  {% for store in stores if item.store.id == store.id %}
+                    <td>{{ item.quantity }}</td>
+                  {% endfor %}
+                {% endfor %}
+                <td>{{ product.totalStock }}</td>
+              {% else %}
+                <td>{{ product.totalStock }}</td>
+              {% endif %}
               <td>{{ product.unitPrice|number_format(0, ',', ' ') }} F</td>
               <td>
                 <a href="{{ path('product_edit', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-edit"></i></a>
                 {% if is_granted("ROLE_STOCK_INITIAL") %}
-                  &nbsp;&nbsp;&nbsp;
+                  &nbsp;
                   <a href="{{ path('update_product_stock', {id: product.id}) }}" title="Modifier le stock"><i class="icon-cog"></i></a>
                 {% endif %}
                 {% if is_granted("ROLE_SUPER_ADMIN") %}
-                  &nbsp;&nbsp;&nbsp;
+                  &nbsp;
                   <a href="{{ path('define_product_prices', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-xing"></i></a>
                 {% endif %}
               </td>

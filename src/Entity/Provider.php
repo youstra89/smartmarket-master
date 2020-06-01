@@ -120,12 +120,18 @@ class Provider
      */
     private $observation;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Acompte", mappedBy="provider")
+     */
+    private $acomptes;
+
 
     public function __construct()
     {
         $this->is_deleted     = false;
         $this->created_at     = new \DateTime();
         $this->providerCommandes = new ArrayCollection();
+        $this->acomptes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -421,6 +427,37 @@ class Provider
     public function setObservation(?string $observation): self
     {
         $this->observation = $observation;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Acompte[]
+     */
+    public function getAcomptes(): Collection
+    {
+        return $this->acomptes;
+    }
+
+    public function addAcompte(Acompte $acompte): self
+    {
+        if (!$this->acomptes->contains($acompte)) {
+            $this->acomptes[] = $acompte;
+            $acompte->setProvider($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAcompte(Acompte $acompte): self
+    {
+        if ($this->acomptes->contains($acompte)) {
+            $this->acomptes->removeElement($acompte);
+            // set the owning side to null (unless already changed)
+            if ($acompte->getProvider() === $this) {
+                $acompte->setProvider(null);
+            }
+        }
 
         return $this;
     }

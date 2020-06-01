@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Erreur 500 - Erreur d'exécution</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="{{ asset('images/logo.ico') }}" type="image/x-icon"/>
+<!--Css Fils-->
+<link href="{{ asset('css/style.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('css/mystyle.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('css/bootstrap.css') }}" rel="stylesheet" type="text/css">
+{% if app.request.locale == 'ar' %}
+  <link href="{{ asset('css/rtl.css') }}" rel="stylesheet" type="text/css">
+{% endif %}
+<link href="{{ asset('css/responsive.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('css/color.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('css/owl.carousel.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('css/audioplayer.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('css/prettyPhoto.css') }}" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div id="wrapper"> 
+  <!--Header-->
+  <header id="header">
+    <div class="container"> <a href="index.html" class="logo"><img src="{{ asset('images/logoISI-xxs.png') }}" alt="logo"></a>
+      <div class="header-right">
+        <div class="navigation-row">
+        </div>
+      </div>
+    </div>
+    <!--Search Bar-->
+    <div class="overlay overlay-contentscale">
+      <button type="button" class="overlay-close">Close</button>
+      <div class="search-inner">
+        <form method="get">
+          <input type="text" placeholder="Search....." required>
+          <button class="submit"><i class="fa fa-search"></i></button>
+        </form>
+      </div>
+      <!--Search Bar Inner--> 
+    </div>
+    <!--Search Bar--> 
+  </header>
+  <!--Header--> 
+  
+  <!--INNER BANNER-->
+  <div id="inner-banner">
+    <div class="container">
+      <h1>Erreur d'exécution</h1>
+      <ol class="breadcrumb">
+        <li><a href="{{ path('homepage') }}">Accueil</a></li>
+        <li class="active">Erreur</li>
+      </ol>
+    </div>
+  </div>
+  <!--INNER BANNER-->
+  <div id="main"> 
+    <!--404 START-->
+    <section class="error-section">
+      <div class="container">
+        <div class="holder"> 
+          <strong class="error-text">500</strong> 
+          <span class="oops">oOops!</span> <b>{{ 'Traitempent interrompu!'|trans }}</b> 
+          <strong class="title">{{ 'Le traitement de votre demande a ne peut aboutir.'|trans }}</strong>
+        </div>
+        <div class="heading-center">
+          <h2></h2>
+          <div class="text-holder">
+            {# <p>{{ 'Veuillez envoyer un mail à l\'administrateur du site à l\'adresse suivante %a%webmaster@drdiallo.net%b%.'|trans({'%a%': '<a href="' ~ mailto:webmaster@drdiallo.net ~ '" class="my-links">', '%b%': </a>})|raw }}</p> #}
+            <p>{% trans %}Veuillez envoyer un mail à l'administrateur du site à l'adresse suivante <a href="mailto:webmaster@drdiallo.net" class="my-links">webmaster@drdiallo.net</a>.{% endtrans %}</p>
+            <p>{% trans %}Mentionnez dans le mail ce que vous faisiez lorsque l'erreur est survenue.{% endtrans %}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--404 END--> 
+  </div>
+  
+  <!--Footer-->
+  <footer id="footer">
+    <section class="footer-section-1">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-5 col-sm-5">
+            <div class="footer-box"> <a href="index.html" class="footer-logo"><img src="{{ asset('images/logoISI-xxs.png') }}" alt="logo"></a>
+              <p>Science - Pratique - Propagation<br>Pour le renouveau de l'islam</p>
+              <address>
+              <ul>
+                <li><i class="fa fa-map-o" aria-hidden="true"></i>Côte d'Ivoire, Abidjan, Anyama, Dars Salam</li>
+                <li><i class="fa fa-paper-plane" aria-hidden="true"></i><a href="mailto:contact@drdiallo.net">contact@drdiallo.net</a></li>
+                <li><i class="fa fa-volume-control-phone" aria-hidden="true"></i>+225 21 37 30 48</li>
+                <li><i class="fa fa-volume-control-phone" aria-hidden="true"></i>+225 20 24 83 12</li>
+              </ul>
+              </address>
+            </div>
+          </div>
+          <div class="col-md-2 col-sm-2">
+          </div>
+          <div class="col-md-5 col-sm-5">
+            <div class="footer-box">
+              <h3>menu</h3>
+              <p></p>
+              <form action="#">
+                <input type="text" placeholder="Your name" required>
+                <div class="input-box">
+                  <input type="text" placeholder="Your email here" required>
+                  <button type="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="footer-section-2">
+      <div class="container"> <strong class="copyright">&copy; 2019. Tout droit réservé</strong>
+        <div class="footer-social">
+          <ul>
+            {# <li><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+            <li><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+            <li><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li> #}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </footer>
+  <!--Footer--> 
+</div>
+<!--JQUERY START--> 
+<script src="{{ asset('js/jquery.js') }}"></script> 
+<!--Bootstrap--> 
+<script src="{{ asset('js/bootstrap.js') }}"></script> 
+<!--PRETTYPHOTO JS--> 
+<script src="{{ asset('js/jquery.prettyPhoto.js') }}"></script> 
+<!--Owl Carousel--> 
+<script src="{{ asset('js/owl.carousel.min.js') }}"></script> 
+<!--EVENT TIMER JS--> 
+<script src="{{ asset('js/jquery_countdown.js') }}"></script> 
+<!---Modernizr Script--> 
+<script src="{{ asset('js/modernizr.custom.js') }}"></script> 
+<!---Search Script--> 
+<script src="{{ asset('js/search-script.js') }}"></script> 
+<!--Custom Script--> 
+<script src="{{ asset('js/custom_script.js') }}"></script>
+<script src="{{ asset('js/jquery.bootstrap-growl.min.js') }}"></script>
+<script src="{{ asset('js/bootstrap-notify.min.js') }}"></script>
+</body>
+</html>

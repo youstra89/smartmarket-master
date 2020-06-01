@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Approvisionnements{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Approvisionnements</h2>
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th width="">Référence</th>
+          <th width="">Source</th>
+          <th width="">Destination</th>
+          <th width="">Date</th>
+          <th width="">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in approvisionnements if item.isDeleted == 0 %}
+          <tr>
+            <td>{{ item.reference }}</td>
+            <td>{{ item.source.name }}</td>
+            <td>{{ item.destination.name }}</td>
+            <td>{{ item.date|date("d-m-Y") }}</td>
+            <td>
+              {% if item.status == "DEMANDEE" %}
+                <a href="{{ path('receive_approvisionnement', {id: item.id}) }}"data-toggle="tooltip" title="Recevoir les produits de l'approvisionnement"><i class="icon-delicious"></i></a>&nbsp;&nbsp;&nbsp;
+              {% endif %}
+                <a href="{{ path('bon_de_sortie', {id: item.id}) }}"data-toggle="tooltip" title="Tirer un bon de sortie"><i class="icon-data"></i></a>&nbsp;&nbsp;&nbsp;
+              {# <a href="{{ path('store_info', {id: item.id}) }}"data-toggle="tooltip" title="Voir les stocks de ce dépôt"><i class="icon-display2"></i></a> #}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script>
+    $(document).ready(function(){
+      // $(".alert").alert('close');
+    })
+  </script>
+{% endblock %}

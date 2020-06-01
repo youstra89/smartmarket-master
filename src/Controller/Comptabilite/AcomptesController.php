@@ -33,8 +33,8 @@ class AcomptesController extends AbstractController
      */
     public function add_acompte_client(Request $request, EntityManagerInterface $manager, CheckConnectedUser $checker, FonctionsComptabiliteController $fonctions)
     {
-      $customers = $manager->getRepository(Customer      ::class)->findAll();
-      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $customers = $manager->getRepository(Customer::class)->findAll();
+      $exercice  = $fonctions->exercice_en_cours($manager);
       $exerciceId = $exercice->getId();
       if($request->isMethod('post'))
       {
@@ -104,8 +104,8 @@ class AcomptesController extends AbstractController
      */
     public function add_acompte_fournisseur(Request $request, EntityManagerInterface $manager, CheckConnectedUser $checker, FonctionsComptabiliteController $fonctions)
     {
-      $providers = $manager->getRepository(Provider      ::class)->findAll();
-      $exercice  = $manager->getRepository(ComptaExercice::class)->dernierExerciceEnCours();
+      $providers = $manager->getRepository(Provider::class)->findAll();
+      $exercice  = $fonctions->exercice_en_cours($manager);
       $exerciceId = $exercice->getId();
       if($request->isMethod('post'))
       {
