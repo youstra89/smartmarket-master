@@ -64,6 +64,12 @@
                 {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="codebarre">Code barre</label>
+                <input type="text" name="codebarre" id="codebarre" class="form-control">
+            </div>
+        </div>
     </div><br><br>
     <button class="btn-lg btn-default" onclick="submitForm(this);">{{ button|default('Enregistrer') }}</button>
 {{ form_end(form) }}

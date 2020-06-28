@@ -143,10 +143,10 @@
                   &nbsp;
                   <a href="{{ path('define_product_prices', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-xing"></i></a>
                 {% endif %}
-                {% if is_granted("ROLE_ADMIN") %}
+                {# {% if is_granted("ROLE_ADMIN") %}
                   &nbsp;
                   <a href="{{ path('product_barecode', {id: product.id}) }}" title="Modifier le code barre"><i class="icon-code"></i></a>
-                {% endif %}
+                {% endif %} #}
               </td>
             </tr>
           {% endfor %}

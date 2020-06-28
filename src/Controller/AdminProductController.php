@@ -110,6 +110,19 @@ class AdminProductController extends AbstractController
               // instead of its contents
               $product->setImage($newFilename);
           }
+
+          $data = $request->request->all();
+          $codebarre = isset($data['codebarre']) ? $data['codebarre'] : null;
+          if(null !== $codebarre){
+            $exitingProduct = $manager->getRepository(Product::class)->findOneBy(["code_barre" => $codebarre]);
+            if(empty($exitingProduct)){
+              $product->setCodeBarre($codebarre);
+            }
+            elseif(!empty($exitingProduct)){
+              $this->addFlash('danger', "Code barre <strong>$codebarre</strong> déjà engistré pour le produit <strong>".$exitingProduct->label()."</strong>");
+              return $this->redirectToRoute('product');
+            }
+          }
           $product->setAveragePurchasePrice($product->getPurchasingPrice());
           $product->setAverageSellingPrice($product->getUnitPrice());
           $product->setAveragePackageSellingPrice($product->getUnitPrice() * $product->getUnite());
@@ -310,6 +323,19 @@ class AdminProductController extends AbstractController
               // instead of its contents
               $product->setImage($newFilename);
           }
+          $data = $request->request->all();
+          $codebarre = isset($data['codebarre']) ? $data['codebarre'] : null;
+          if(null !== $codebarre){
+            $exitingProduct = $manager->getRepository(Product::class)->findOneBy(["code_barre" => $codebarre]);
+            if(empty($exitingProduct)){
+              $product->setCodeBarre($codebarre);
+            }
+            elseif(!empty($exitingProduct) and $exitingProduct->getId() != $id){
+              $this->addFlash('danger', "Code barre <strong>$codebarre</strong> déjà engistré pour le produit <strong>".$exitingProduct->label()."</strong>");
+              return $this->redirectToRoute('product', ["id" => $id]);
+            }
+          }
+
           $product->setUpdatedAt(new \DateTime());
           $product->setUpdatedBy($this->getUser());
           try{

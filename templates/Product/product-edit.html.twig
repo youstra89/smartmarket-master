@@ -76,16 +76,22 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             {{ form_label(form.security_stock) }}
                             {{ form_widget(form.security_stock, {'attr': {'class': 'form-control'}}) }}
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             {{ form_label(form.unite) }}
                             {{ form_widget(form.unite, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="codebarre">Code barre</label>
+                            <input type="text" name="codebarre" id="codebarre" class="form-control" value="{{ product.codeBarre }}">
                         </div>
                     </div>
                 </div>
@@ -115,5 +121,53 @@
         // submit the form    
         btn.form.submit();
     }
+    $(document).ready(function() {
+        $("#codebarre").focus();
+        // $("#codebarre").select();
+
+        var barcode="";
+        var oldBarcode = $('#codebarre').val();
+        var productId = $("#productId").val();
+        var is_exists;
+        
+        $('#codebarre').on("keydown", function(e) {            
+            var code = (e.keyCode ? e.keyCode : e.which);
+            // console.log(is_exists);
+            $("#notif p").text('');
+            if(code==13){
+              // $.ajax({
+              //   url: '/products/set-code-barre/' + productId + '/' + barcode,
+              //   type: 'GET',
+              //   dataType: 'json',
+              //   success: function (result) { 
+              //     if(result === false){
+              //       $("#notif p").text('Code barre ' + barcode + ' déjà utilisé.');
+              //       $("#notif p").css("color", "red");
+              //       is_exists = 1;
+              //       return false;
+              //     }
+              //     else{
+              //       is_exists = 2;
+              //       return false;
+              //     }
+              //     // barcode = "";
+              //   },
+              //   error: function (xhr, status, error) {
+              //     $("#notif p").text('Désolé ! Le serveur de données a rencontré un problème.');
+              //     $("#notif p").css("color", "red");
+              //     console.log(error)
+              //   }
+              // });
+              console.log(oldBarcode, barcode, is_exists);
+              
+              this.value = is_exists == 1 ? oldBarcode : barcode;
+              barcode = "";
+              return false;
+            }
+            else{
+              barcode=barcode+String.fromCharCode(code);
+            }
+          });
+    });
   </script>
 {% endblock %}
