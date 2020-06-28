@@ -7,7 +7,7 @@
 {% endblock %}
 
 
-{% block title %}Les ventes{% endblock %}
+{% block title %}Les ventes de {{ exercice.label }}{% endblock %}
 
 
 {% block notifications %}
@@ -36,12 +36,15 @@
 
 
 {% block body %}
-  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ventes</h2>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Ventes de <strong>{{ exercice.label }}</strong></h2>
   <div class="btn-group btn-group">
     <a href="{{ path('customer') }}" class="btn-sm btn-primary">Gestion des clients</a>
     <a href="{{ path('preparing_sells') }}" class="btn-sm btn-primary">Commandes</a>
     <a href="{{ path('unique_form_for_selling', {id: 1}) }}" class="btn-sm btn-primary">Ajouter une vente</a>
     <a href="{{ path('add_acompte_client') }}" class="btn-sm btn-primary">Enregistrer acompte client</a>
+    {% if nombreExercice != 0 %}
+      <a href="{{ path('ventes_precedentes') }}" class="btn-sm btn-primary">Ventes des exercices précedents</a>
+    {% endif %}
   </div><br><br>
 
   <div class="row row-bottom-padded-md">

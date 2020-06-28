@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\Cloture;
 use App\Entity\Depense;
 use App\Form\DepenseType;
 use App\Entity\Settlement;
@@ -53,15 +54,18 @@ class AdminDepenseController extends AbstractController
           if(isset($data['date']))
           {
             $date = new \DateTime($data['date']);
+            $cloture = $manager->getRepository(Cloture::class)->findOneByDate($date);
+            if(!empty($cloture)){
+              $this->addFlash('danger', 'Action non autorisée. Les activités du <strong>'.$date->format("d-m-Y").'</strong> ont déjà été clôturées.');
+              return $this->redirectToRoute('depenses_add');
+            }
             $mode = (int) $data['mode'];
             $mois = $date->format("Y-m");
             $depense->setDateDepense($date);
+            $depense->setModePaiement($mode);
             $depense->setCreatedAt(new \DateTime());
             $depense->setCreatedBy($this->getUser());
             $manager->persist($depense);
-            $typeDepenseId = $depense->getType()->getId();
-            // $fonctions->ecritureDeDepensesDansLeJournalComptable($manager, $typeDepenseId, $depense->getAmount(), $mode, $depense, $depense->getDescription(), $exercice);
-            // dd($depense->getType());
             try{
               $manager->flush();
               $this->addFlash('success', 'Enregistrement de dépense <strong>'.$depense->getDescription().'</strong> réussie.');

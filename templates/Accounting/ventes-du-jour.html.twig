@@ -11,7 +11,10 @@
   <a href="javascript:history.back()" class="btn btn-primary sm">
     <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
   </a><br><br>
+  
   <h2 class="animate-box" data-animate-effect="fadeInLeft">Les ventes du <strong>{{ dateVente }}</strong></h2>
+  <a href="{{ path('impression_des_ventes_du_jour', {'date': ventes[0].date|date('Y-m-d')}) }}" class="btn-sm btn-primary">Imprimer les ventes du {{ dateVente }}</a>
+
   <div class="table-responsive">
     <table class="table table-sm">
       <thead>

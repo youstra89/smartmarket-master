@@ -45,8 +45,8 @@ class ProviderType extends AbstractType
             if (!$customer || null === $customer->getId()) {
                 $form
                     ->add('reference',   TextType::class, ['label' => 'Référence', 'required' => true])
-                    ->add('acompte',   NumberType::class, ['label' => 'Acomptes ou avances versés', 'required' => true])
-                    ->add('arriere_initial',   NumberType::class, ['label' => 'Arriérés à l\'enregistrement', 'required' => true])
+                    // ->add('acompte',   NumberType::class, ['label' => 'Acomptes ou avances versés', 'required' => true])
+                    // ->add('arriere_initial',   NumberType::class, ['label' => 'Arriérés à l\'enregistrement', 'required' => true])
 
                 ;
             }

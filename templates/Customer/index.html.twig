@@ -43,7 +43,7 @@
 {% block body %}
   <a href="javascript:history.back()" class="btn btn-primary">Retour</a><br><br>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Clients</h2>
-  <a href="{{ path('customer.add') }}" class="btn-sm btn-primary">Ajouter un client</a>
+  <a href="{{ path('customer_add') }}" class="btn-sm btn-primary">Ajouter un client</a>
   <a href="{{ path('impression_customers') }}" class="btn-sm btn-primary">Liste des clients</a>
   <a href="{{ path('customertypes') }}" class="btn-sm btn-primary">Gestion des types de client</a><br><br>
   <div class="table-responsive">
@@ -120,8 +120,8 @@
               {# <a href="{{ path('prepare_sell_for_customer', {id: customer.id}) }}" title="Préparer une commande"><i class="icon-plus"></i></a>&nbsp;&nbsp;&nbsp; #}
               <a href="{{ path('customer_info', {id: customer.id}) }}" title="Voir les détails"><i class="icon-params"></i></a>&nbsp;&nbsp;&nbsp;
               <a href="{{ path('ajouter_acompte_clients', {id: customer.id}) }}" title="Recevoir un acompte de ce client"><i class="icon-xing"></i></a>&nbsp;&nbsp;&nbsp;
-              {% if customer.creanceInitiale > 0 %}
-                <a href="{{ path('paiement_creance_initiale', {id: customer.id}) }}" title="Règelement créance initiale"><i class="icon-time"></i></a>
+              {% if customer.acompte > 0 %}
+                <a href="{{ path('rembourser_avance_client', {id: customer.id}) }}" title="Retirer de l'argent de l'acompte"><i class="icon-time"></i></a>
               {% endif %}
             </td>
           </tr>

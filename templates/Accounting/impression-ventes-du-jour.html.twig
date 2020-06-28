@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            @font-face {
+                font-family: 'Elegance';
+                font-weight: normal;
+                font-style: normal;
+                font-variant: normal;
+                src: url("http://eclecticgeek.com/dompdf/fonts/Elegance.ttf") format("truetype");
+            }
+
+            /** Define the margins of your page **/
+            @page {
+                margin: 100px 50px;
+            }
+
+            header {
+                position: fixed;
+                top: -60px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+
+                /** Extra personal styles **/
+                color: gray;
+                text-align: left;
+                padding-left: 20px;
+                font-size: .9em
+            }
+
+            footer {
+                position: fixed; 
+                bottom: -60px; 
+                left: 0px; 
+                right: 0px;
+                height: 50px; 
+
+                /** Extra personal styles **/
+                color: darkGray;
+                text-align: center;
+                font-size: 0.5em;
+            }
+
+            table, th, td {
+              border: 1px solid black;
+            }
+
+            td{
+              border: 1px solid black;
+              border-collapse: collapse;
+              font-size: 1.2em
+            }
+
+            .numero{
+              text-align: center;
+            }
+
+            .row{
+              margin: 0px;
+              padding: 0px;
+              width: 100%;
+            }
+
+            .col{
+              width: 32%;
+              display: inline-block;
+            }
+
+            p{
+              margin: 0px;
+              padding: 5px;
+            }
+
+            .info{
+              font-weight: bold;
+            }
+
+            tbody{
+              font-size: .7em;
+            }
+
+            /* body{
+              display: flex;
+              flex-direction: column-reverse;
+            } */
+        </style>
+        <meta charset="UTF-8">
+        <title>Impression des ventes du {{ dateVente }} | Smart Market</title>
+    </head>
+    <body>
+        {# Inclusion de l'entête de du pied de page #}
+        {{ include('header.html.twig') }}
+        <div class="title-form">
+          <h3 class="title">Impression des ventes du {{ dateVente }}</h3>
+        </div>
+        <div class="reference">
+          <div class="row">
+            <div class="col">
+              <p class="annee">Date : {{ dateVente }}<span class="info"></span></p>
+            </div>
+            <div class="col">
+            </div>
+            <div class="col">
+            </div>
+          </div>
+        </div>
+        <div class="content">
+          <table class="table table-sm" cellspacing="0" border="0" width="100%">
+            <thead>
+              <tr>
+                <th width="20px">#</th>
+                <th width="">Reéférences</th>
+                <th width="">Cients</th>
+                <th width="">Montant</th>
+                <th width="">Statu</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set i = 0 %}
+              {% set totalGeneral = 0 %}
+              {% for vente in ventes %}
+                {% set i = i + 1 %}
+                  <tr>
+                    <td>{{ i }}</td>
+                    <td>{{ vente.reference }}</td>
+                    <td>{{ vente.customer.nom }}</td>
+                    <td>{{ vente.netAPayer|number_format(0, ',', ' ') }} F</td>
+                    <td>{{ vente.soldee }}</td>
+                  </tr>
+                  {% set totalGeneral = totalGeneral + vente.netAPayer %}
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4">Total des ventes</td>
+                <td>{{ totalGeneral|number_format(0, ',', ' ') }} F</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+    </body>
+</html>

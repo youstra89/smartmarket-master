@@ -2,18 +2,15 @@
 // src/Controller/LuckyController.php
 namespace App\Controller;
 
-use App\Entity\Depense;
-use App\Entity\Product;
-use App\Entity\TypeDepense;
-use App\Entity\ComptaExercice;
-use App\Entity\ReturnedProduct;
+use App\Entity\Avoir;
+use App\Entity\Stock;
+use App\Entity\Acompte;
+use App\Entity\DetailsAvoir;
 use App\Entity\CustomerCommande;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Controller\FonctionsComptabiliteController;
-use App\Entity\Avoir;
-use App\Entity\DetailsAvoir;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -69,6 +66,7 @@ class AdminResetSellController extends AbstractController
                 $process = true;
                 // $product = $manager->getRepository(Product::class)->find($key);
                 //On va sélectionner le prix auquel le produit à été vendu
+                $storeId = $commande->getStore()->getId();
                 foreach ($commande->getProduct() as $item) {
                   if($key === $item->getProduct()->getId()){
                     $product = $item->getProduct();
@@ -85,22 +83,33 @@ class AdminResetSellController extends AbstractController
                     $total    = $total + $price * $quantity;
                     $benefice = $benefice + ($item->getBenefice() / $item->getQuantity()) * $quantity;
                     // Lors du retour de marchandises d'un client, il faudra mettre à jour le stock de chacun des produits retournés
-                    $nouvelleQuantite = $product->getStock() + $quantity;
-                    $product->setStock($nouvelleQuantite);
+                    $stock = $manager->getRepository(Stock::class)->findOneBy(["store" => $storeId, "product" => $product->getId()]);
+                    $nouvelleQuantite = $stock->getQuantity() + $quantity;
+                    $stock->setQuantity($nouvelleQuantite);
                   }
                 }
               }
             }
             //UPDATE customer_commande_details c, product p SET c.benefice = (c.unit_price - p.average_purchase_price) * c.quantity WHERE p.id = c.product_id
             // On va calculer la remise pour la valeur de la marchandise retournée en stock
-            $remise           = $total * $commande->getRemise() / $commande->getMontantTtc();
-            $montantTva       = $total * $commande->getTva();
-            $totalMarchandise = $total - $benefice;
-            $resultat         = $benefice - $remise;
-            $acompte          = $commande->getCustomer()->getAcompte() + $totalReglement;
-            $acompte          = $acompte - $commande->getTotalSettlments();
+            $remise            = $total * $commande->getRemise() / $commande->getMontantTtc();
+            $montantTva        = $total * $commande->getTva();
+            $totalMarchandises = $total - $benefice;
+            $resultat          = $benefice - $remise;
+            $customer          = $commande->getCustomer();
+            $montantAcompte    = $commande->getCustomer()->getAcompte() + $totalReglement;
             $avoir->setMontant($totalReglement);
-            // dd($avoir->getMontant());
+            $commande->getCustomer()->setAcompte($montantAcompte);
+
+            $acompte = new Acompte();
+            $acompte->setCustomer($customer);
+            $acompte->setDate(new \DateTime());
+            $acompte->setMontant($montantAcompte);
+            $acompte->setExercice($exercice);
+            $acompte->setCommentaire("Acompte reçu après résiliation de la vente N°$reference");
+            $acompte->setCreatedBy($this->getUser());
+            $manager->persist($acompte);
+            // dd($avoir->getMontant(), $acompte1, $acompte3);
 
             // dump(["totalHT" => $total, "totalMR" => $totalMarchandise, "RMR" => $remise, "Acompte" => $acompte, "Résul" => $resultat, "bene" => $benefice, "tva" => $montantTva]);
             // die();
@@ -113,7 +122,7 @@ class AdminResetSellController extends AbstractController
             else {
               try{
                 $manager->flush();
-                $this->addFlash('success', 'Retour de marchandises enregistré <strong>'.$commande->getDate()->format('d-m-Y').'</strong> avec succès.');
+                $this->addFlash('success', 'Retour de marchandises enregistré <strong>'.$commande->getReference().'</strong> avec succès.');
               } 
               catch(\Exception $e){
                 $this->addFlash('danger', $e->getMessage());

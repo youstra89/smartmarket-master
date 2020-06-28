@@ -6,8 +6,11 @@ use DateInterval;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use NumberFormatter;
+use App\Entity\Avoir;
 use App\Entity\Stock;
 use App\Entity\Store;
+use App\Entity\Acompte;
+use App\Entity\Cloture;
 use App\Entity\Product;
 use App\Entity\Customer;
 use App\Entity\Echeance;
@@ -40,13 +43,39 @@ class AdminSellController extends AbstractController
      */
     public function index(Request $request, EntityManagerInterface $manager, FonctionsComptabiliteController $fonctions)
     {
-      $exercice  = $fonctions->exercice_en_cours($manager);
-      $exerciceId = $exercice->getId();
+      $nombreExercice = $manager->getRepository(ComptaExercice::class)->findAll();
+      $nombreExercice = count($nombreExercice);
+      if($request->get('exerciceId') == null){
+        $exercice   = $fonctions->exercice_en_cours($manager);
+        $exerciceId = $exercice->getId();
+      }
+      else{
+        $exerciceId = $request->get('exerciceId');
+        $exercice   = $manager->getRepository(ComptaExercice::class)->find($exerciceId);
+      }
       $commandes  = $manager->getRepository(CustomerCommande::class)->commandesClients($exerciceId);
 
       return $this->render('Sell/index.html.twig', [
+        'current'        => 'sells',
+        'commandes'      => $commandes,
+        'exercice'       => $exercice,
+        'nombreExercice' => $nombreExercice,
+      ]);
+    }
+
+
+    /**
+     * @Route("/les-ventes-des-exercices-precedents", name="ventes_precedentes")
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function exercices_precedents(EntityManagerInterface $manager)
+    {
+      $exercices = $manager->getRepository(ComptaExercice::class)->findAll();
+      $exercices = array_reverse($exercices);
+
+      return $this->render('Sell/exercices-precedents.html.twig', [
         'current'   => 'sells',
-        'commandes' => $commandes
+        'exercices' => $exercices,
       ]);
     }
 
@@ -91,6 +120,7 @@ class AdminSellController extends AbstractController
         "unit_price"                    => $stock->getProduct()->getUnitPrice(),
         "purchasing_price"              => $stock->getProduct()->getPurchasingPrice() * $stock->getProduct()->getUnite(),
         "average_selling_price"         => $stock->getProduct()->getAverageSellingPrice(),
+        "average_purchase_price"        => $stock->getProduct()->getAveragePurchasePrice() * $stock->getProduct()->getUnite(),
         "average_package_selling_price" => $stock->getProduct()->getAveragePackageSellingPrice(),
       ];
 
@@ -116,9 +146,37 @@ class AdminSellController extends AbstractController
           "unit_price"                    => $stock->getProduct()->getUnitPrice(),
           "purchasing_price"              => $stock->getProduct()->getPurchasingPrice() * $stock->getProduct()->getUnite(),
           "average_selling_price"         => $stock->getProduct()->getAverageSellingPrice(),
+          "average_purchase_price"        => $stock->getProduct()->getAveragePurchasePrice() * $stock->getProduct()->getUnite(),
           "average_package_selling_price" => $stock->getProduct()->getAveragePackageSellingPrice(),
         ];
       }
+
+      return new JsonResponse($data);
+    }
+
+    /**
+     * @Route("/select-product-by-barcode/{barcode}/{storeId}", name="get_product_barcode", options={"expose"=true})
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function get_product_barcode(Request $request, EntityManagerInterface $manager, $barcode, int $storeId)
+    {
+      $stock = $manager->getRepository(Stock::class)->findByBarcodeAndStoreId($barcode, $storeId);
+      if(!empty($stock))
+        $stock = $stock[0];
+      else
+        return new JsonResponse(false);
+      $data = [
+        "id"                            => $stock->getProduct()->getId(),
+        "reference"                     => $stock->getProduct()->getReference(),
+        "label"                         => $stock->getProduct()->label(),
+        "stock"                         => $stock->getQuantity(),
+        "unite"                         => $stock->getProduct()->getUnite(),
+        "unit_price"                    => $stock->getProduct()->getUnitPrice(),
+        "purchasing_price"              => $stock->getProduct()->getPurchasingPrice() * $stock->getProduct()->getUnite(),
+        "average_selling_price"         => $stock->getProduct()->getAverageSellingPrice(),
+        "average_purchase_price"        => $stock->getProduct()->getAveragePurchasePrice() * $stock->getProduct()->getUnite(),
+        "average_package_selling_price" => $stock->getProduct()->getAveragePackageSellingPrice(),
+      ];
 
       return new JsonResponse($data);
     }
@@ -163,6 +221,14 @@ class AdminSellController extends AbstractController
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans client.');
               return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
+            
+            
+            $dateCloture = new \DateTime($data["date"]);
+            $cloture = $manager->getRepository(Cloture::class)->findOneByDate($dateCloture);
+            if(!empty($cloture)){
+              $this->addFlash('danger', 'Action non autorisée. Les activités du <strong>'.$dateCloture->format("d-m-Y").'</strong> ont déjà été clôturées.');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
+            }
             $storeId            = $id;
             $customerId         = (int) $data["customer"];
             $paiementParCreance = (int) $data["creance"];
@@ -175,18 +241,26 @@ class AdminSellController extends AbstractController
             $amount             = (int) $data["amount"];
             $venduPar           = $data["ventePar"];
             $quantities         = $data["quantities"];
+            $customer           = (int) $data['customer'];
+            $customer           = $manager->getRepository(Customer::class)->find($data['customer']);
 
             if($amount > $net){
               $this->addFlash('danger', 'Le montant saisie est supérieur au montant total de la commande.');
               return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
 
+            
             if($paiementParCreance === 1 && $customerId === 1 or $customerId === 1 and $amount < $net){
               $this->addFlash('danger', 'Aucune créance n\'est accordée aux clients ordinaires. Veuillez saisir le montant total de la commande pour ce client.');
               return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
             elseif($paiementParCreance === 2 and $amount < $net){
               $this->addFlash('danger', 'Aucune créance n\'est accordée. Veuillez saisir le montant total de la commande pour ce client.');
+              return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
+            }
+
+            if($mode == 3 && $customer->getAcompte() <= 0){
+              $this->addFlash('danger', 'Montant insuffisant dans l\'acompte du client.');
               return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
             }
 
@@ -208,12 +282,7 @@ class AdminSellController extends AbstractController
               $seller = $this->getUser();
               $reference = $date->format('Ymd').'.'.(new \DateTime())->format('His');
               $customerCommande = new CustomerCommande();
-              if(isset($data['customer']))
-              {
-                $customer = (int) $data['customer'];
-                $customer = $manager->getRepository(Customer::class)->find($data['customer']);
-                $customerCommande->setCustomer($customer);
-              }
+              $customerCommande->setCustomer($customer);
               $customerCommande->setReference($reference);
               $customerCommande->setExercice($exercice);
               $customerCommande->setStore($store);
@@ -295,19 +364,19 @@ class AdminSellController extends AbstractController
               $customerCommande->setNetAPayer($netAPayer);
               // dd($customerCommande);
 
-              if($amount < $net){
-                $dateEcheance = $date;
-                $dateEcheance = $dateEcheance->add(new DateInterval('P10D'));
-                $echeance = new Echeance();
-                $echeance->setCommande($customerCommande);
-                $echeance->setAmount($net - $amount);
-                $echeance->setDateEcheance($dateEcheance);
-                $echeance->setCreatedBy($this->getUser());
-                $echeance->setCreatedAt(new \DateTime());
-                $manager->persist($echeance);
-                $cr = true;
-              }
-              $date = new \DateTime($data["date"]);
+              // if($amount < $net){
+              //   $dateEcheance = $date;
+              //   $dateEcheance = $dateEcheance->add(new DateInterval('P10D'));
+              //   $echeance = new Echeance();
+              //   $echeance->setCommande($customerCommande);
+              //   $echeance->setAmount($net - $amount);
+              //   $echeance->setDateEcheance($dateEcheance);
+              //   $echeance->setCreatedBy($this->getUser());
+              //   $echeance->setCreatedAt(new \DateTime());
+              //   $manager->persist($echeance);
+              //   $cr = true;
+              // }
+              // $date = new \DateTime($data["date"]);
               // dd($date, $dateEcheance);
 
               //On va maintenant enregistrer le règlement de la commande
@@ -316,7 +385,11 @@ class AdminSellController extends AbstractController
                 $this->addFlash('danger', $result[1]);
                 return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
               }
-              $settlement = $result[2];
+
+              if($mode == 3 && $customer->getAcompte() > 0){
+                // Il ne faut pas oublier de retirer le montant de l'acompte du client
+                $customer->setAcompte($customer->getAcompte() - $amount);
+              }
               // die($stock->getQuantity());
               try{
                 $manager->flush();
@@ -371,15 +444,11 @@ class AdminSellController extends AbstractController
             $prices     = $data["pricesH"];
             $total      = $data["total"];
             $change     = false;
-            // Si la somme total des versements effectués est supérieure au montant total de la commande, il faut arrếter le script et modifier les versements
-            if($commande->getTotalSettlments() > $total)
-            {
-              $this->addFlash('danger', 'Impossible de continuer. Car la somme des versements est supérieure au total de commande.');
-              return $this->redirectToRoute('edit_sell', ["id" => $id]);
-            }
 
+            $storeId   = $commande->getStore()->getId();
             foreach ($commande->getProduct() as $key => $value) {
-              // $product   = $manager->getRepository(Product::class)->find($value->getProduct()->getId());
+              $productId = $value->getProduct()->getId();
+              $stock     = $manager->getRepository(Stock::class)->findOneBy(["product" => $productId, "store" => $storeId]);
               $product   = $value->getProduct();
               $productId = $product->getId();
               $quantity  = $quantities[$productId];
@@ -394,15 +463,15 @@ class AdminSellController extends AbstractController
                 // Dans ce cas, on va vérifier si la différence demandée est disponible en stock. Si oui, on procède au mises à jour
                 if ($diff < 0) {
                   $diff = abs($diff);
-                  if($product->getStock() >= $diff)
-                    $product->setStock($product->getStock() - $diff);
+                  if($stock->getQuantity() >= $diff)
+                    $stock->setQuantity($stock->getQuantity() - $diff);
                   else{
                     $this->addFlash('danger', 'Impossible de satisfaire la demande d\'augmentation. La quantité demandée ('.$diff.') n\'est pas disponible en stock');
                     return $this->redirectToRoute('edit_sell', ["id" => $id]);
                   }
                 } 
                 elseif ($diff > 0) {
-                  $product->setStock($product->getStock() + $diff);
+                  $stock->setQuantity($stock->getQuantity() + $diff);
                 }
                 
                 $change   = true;
@@ -419,13 +488,60 @@ class AdminSellController extends AbstractController
             if($change === true)
             {
               $tva         = $commande->getTva();
-              $ancienTotal = $commande->getMontantTtc();
               $montantTtc  = $total + $total * ($tva/100);
+              $netAPayer   = $montantTtc - $remise;
               $commande->setTotalAmount($total);
               $commande->setMontantTtc($montantTtc);
-              $commande->setNetAPayer($montantTtc - $remise);
+              $commande->setNetAPayer($netAPayer);
               $commande->setUpdatedAt(new \DateTime());
               $commande->setUpdatedBy($this->getUser());
+              
+              // S'il y a une différence entre le nouveau total et le total des règlements, il faudra faire un traitement.
+              $totalReglement = $commande->getTotalSettlments();
+              $customer       = $commande->getCustomer();
+              $reference      = $commande->getReference();
+              // $diff           = abs($totalReglement - $netAPayer);
+              // Si $totalReglement > $netAPayer, cela veut dire que nous devons donner cette différence au client
+              if ($totalReglement > $netAPayer) {
+                $exercice  = $fonctions->exercice_en_cours($manager);
+                $etat = "Acompte";
+                // On va, dans un premier temps, enregistrer l'avoir du client
+                $avoir = new Avoir();
+                $totalAvoir = $totalReglement - $netAPayer;
+                $reference = "AV-".(new \DateTime())->format('Ymd').'-'.(new \DateTime())->format('His');
+                $avoir->setDate(new \DateTime());
+                $avoir->setMode(3);
+                $avoir->setExercice($exercice);
+                $avoir->setReference($reference);
+                $avoir->setCommande($commande);
+                $avoir->setCreatedBy($this->getUser());
+                $avoir->setMontant($totalAvoir);
+                $manager->persist($avoir);
+
+                $acompte = new Acompte();
+                $acompte->setCustomer($customer);
+                $acompte->setDate(new \DateTime());
+                $acompte->setMontant($totalAvoir);
+                $acompte->setExercice($exercice);
+                $acompte->setCommentaire("Acompte reçu après modification de la vente N°$reference");
+                $acompte->setCreatedBy($this->getUser());
+                $manager->persist($acompte);
+                $commande->setEnded(true);
+                $customer->setAcompte($customer->getAcompte() + $totalAvoir);
+                // dd($avoir, $acompte);
+              }
+              elseif ($totalReglement < $netAPayer) {
+                $etat = "Règlement";
+                $commande->setEnded(false);
+                // dd($commande);
+              }
+              elseif ($totalReglement = $netAPayer) {
+                $commande->setEnded(true);
+                // dd($commande);
+              }
+
+              // dd($etat);
+              // Si $netAPayer > $totalReglement, cela veut dire que le client nous doit la différence
               try{
                 // $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
                 $manager->flush();
@@ -666,6 +782,26 @@ class AdminSellController extends AbstractController
         $date   = new \DateTime($data['date']);
         $mode   = (int) $data['mode'];
         $amount = (int) $data['amount'];
+        $customer = $commande->getCustomer();
+        
+        $cloture = $manager->getRepository(Cloture::class)->findOneByDate($date);
+        if(!empty($cloture)){
+          $this->addFlash('danger', 'Action non autorisée. Les activités du <strong>'.$date->format("d-m-Y").'</strong> ont déjà été clôturées.');
+          return $this->redirectToRoute('settlement', ["id" => $id]);
+        }
+
+        if($mode == 3 && $customer->getAcompte() <= 0){
+          $this->addFlash('danger', 'Montant insuffisant dans l\'acompte du client.');
+          return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
+        }
+        if($mode == 3 && $customer->getAcompte() > 0){
+          // Il ne faut pas oublier de retirer le montant de l'acompte du client
+          $customer->setAcompte($customer->getAcompte() - $amount);
+          // die();
+        }
+
+        // dd($customer->getAcompte());
+
         $soldee = false;
         if($this->isCsrfTokenValid('token_reglement', $token)){
           if(empty($date)){

@@ -200,6 +200,11 @@ class CustomerCommande
         return $this;
     }
 
+    public function getSoldee()
+    {
+        return $this->ended == 0 ? "Pas soldée" : "Soldée";
+    }
+
     /**
      * @return Collection|CustomerCommandeDetails[]
      */

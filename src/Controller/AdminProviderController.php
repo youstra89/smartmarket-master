@@ -3,13 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Acompte;
+use App\Entity\Cloture;
 use App\Entity\Activite;
 use App\Entity\Provider;
 use App\Form\ProviderType;
 use App\Entity\ComptaExercice;
 use App\Entity\ProviderSettlement;
-use App\Controller\FonctionsController;
 
+use App\Controller\FonctionsController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -50,19 +51,8 @@ class AdminProviderController extends AbstractController
         {
           $exercice  = $fonctionsComptables->exercice_en_cours($manager);
           $nom = $provider->getNom();
-          $acompte = $provider->getAcompte();
-          $arriere = $provider->getArriereInitial();
-          if($acompte < 0 or $arriere < 0){
-            $this->addFlash('danger', "Les valeurs de <strong>Avances</strong> et / ou <strong>Arriéré</strong> doivent être supérieur à zéro");
-            return $this->redirectToRoute('provider.add');
-          }
-          // // Lors de l'enregistrement d'un nouveau nouveau client, s'il y a des avances et ou des créances, il faut les ajouter aux ecritures comptables
-          // if($acompte > 0){
-          //   $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $acompte, $exercice, new \DateTime(), $nom, true, "fournisseur");
-          // }
-          // if($arriere > 0){
-          //   $fonctionsComptables->ecriture_des_avances_ou_des_creances_initiales($manager, $arriere, $exercice, new \DateTime(), $nom, false, "fournisseur");
-          // }
+          $provider->setAcompte(0);
+          $provider->setArriereInitial(0);
           $provider->setCreatedBy($this->getUser());
           $manager->persist($provider);
           try{
@@ -129,6 +119,12 @@ class AdminProviderController extends AbstractController
             $montantAcompte = (int) $data['acompte'];
             $commentaire    = empty($data['comment']) ? null: $data['comment'];
             $exercice  = $fonctions->exercice_en_cours($manager);
+
+            $cloture = $manager->getRepository(Cloture::class)->findOneByDate($date);
+            if(!empty($cloture)){
+              $this->addFlash('danger', 'Action non autorisée. Les activités du <strong>'.$date->format("d-m-Y").'</strong> ont déjà été clôturées.');
+              return $this->redirectToRoute('ajouter_acompte_fournisseurs', ["id" => $id]);
+            }
 
             if($montantAcompte > 0){
               $acompte = new Acompte();

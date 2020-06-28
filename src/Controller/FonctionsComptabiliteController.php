@@ -2,11 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Acompte;
 use App\Entity\Depense;
 use App\Entity\Settlement;
 use App\Entity\ComptaCompte;
 use App\Entity\ComptaEcriture;
 use App\Entity\ComptaExercice;
+use App\Entity\RetraitAcompte;
 use App\Entity\CustomerCommande;
 use App\Entity\ProviderCommande;
 use App\Entity\ProviderSettlement;
@@ -146,7 +148,7 @@ class FonctionsComptabiliteController extends AbstractController
     }
 
 
-    public function ecriture_des_avances_ou_des_creances_initiales(EntityManagerInterface $manager, int $montant, object $exercice, \DateTime $date, string $nom, bool $acomptes, string $type)
+    public function ecriture_des_avances_ou_des_creances(EntityManagerInterface $manager, int $montant, object $exercice, \DateTime $date, string $nom, bool $acomptes, string $type)
     {
       $tableauEcritures = [];
       $exerciceId = $exercice->getId();
@@ -156,7 +158,7 @@ class FonctionsComptabiliteController extends AbstractController
        */
       if($type === "client" and $acomptes == 0){
         // Dans ce cas, il s'agit d'une créance initiale client. On débite le compte "Clients" et on crédite le compte "Capital"
-        $label = "Créances initiales du client $nom";
+        $label = "Créances du client $nom";
         $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(9, $exerciceId);
         $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() + $montant);
         $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(5, $exerciceId);
@@ -164,7 +166,7 @@ class FonctionsComptabiliteController extends AbstractController
       }
       elseif($type === "client" and $acomptes == 1){
         // Dans ce cas, il s'agit d'un acompte / avance initial reçu client. On débite le compte "Clients" et on crédite le compte "Capital"
-        $label = "Acomptes/Avances initiaux du client $nom";
+        $label = "Acomptes/Avances du client $nom";
         $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(5, $exerciceId);
         $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() - $montant);
         $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
@@ -172,7 +174,7 @@ class FonctionsComptabiliteController extends AbstractController
       }
       elseif($type === "fournisseur" and $acomptes == 0){
         // Dans ce cas, il s'agit d'un arriéré initial fournisseur. On débite le compte débite le compte "Capital" et on crédite le compte "Fournisseur"
-        $label = "Arriérés initiaux envers le fournisseur $nom";
+        $label = "Arriérés envers le fournisseur $nom";
         $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(5, $exerciceId);
         $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() - $montant);
         $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(14, $exerciceId);
@@ -180,7 +182,7 @@ class FonctionsComptabiliteController extends AbstractController
       }
       elseif($type === "fournisseur" and $acomptes == 1){
         // Dans ce cas, il s'agit d'un acompte / avance initial versé. On débite le compte "Fournisseurs - Avances/Acomptes versés" et on crédite le compte "Capital"
-        $label = "Avances/Acomptes initiaux du fournisseur $nom";
+        $label = "Avances/Acomptes du fournisseur $nom";
         $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(28, $exerciceId);
         $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() + $montant);
         $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(5, $exerciceId);
@@ -215,9 +217,6 @@ class FonctionsComptabiliteController extends AbstractController
 
         $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
         $compteAcrediter->setMontantFinal($compteAcrediter->getMontantFinal() - $montant);  
-
-        // Il ne faut pas oublier de retirer le montant de l'acompte du client
-        $settlement->getCommande()->getCustomer()->setAcompte($settlement->getCommande()->getCustomer()->getAcompte() - $montant);
       }
       else{
 
@@ -268,6 +267,45 @@ class FonctionsComptabiliteController extends AbstractController
       // }
 
       // return $response;
+    }
+
+
+    public function ecriture_de_retrait_acompte_client_dans_le_journal_comptable(EntityManagerInterface $manager, int $mode, int $montant, object $exercice, \DateTime $date, RetraitAcompte $retrait, string $nom)
+    {
+      $tableauEcritures = [];
+      $exerciceId = $exercice->getId();
+
+      // On débite le compte "Clients - Acomptes/Avances versés"
+      $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
+      $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() - $montant);
+      
+      // 2 - On crédite ensuite soit le compte caisse, soit le compte banque
+      if($mode == 1)
+        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+      elseif($mode == 2)
+        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+      elseif($mode == 3)
+        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
+      elseif($mode == 4)
+        $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(29, $exerciceId);
+      // dd($mode);
+      $compteACrediter->setMontantFinal($compteACrediter->getMontantFinal() - $montant);
+
+
+      // 3 - Et enfin la dernière étape, on écrit dans le journal
+      $reference       = $this->generateReferenceEcriture($manager);
+      $label           = "Remboursement d'acompte client (".$nom.")";
+      $tva             = 0;
+      $montant         = $montant;
+      $remarque        = null;
+      $compteADebiter  = $compteADebiter;
+      $compteAcrediter = $compteACrediter;
+      $ecriture_liee_a = $retrait;
+      $ecriture = $this->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcrediter, $tva, $montant, $remarque, $ecriture_liee_a);
+      $manager->persist($ecriture);
+      $tableauEcritures[] = $ecriture;
+
+      return $tableauEcritures;
     }
 
 
@@ -403,8 +441,8 @@ class FonctionsComptabiliteController extends AbstractController
        */
       $exerciceId = $exercice->getId();
       $referenceCommande = $vente->getReference();
-      $acompte = $vente->getCustomer()->getAcompte() + $totalMarchandises + $montantTva + $resultat;
-      $vente->getCustomer()->setAcompte($acompte);
+      // $acompte = $vente->getCustomer()->getAcompte() + $totalMarchandises + $montantTva + $resultat;
+      // $vente->getCustomer()->setAcompte($acompte);
       $date = new \DateTime();
 
       //##################### Première opération
@@ -753,6 +791,12 @@ class FonctionsComptabiliteController extends AbstractController
       }
       elseif ($ecriture_liee_a instanceof Depense) {
         $ecriture->setDepense($ecriture_liee_a);
+      }
+      elseif ($ecriture_liee_a instanceof Acompte) {
+        $ecriture->setAcompte($ecriture_liee_a);
+      }
+      elseif ($ecriture_liee_a instanceof RetraitAcompte) {
+        $ecriture->setRetraitAcompte($ecriture_liee_a);
       }
 
       return $ecriture;

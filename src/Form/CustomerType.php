@@ -107,8 +107,8 @@ class CustomerType extends AbstractType
             if (!$customer || null === $customer->getId()) {
                 $form
                     ->add('reference',   TextType::class, ['label' => 'Référence', 'required' => true])
-                    ->add('acompte',   NumberType::class, ['label' => 'Acomptes ou avances recçu', 'required' => true])
-                    ->add('creance_initiale',   NumberType::class, ['label' => 'Créances à l\'enregistrement', 'required' => true])
+                    // ->add('acompte',   NumberType::class, ['label' => 'Acomptes ou avances recçu', 'required' => true])
+                    // ->add('creance_initiale',   NumberType::class, ['label' => 'Créances à l\'enregistrement', 'required' => true])
                 ;
             }
             else{

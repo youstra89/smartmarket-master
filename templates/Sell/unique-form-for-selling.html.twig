@@ -37,11 +37,16 @@
 
 
 {% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary btn-sm">Retour</a>
   <h2 class="animate-box" data-animate-effect="fadeInLeft">Enregistrement d'une nouvelle vente à partir du <strong>{{ store.name }}</strong></h2>
   <form class="text-sm">
     <legend>Ajoute de produit au pannier</legend>
     <div class="row">
-      <div class="form-group col-md-6 col-sm-6 col-xs-6">
+      <div class="form-group col-md-3 col-sm-3 col-xs-3">
+        <label for="codebarre" class="col-form-label">Code barre</label>
+        <input type="text" name="codebarre" class="form-control" id="codebarre">
+      </div>
+      <div class="form-group col-md-3 col-sm-3 col-xs-3">
         <label for="reference" class="col-form-label">Référence de produit</label>
         <input type="text" name="reference" class="form-control" id="reference" value="PR">
       </div>
@@ -76,14 +81,16 @@
     <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
     <div class="modal-footer">
       <input type="hidden" name="productId" id="productId" value="">
+      <input type="hidden" name="averagePurchasePrice" id="averagePurchasePrice" value="">
       <input type="hidden" name="averageSellingPrice" id="averageSellingPrice" value="">
       <input type="hidden" name="averagePackageSellingPrice" id="averagePackageSellingPrice" value="">
       <input type="hidden" name="prixUnitaire" id="prixUnitaire" value="">
+      <input type="hidden" name="prixUnitaireCarton" id="prixUnitaireCarton" value="">
       <input type="hidden" name="nombreUnite" id="nombreUnite" value="">
       <input type="hidden" name="productLabel" id="productLabel" value="">
       <input type="hidden" name="productStock" id="productStock" value="">
       <input type="hidden" name="storeId" id="storeId" value="{{ store.id }}">
-      <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
+      <button class="btn-lg btn-primary" id="add_product">Ajouter</button>
     </div>
   </form>
   <form class="form" action="" method="post" id="myForm">
@@ -93,14 +100,14 @@
         <label for="customer">Client</label>
         <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
           <option value="">Sélectionner un client</option>
-          {% for customer in customers %}
+          {% for customer in customers if customer.isDeleted == 0 %}
             <option value="{{ customer.id }}">{{ customer.reference }} --- {{ customer.nom }} {{ customer.phoneNumber }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="form-group col-md-2">
         <label for="date">Date de la commande</label><br>
-        <input type="date" name="date" id="date" value="{{ 'now'|date('Y-m-d') }}" required>
+        <input type="date" name="date" id="date" min="{{ 'now'|date('Y-m-d') }}" value="{{ 'now'|date('Y-m-d') }}" required>
       </div>
       <div class="form-group col-md-2">
         <label for="tva">TVA</label><br>
@@ -208,6 +215,7 @@
               $("#productLabel").val(result.label);
               $("#prixUnitaire").val(result.unit_price);
               $("#averageSellingPrice").val(result.average_selling_price);
+              $("#averagePurchasePrice").val(result.average_purchase_price);
               $("#averagePackageSellingPrice").val(result.average_package_selling_price);
               $("#nombreUnite").val(result.unite);
               $("#productStock").val(result.stock);
@@ -248,6 +256,7 @@
                 $("#productLabel").val(result.label);
                 $("#prixUnitaire").val(result.unit_price);
                 $("#averageSellingPrice").val(result.average_selling_price);
+                $("#averagePurchasePrice").val(result.average_purchase_price);
                 $("#averagePackageSellingPrice").val(result.average_package_selling_price);
                 $("#nombreUnite").val(result.unite);
                 $("#productStock").val(result.stock);
@@ -283,6 +292,82 @@
         }
       });
 
+      var barcode="";
+      $('#codebarre').on({
+          keydown: function(e) { 
+            // typed_into = true;             
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if(code==13){
+              console.log(barcode);
+              this.value = barcode
+              $.ajax({
+                url: '/ventes/select-product-by-barcode/' + barcode + '/' + storeId,
+                type: 'GET',
+                dataType: 'json',
+                success: function (result) { 
+                  if(result.length !== 0 && result.stock !== 0 && result.reference != undefined) {
+                    // if(jQuery.inArray(id, productsId) !== -1){
+                    //   $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');
+                    //   $("#notif p").css("color", "red");
+                    // }
+                    // else{
+                      
+                    // }
+                    var vente_par = $("#venduPar").val();
+                    $("#price").val(result.unit_price);
+                    if(vente_par == 2){
+                      $("#price").val(result.unit_price * result.unite);
+                    } 
+                    $("#reference").val(result.reference);
+                    $("#productId").val(result.id);
+                    $("#productLabel").val(result.label);
+                    $("#prixUnitaire").val(result.unit_price);
+                    $("#averageSellingPrice").val(result.average_selling_price);
+                    $("#averagePurchasePrice").val(result.average_purchase_price);
+                    $("#averagePackageSellingPrice").val(result.average_package_selling_price);
+                    $("#nombreUnite").val(result.unite);
+                    $("#productStock").val(result.stock);
+                    $("#quantity").val(1);
+                    $("#quantity").focus();
+                    $("#quantity").select();
+                    $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
+                    $("#notif p").text(result.reference + ' --- ' + result.label);
+                    $("#notif p").css("color", "green");
+                  } 
+                  else if(result.length != 0 && result.stock == 0) {
+                    $("#notif p").text('Stock de (' + result.label + ') épuisé.');
+                    $("#notif p").css("color", "red");
+                  } 
+                  else{
+                    $("#notif p").text('Code barre incorrect ou inexistant.');
+                    $("#notif p").css("color", "red");
+                  }
+                },
+                error: function (xhr, status, error) {
+                  $("#products").val(null);
+                  $("#price").val(null);
+                  $("#quantity").val(1);
+                  $("#notif p").text('Référence (' + ref + ') incorrecte.');
+                  $("#notif p").css("color", "red");
+                }
+              });
+              barcode = "";
+            }
+            else{
+              barcode=barcode+String.fromCharCode(code);
+            }
+          },
+          // keydown: function(){ alert('test'); },
+          change: function() {
+              if (typed_into) {
+                  alert('type');
+                  typed_into = false; //reset type listener
+              } else {
+                  alert('not type');
+              }
+          }
+      });
+
       // $("#venduPar").on("change", function(){
       //   var price = $("#prixUnitaire").val();
       //   var unite = $("#nombreUnite").val();
@@ -292,26 +377,35 @@
 
       // A chaque fois que la quantité change
       $('#add_product').on('click', function(e){
-        var id                  = parseInt($("#productId").val());
-        var reference           = $("#reference").val();
-        var unite               = parseInt($("#nombreUnite").val());
-        var venduPar            = parseInt($("#venduPar").val());
-        var label               = $("#productLabel").val();
-        var stock               = parseInt($("#productStock").val());
-        var price               = parseInt($("#price").val());
-        var quantity            = parseFloat($("#quantity").val());        
-        var averageSellingPrice = parseInt($("#averageSellingPrice").val());        
+        var id                         = parseInt($("#productId").val());
+        var reference                  = $("#reference").val();
+        var unite                      = parseInt($("#nombreUnite").val());
+        var venduPar                   = parseInt($("#venduPar").val());
+        var label                      = $("#productLabel").val();
+        var stock                      = parseInt($("#productStock").val());
+        var price                      = parseInt($("#price").val());
+        var sellingPrice               = parseInt($("#prixUnitaire").val());
+        var quantity                   = parseFloat($("#quantity").val());        
+        var averageSellingPrice        = parseInt($("#averageSellingPrice").val());        
+        var averagePurchasePrice       = parseInt($("#averagePurchasePrice").val());        
         var averagePackageSellingPrice = parseInt($("#averagePackageSellingPrice").val());        
-        // console.log(averageSellingPrice, averagePackageSellingPrice);
+        // console.log(averageSellingPrice, averagePackageSellingPrice);        
         
         if(price == undefined || price == null || price == 0){
           $("#notif p").text('Le prix de vente n\'a pas été précisé.');
           $("#notif p").css("color", "red");
           return false;
         }
-        if(price < averageSellingPrice && unite == 1){
-          $("#notif p").text(label + ' ne peut être vendu en deça de ' + averageSellingPrice + 'F.');
+        // if(price > sellingPrice && unite == 1){
+        //   $("#notif p").text('Le prix de vente est plus élevé que la normale (' + sellingPrice + 'F).');
+        //   $("#notif p").css("color", "red");
+        //   return false;
+        // }
+        if(price < averagePurchasePrice && unite == 1){
+          $("#notif p").text(label + ' ne peut être vendu en deça de ' + averagePurchasePrice + 'F.');
           $("#notif p").css("color", "red");
+          console.log(price, averageSellingPrice, averagePurchasePrice);
+          
           return false;
         }
         if(unite != 1){
@@ -341,6 +435,8 @@
         if(jQuery.inArray(id, productsId) !== -1){
           $("#notif p").text('Ce produit (' + label + ') a déjà été ajouté à la commande en cours');
           $("#notif p").css("color", "red");
+          // return undefined;
+          // throw new Error("Impossible");
         }
         else{
           if(quantity <= stock){
@@ -365,12 +461,15 @@
             $("#ttc").val(t + taxe)
             $("#net").val(t + taxe - remise)
             $("#venduPar").val(1)
+            $("#codebarre").val("");
+            $("#codebarre").focus();
           }
           else{
             $("#notif p").text('Quantité demandée indisponible pour le produit ' + label + ' (' + stock + ' exemplaires disponibles)');
             $("#notif p").css("color", "red");
           }
         }
+        // $("#quantity").blur();
         return false;
       });
 

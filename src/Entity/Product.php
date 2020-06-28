@@ -141,6 +141,16 @@ class Product
      */
     private $detailsApprovisionnements;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\CustomerCommandeDetails", mappedBy="product")
+     */
+    private $commandeDetails;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $code_barre;
+
 
     public function __construct()
     {
@@ -148,6 +158,7 @@ class Product
         $this->is_deleted = false;
         $this->created_at = new \DateTime();
         $this->stocks = new ArrayCollection();
+        $this->commandeDetails = new ArrayCollection();
         $this->detailsApprovisionnements = new ArrayCollection();
     }
 
@@ -499,6 +510,49 @@ class Product
                 $detailsApprovisionnement->setProduct(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CustomerCommandeDetails[]
+     */
+    public function getCommandeDetails(): Collection
+    {
+        return $this->commandeDetails;
+    }
+
+    public function addCommandeDetail(CustomerCommandeDetails $commandeDetail): self
+    {
+        if (!$this->commandeDetails->contains($commandeDetail)) {
+            $this->commandeDetails[] = $commandeDetail;
+            $commandeDetail->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommandeDetail(CustomerCommandeDetails $commandeDetail): self
+    {
+        if ($this->commandeDetails->contains($commandeDetail)) {
+            $this->commandeDetails->removeElement($commandeDetail);
+            // set the owning side to null (unless already changed)
+            if ($commandeDetail->getProduct() === $this) {
+                $commandeDetail->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCodeBarre(): ?string
+    {
+        return $this->code_barre;
+    }
+
+    public function setCodeBarre(?string $code_barre): self
+    {
+        $this->code_barre = $code_barre;
 
         return $this;
     }

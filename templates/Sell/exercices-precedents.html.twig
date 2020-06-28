@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Exericies précédents{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary sm">
+    <span class="lnr lnr-arrow-left"></span>&nbsp;Retour
+  </a><br><br>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Les ventes mensuelles</h2>
+  <div class="table-responsive">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Mois</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set i = 0 %}
+        {% for item in exercices %}
+          {% set i = i + 1 %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ item.label }}</td>
+            <td>
+              <a href="{{ path('sell', {exerciceId: item.id}) }}" class=" circle arrow small">Voir les ventes</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

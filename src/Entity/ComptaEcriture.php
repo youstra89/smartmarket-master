@@ -129,6 +129,16 @@ class ComptaEcriture
      */
     private $depense;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\Acompte", cascade={"persist", "remove"})
+     */
+    private $acompte;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\RetraitAcompte", cascade={"persist", "remove"})
+     */
+    private $retrait_acompte;
+
     public function __construct()
     {
       $this->is_deleted  = false;
@@ -401,6 +411,30 @@ class ComptaEcriture
     public function setDepense(?Depense $depense): self
     {
         $this->depense = $depense;
+
+        return $this;
+    }
+
+    public function getAcompte(): ?Acompte
+    {
+        return $this->acompte;
+    }
+
+    public function setAcompte(?Acompte $acompte): self
+    {
+        $this->acompte = $acompte;
+
+        return $this;
+    }
+
+    public function getRetraitAcompte(): ?RetraitAcompte
+    {
+        return $this->retrait_acompte;
+    }
+
+    public function setRetraitAcompte(?RetraitAcompte $retrait_acompte): self
+    {
+        $this->retrait_acompte = $retrait_acompte;
 
         return $this;
     }

@@ -179,6 +179,32 @@
             {% endif %}
           {% endif %}
         </div>
+        <div class="col-lg-6 col-md-8 col-sm-12">
+          {% if commande.avoirs|length != 0 %}
+            <h3>Avoirs</h3>
+            <table width="100%">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Montant</th>
+                  <th>Enregistré par</th>
+                  <th>Enregistré le</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in commande.avoirs %}
+                  <tr>
+                    {% set total = total + item.montant %}
+                    <td>{{ item.date|date('d-m-Y') }}</td>
+                    <td>{{ item.montant|number_format(0, ',', ' ') }} F</td>
+                    <td>{{ item.createdBy.username }}</td>
+                    <td>{{ item.createdAt|date('d-m-Y') }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% endif %}
+        </div>
       </div><br><br>
     </div>
   </div>

@@ -5,6 +5,7 @@ namespace App\Controller;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Store;
+use App\Entity\Cloture;
 use App\Entity\Product;
 use App\Entity\Informations;
 use App\Entity\ComptaExercice;
@@ -152,15 +153,7 @@ class AdminPurchaseController extends AbstractController
           $providerCommande->setMontantTtc($commandeGlobalCost + $commandeGlobalCost * ($tva/100));
           $netAPayer = $providerCommande->getMontantTtc() - $remise;
           $providerCommande->setNetAPayer($netAPayer);
-          
-          $transport       = $providerCommande->getTransport();
-          $dedouanement    = $providerCommande->getDedouanement();
-          $currency_cost   = $providerCommande->getCurrencyCost();
-          $forwarding_cost = $providerCommande->getForwardingCost();
-          $additional_fees = $providerCommande->getAdditionalFees();
 
-          // $fonctions->ecritureDAchatDansLeJournalComptable($manager, $netAPayer, $tva, $exercice, $date, $providerCommande);
-          // $fonctions->ecritureDesChargesDUnAchatDansLeJournalComptable($manager, $transport, $dedouanement, $currency_cost, $forwarding_cost, $additional_fees, $providerCommande, $exercice);
           try{
             $manager->flush();
             $this->addFlash('success', '<li>Enregistrement de la commande fournisseur <strong>N°'.$commande->getReference().'</strong> du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li>');
@@ -215,6 +208,12 @@ class AdminPurchaseController extends AbstractController
         if($this->isCsrfTokenValid('reception_commande_fournisseur', $token)){
           $date    = new \DateTime($data['date']);
           $storeId = (int) $data['store'];
+          $cloture = $manager->getRepository(Cloture::class)->findOneByDate($date);
+          if(!empty($cloture)){
+            $this->addFlash('danger', 'Action non autorisée. Les activités du <strong>'.$date->format("d-m-Y").'</strong> ont déjà été clôturées.');
+            return $this->redirectToRoute('receive_provider_commande', ["id" => $id]);
+          }
+          
           foreach ($stores as $value) {
             if($value->getId() == $storeId)
             $store = $value;
@@ -346,6 +345,12 @@ class AdminPurchaseController extends AbstractController
         $mode   = $data['mode'];
         $amount = $data['amount'];
         // return new Response(var_dump($data));
+        $cloture = $manager->getRepository(Cloture::class)->findOneByDate($date);
+        if(!empty($cloture)){
+          $this->addFlash('danger', 'Action non autorisée. Les activités du <strong>'.$date->format("d-m-Y").'</strong> ont déjà été clôturées.');
+          return $this->redirectToRoute('provider_settlement', ["id" => $id]);
+        }
+
         if($this->isCsrfTokenValid('token_reglement_fournisseur', $token)){
           if(empty($date)){
             $this->addFlash('danger', 'Saisir une valeur pour la date.');

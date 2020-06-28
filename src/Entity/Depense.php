@@ -78,6 +78,11 @@ class Depense
      */
     private $comptaEcriture;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $mode_paiement;
+
 
     public function __construct()
     {
@@ -236,6 +241,18 @@ class Depense
         if ($comptaEcriture->getDepense() !== $newDepense) {
             $comptaEcriture->setDepense($newDepense);
         }
+
+        return $this;
+    }
+
+    public function getModePaiement(): ?int
+    {
+        return $this->mode_paiement;
+    }
+
+    public function setModePaiement(int $mode_paiement): self
+    {
+        $this->mode_paiement = $mode_paiement;
 
         return $this;
     }

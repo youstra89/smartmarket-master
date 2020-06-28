@@ -185,6 +185,11 @@ class Customer
      */
     private $acomptes;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RetraitAcompte", mappedBy="customer")
+     */
+    private $retraitAcomptes;
+
 
     public function __construct()
     {
@@ -192,6 +197,7 @@ class Customer
         $this->created_at        = new \DateTime();
         $this->customerCommandes = new ArrayCollection();
         $this->acomptes = new ArrayCollection();
+        $this->retraitAcomptes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -201,7 +207,7 @@ class Customer
 
     public function getSexeType(): string
     {
-      return empty($this->sexe) ? 'Indéfini' : self::SEXE[$this->sexe];
+      return is_null($this->sexe) ? 'Indéfini' : self::SEXE[$this->sexe];
     }
 
     public function getNom()
@@ -661,6 +667,37 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($acompte->getCustomer() === $this) {
                 $acompte->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RetraitAcompte[]
+     */
+    public function getRetraitAcomptes(): Collection
+    {
+        return $this->retraitAcomptes;
+    }
+
+    public function addRetraitAcompte(RetraitAcompte $retraitAcompte): self
+    {
+        if (!$this->retraitAcomptes->contains($retraitAcompte)) {
+            $this->retraitAcomptes[] = $retraitAcompte;
+            $retraitAcompte->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRetraitAcompte(RetraitAcompte $retraitAcompte): self
+    {
+        if ($this->retraitAcomptes->contains($retraitAcompte)) {
+            $this->retraitAcomptes->removeElement($retraitAcompte);
+            // set the owning side to null (unless already changed)
+            if ($retraitAcompte->getCustomer() === $this) {
+                $retraitAcompte->setCustomer(null);
             }
         }
 

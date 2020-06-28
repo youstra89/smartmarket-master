@@ -66,9 +66,11 @@
     <a href="{{ path('impression_inventaire') }}" title="Vente prévisionnelle"><button class="btn btn-default btn-circle btn-xl">Vente <br> Prévisionnelle</button></a>
     <a href="{{ path('cout_total_en_stock') }}" title="Inventaire"><button class="btn btn-info btn-circle btn-xl" style="font-size: 10px;">Inventaire</button></a>
     <a href="{{ path('impression_cout_total_en_stock') }}" title="Inventaire en PDF"><button class="btn btn-primary btn-circle btn-xl"><i class="icon-file"></i>Inventaire</button></a>
-    <br><br>
-      <a href="{{ path('add_multiple_products') }}" class="btn-sm btn-default">Ajouter plusieus produits à la fois</a>
-    <br><br>
+    {% if is_granted('ROLE_STOCK_INITIAL') %}
+      <br><br>
+        <a href="{{ path('add_multiple_products') }}" class="btn-sm btn-default">Ajouter plusieus produits à la fois</a>
+      <br><br>
+    {% endif %}
   {% endif %}
   <div class="table-responsive">
       <table class="table table-borderless" id="dataTable" width="auto" cellspacing="0">
@@ -141,6 +143,10 @@
                   &nbsp;
                   <a href="{{ path('define_product_prices', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-xing"></i></a>
                 {% endif %}
+                {% if is_granted("ROLE_ADMIN") %}
+                  &nbsp;
+                  <a href="{{ path('product_barecode', {id: product.id}) }}" title="Modifier le code barre"><i class="icon-code"></i></a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -151,9 +157,9 @@
 {% endblock %}
 
 {% block javascript %}
-    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-    <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('js/datatables-demo.js') }}"></script>
+  <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+  <script src="{{ asset('datatables/jquery.dataTables.min.js') }}"></script>
+  <script src="{{ asset('datatables/dataTables.bootstrap4.min.js') }}"></script>
+  <script src="{{ asset('js/datatables-demo.js') }}"></script>
 {% endblock %}

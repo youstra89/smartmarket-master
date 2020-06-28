@@ -27,6 +27,7 @@ use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Controller\FonctionsComptabiliteController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -149,13 +150,13 @@ class AdminProductController extends AbstractController
      */
     public function add_multiple_products(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions, FonctionsComptabiliteController $fonctionsComptables)
     {
-      return $this->redirectToRoute('product');
+      // return $this->redirectToRoute('product');
 
       $families     = $manager->getRepository(Family  ::class)->findAll();
       $categories   = $manager->getRepository(Category::class)->findAll();
       $marks        = $manager->getRepository(Mark    ::class)->findAll();
       $last_product = $manager->getRepository(Product ::class)->last_saved_product();
-      $manager   = $this->getDoctrine()->getManager();
+      $exercice     = $fonctionsComptables->exercice_en_cours($manager);
       // dump($reference);
       if($request->isMethod('post'))
       {
@@ -165,7 +166,8 @@ class AdminProductController extends AbstractController
         {
           $token = $data['token'];
           if($this->isCsrfTokenValid('insert_products', $token)){
-            $exercice  = $fonctionsComptables->exercice_en_cours($manager);
+            $stores            = $manager->getRepository(Store::class)->findAll();
+            $montant           = 0;
             $data              = $request->request->all();
             $familiesP         = $data["families"];
             $categoriesP       = $data["categories"];
@@ -195,26 +197,39 @@ class AdminProductController extends AbstractController
                 $product->setAveragePurchasePrice($purchasing_prices[$key]);
                 $product->setAverageSellingPrice($selling_prices[$key]);
                 $product->setUnite($value);
-                $product->setStock($stocks[$key]);
                 $product->setSecurityStock(0);
                 $product->setDescription($descriptions[$key]);
                 $product->setAveragePackageSellingPrice($selling_prices[$key] * $value);
                 $product->setCreatedBy($this->getUser());
+                $montant = $montant + $stocks[$key] * $value * $purchasing_prices[$key];
                 $manager->persist($product);
+                foreach ($stores as $item) {
+                  if($item->getIsDeleted() == 0){
+                    $newStock = new Stock();
+                    $newStock->setProduct($product);
+                    $newStock->setStore($item);
+                    $newStock->setQuantity(0);
+                    $item->getIsRoot() == 1 ? $newStock->setIsRoot(1) : $newStock->setIsRoot(0);
+                    $item->getIsRoot() == 1 ? $newStock->setQuantity($stocks[$key]) : $newStock->setQuantity(0);
+                    $manager->persist($newStock);
+                  }
+                }
                 $tab[] = $product;
               }
             }
 
             $nbr = count($tab);
-            $montant = 0;
             $reference = $fonctions->generateReference("product", $last_product, $nbr);
-            foreach ($reference as $key => $value) {
-              $tab[$key]->setReference($reference[$key]);
-              $montant = $montant + $tab[$key]->getStock() * $tab[$key]->getUnite() * $tab[$key]->getAveragePurchasePrice();
+            if($nbr == 1)
+              $tab[0]->setReference($reference);
+            else{
+              foreach ($reference as $key => $value) {
+                $tab[$key]->setReference($reference[$key]);
+              }
             }
-            // dd($montant);
+            // dd($tab);
             try{
-              // $fonctionsComptables->ecriture_de_l_enregistrement_du_stock_initial_dans_le_journal_comptable($manager, $montant, $exercice);
+              $fonctionsComptables->ecriture_de_l_enregistrement_du_stock_initial_dans_le_journal_comptable($manager, $montant, $exercice);
               $manager->flush();
               $this->addFlash('success', 'Enregistrement de <strong>'.$nbr.' produits</strong> réussie.');
             } 
@@ -311,6 +326,69 @@ class AdminProductController extends AbstractController
           'product' => $product,
           'form'    => $form->createView()
         ]);
+    }
+
+    /**
+     * @Route("/definition-du-code-barre/{id}", name="product_barecode")
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function product_barecode(Request $request, EntityManagerInterface $manager, Product $product, int $id)
+    {
+      if($request->isMethod('post')){
+        $data = $request->request->all();
+        $token = $data['_csrf_token'];
+        $codebarre = $data['codebarre'];
+        if($this->isCsrfTokenValid('prices_barecode', $token)){
+          $exitingProduct = $manager->getRepository(Product::class)->findOneBy(["code_barre" => $codebarre]);
+          if(empty($exitingProduct)){
+            $product->setCodeBarre($codebarre);
+            $product->setUpdatedAt(new \DateTime());
+            $product->setUpdatedBy($this->getUser());
+            try{
+              $manager->flush();
+              $this->addFlash('success', 'Enregistrement du code barre de <strong>'.$product->label().'</strong> (<strong>'.$codebarre.'</strong>) réussi.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            }
+            return $this->redirectToRoute('product');
+          }
+          else{
+            $this->addFlash('danger', "Code barre <strong>$codebarre</strong> déjà engistré pour le produit <strong>".$exitingProduct->label()."</strong>");
+            return $this->redirectToRoute('product_barecode', ["id" => $id]);
+          }
+        }
+      }
+      return $this->render('Product/product-barecode.html.twig', [
+        'current' => 'products',
+        'product' => $product,
+      ]);
+    }
+
+    /**
+     * @Route("/set-code-barre/{id}/{codebarre}", name="set_code_barre", options={"expose"=true}, methods={"POST", "GET"})
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function set_code_barre(Request $request, EntityManagerInterface $manager, Product $product, $codebarre)
+    {
+      $exit = $manager->getRepository(Product::class)->findOneBy(["code_barre" => $codebarre]);
+      if(empty($exit)){
+        return new JsonResponse(true);
+      }
+      else{
+        return new JsonResponse(false);
+      }
+      $product->setCodeBarre($codebarre);
+      try{
+        $manager->flush();
+        $this->addFlash('success', 'Enregistrement du code barre de <strong>'.$product->label().'</strong> <strong>'.$codebarre.'</strong> réussi.');
+        $response = true;
+      } 
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+        $response = false;
+      } 
+      return new JsonResponse($response);
     }
 
     /**

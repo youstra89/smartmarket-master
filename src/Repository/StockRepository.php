@@ -62,6 +62,21 @@ class StockRepository extends ServiceEntityRepository
         ;
     }
 
+    public function findByBarcodeAndStoreId($barcode, int $storeId)
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.product', 'p')
+            ->join('s.store', 'st')
+            ->andWhere('p.code_barre = :barcode')
+            ->andWhere('st.id = :storeId')
+            ->setParameter('barcode', $barcode)
+            ->setParameter('storeId', $storeId)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Stock[] Returns an array of Stock objects
     //  */

@@ -38,7 +38,7 @@ class ComptabiliteController extends AbstractController
         if($checker->getAccess() == true){
           return $this->redirectToRoute('login');
         }
-        
+
         $creancesClients    = 0;
         $dettesFournisseurs = 0;
         $stockMarchandises  = 0;
@@ -380,11 +380,7 @@ class ComptabiliteController extends AbstractController
             $credit = $manager->getRepository(ComptaCompteExercice::class)->find($creditId);
           }
 
-          // Après cela; on vérifie le solde du compte qui doit être débiter. Si le solde est supérieur ou égal au montant saisie alors, on continue.
-          if($debit->getMontantFinal() < $montant){
-            $this->addFlash('danger', "Opération impossible. Le montant à créditer (<strong>".number_format($montant, 0, ',', ' ')." F</strong>) n'est pas disponible dans le compte <strong>".$debit->getCompte()->getLabel()."</strong> (<strong>".number_format($debit->getMontantFinal(), 0, ',', ' ')." F</strong>).");
-            return $this->redirectToRoute('ecrire_dans_journal', ["id" => $id]);      
-          }
+          
           $remarque = isset($data["remarque"]) ? $data["remarque"] : null;
           $ecriture = new ComptaEcriture();
           $ecriture->setExercice($exercice);
@@ -430,11 +426,11 @@ class ComptabiliteController extends AbstractController
           $debit->setMontantFinal($nouveauMontantCompteADebiter);
           $credit->setMontantFinal($nouveauMontantCompteACrediter);
           if($nouveauMontantCompteACrediter < 0 or $nouveauMontantCompteADebiter < 0){
-            $this->addFlash('danger', "La somme indiquée ne peut être débitée/créditée des comptes sélectionnés.");
+            $this->addFlash('danger', "Opération impossible! La somme indiquée (<strong>".number_format($montant, 0, ',', ' ')." F</strong>) ne peut être débitée/créditée des comptes sélectionnés.");
             return $this->redirectToRoute('ecrire_dans_journal', ["id" => $id]);    
 
           }
-          dd($debit->getMontantFinal(), $credit->getMontantFinal());
+          // dd($debit->getMontantFinal(), $credit->getMontantFinal());
           try{
             $manager->flush();
             $this->addFlash('success', "Enregistrement de l'écriture N°<strong>".$reference."</strong> réussi.");
@@ -445,7 +441,7 @@ class ComptabiliteController extends AbstractController
           return $this->redirectToRoute('journal', ["id" => $id]);    
         }
       }
-      $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
+      // $derniereEcriture = $manager->getRepository(ComptaEcriture::class)->last_saved();
       $reference = $fonctions->generateReferenceEcriture($manager);
       $comptes  = $manager->getRepository(ComptaCompteExercice::class)->comptesDuBilanOuDuResultat("tous", null, $id);
       return $this->render('Comptabilite/ecrire-dans-journal.html.twig', [

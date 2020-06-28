@@ -115,6 +115,7 @@
                 <a href="{{ path('cloturer_activites_du_jour', {date: date|date('Y-m-d'), '_csrf_token': csrf_token('cloturer_activites')}) }}" data-toggle="tooltip" data-placement="top" class="btn-danger btn-circle btn-sm" title="Clôturer les activités du {{ date|date('d-m-Y') }}" onclick="return confirm('Etes-vous sûrs de vouloir clôturer les activités du {{date|date('d-m-Y')}} ? Cette action est irreversible. Vous ne pourrez plus enregistrer de vente pour cette journée après cette action.')">
                   <i class="icon-wallet2"></i>
                 </a>
+              {% else %}
               {% endif %}
             </td>
           </tr>

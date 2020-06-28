@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Statistiques sur les clients | Smart Market{% endblock %}
+
+
+{% block stylesheets %}
+<link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+<style>
+  .my-custom-td{
+     vertical-align: middle
+  }
+</style>
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Statistiques sur les clients</h2>
+  
+  <form action="" method="post">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="customer">Client</label>
+          <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
+            <option value="">Sélectionner un client</option>
+            {% for customer in customers if customer.isDeleted == 0 %}
+              <option value="{{ customer.id }}">{{ customer.reference }} --- {{ customer.nom }} {{ customer.phoneNumber }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="debut">Du</label>
+          <input type="date" name="debut" id="debut" class="form-control" value="{% if statistiques["debut"] is defined %}{{ statistiques["debut"]|date('Y-m-d') }}{% endif %}" required>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="fin">Au</label>
+          <input type="date" name="fin" id="fin" class="form-control" value="{% if statistiques["fin"] is defined %}{{ statistiques["fin"]|date('Y-m-d') }}{% endif %}" required>
+        </div>
+      </div>
+      <div class="col-md-1">
+        {# <div class="form-group"> #}
+          <label for=""></label>
+          <button class="btn btn-default">Rechercher</button>
+          <input type="hidden" name="token" value="{{ csrf_token('statistiques_customers') }}"/>
+        {# </div> #}
+      </div>
+    </div>
+  </form><br><br>
+  <div class="row">
+    {% if statistiques is not empty %}
+      {# {{ dump(statistiques["customer"]) }} #}
+      {% set customer = statistiques["customer"] %}
+      {% set debut = statistiques["debut"] %}
+      {% set fin = statistiques["fin"] %}
+      <div class="row">
+        <h3><strong>{{customer.nom}}</strong> Du <strong>{{debut|date('d-m-Y')}}</strong> au <strong>{{fin|date('d-m-Y')}}</strong></h3>
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th colspan="5" style="text-align:center">Les achats effectués par {{customer.nom}}</th>
+          </tr>
+          <tr>
+            <th>#</th>
+            <th>Référence</th>
+            <th>Date</th>
+            <th>Montant</th>
+            <th>Détails</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set i = 0 %}
+          {% for commande in customer.customerCommandes if date(debut) <= date(commande.date) and  date(fin) >= date(commande.date) %}
+            {% set i = i + 1 %}
+            <tr>
+              <td style="vertical-align: middle">{{i}}</td>
+              <td style="vertical-align: middle">{{commande.reference}}</td>
+              <td style="vertical-align: middle">{{commande.date|date('d-m-Y')}}</td>
+              <td style="vertical-align: middle">{{commande.netAPayer|number_format(0, ',', ' ') }} F</td>
+              <td style="vertical-align: middle">
+                {% for item in commande.product %}
+                  <li>{{item.product.label}}</li>
+                {% endfor %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <br><br>
+      {% if customer.acomptes|length != 0 %}
+        <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th colspan="5" style="text-align:center">Les acomptes versés par {{customer.nom}}</th>
+          </tr>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Montant</th>
+            <th>Commentaire</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set i = 0 %}
+          {% for acompte in customer.acomptes if date(debut) <= date(acompte.date) and  date(fin) >= date(acompte.date) %}
+            {% set i = i + 1 %}
+            <tr>
+              <td style="vertical-align: middle">{{i}}</td>
+              <td style="vertical-align: middle">{{acompte.date|date('d-m-Y')}}</td>
+              <td style="vertical-align: middle">{{acompte.montant|number_format(0, ',', ' ') }} F</td>
+              <td style="vertical-align: middle">{{acompte.commentaire }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+  <script>
+    $(document).ready(function() {
+      $('.js-example-basic-single').select2();
+    });
+  </script>
+{% endblock %}

@@ -113,6 +113,11 @@ class ComptaExercice
      */
     private $mois;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\RetraitAcompte", mappedBy="exercice")
+     */
+    private $retraitAcomptes;
+
     public function __construct()
     {
         $this->acheve         = false;
@@ -125,6 +130,7 @@ class ComptaExercice
         $this->avoirs = new ArrayCollection();
         $this->acomptes = new ArrayCollection();
         $this->clotures = new ArrayCollection();
+        $this->retraitAcomptes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -489,6 +495,37 @@ class ComptaExercice
     public function setMois(string $mois): self
     {
         $this->mois = $mois;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RetraitAcompte[]
+     */
+    public function getRetraitAcomptes(): Collection
+    {
+        return $this->retraitAcomptes;
+    }
+
+    public function addRetraitAcompte(RetraitAcompte $retraitAcompte): self
+    {
+        if (!$this->retraitAcomptes->contains($retraitAcompte)) {
+            $this->retraitAcomptes[] = $retraitAcompte;
+            $retraitAcompte->setExercice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRetraitAcompte(RetraitAcompte $retraitAcompte): self
+    {
+        if ($this->retraitAcomptes->contains($retraitAcompte)) {
+            $this->retraitAcomptes->removeElement($retraitAcompte);
+            // set the owning side to null (unless already changed)
+            if ($retraitAcompte->getExercice() === $this) {
+                $retraitAcompte->setExercice(null);
+            }
+        }
 
         return $this;
     }

@@ -66,18 +66,6 @@
       <strong>Montant TTC:</strong>
       <span>{{ commande.netAPayer|number_format(0, ',', ' ') }} F</span><br>
     </div>
-    {% set totalRetour = 0 %}
-    {% if commande.returnedProducts is not empty %}
-      <div class="col-md-4">
-        <h3>Retour de marchandises</h3>
-        {% for item in commande.returnedProducts %}
-          {# {% for prod in commande.product if item.product.id == prod.id %} #}
-            {# {% set totalRetour = totalRetour + (item.quantity * prod.unitPrice) %} #}
-            <li>{{ item.quantity }} {{ item.product.label }}</li>
-          {# {% endfor %} #}
-        {% endfor %}
-      </div>
-    {% endif %}
   </div><br><br>
   <div class="row">
     <form action="" method="post">
@@ -129,7 +117,7 @@
             </tr>
             <tr>
               <th colspan="5">Remise</th>
-              <th><input type="text" id="remise" name="remise" value="{{ commande.remise }}" readonly required></th>
+              <th><input type="text" id="remise" name="remise" value="{{ commande.remise }}" required></th>
             </tr>
             <tr>
               <th colspan="5">Net à payer</th>
@@ -149,23 +137,31 @@
   <script>
     // A chaque fois que le prix change
       $('.price').on('input',function(e){
-        var id = $(this).attr("name");
-        var unitPrice = $(this).val();
-        var price = document.getElementById('prices[' + id + ']');
-        var priceH = document.getElementById('pricesH[' + id + ']');
-        var qte = document.getElementById('quantities[' + id + ']').value;
-        var sousTotal = document.getElementById('sousTotal[' + id + ']');
-        var total = document.getElementById('total');
-        price.value = unitPrice;
-        priceH.value = unitPrice;
+        var id          = $(this).attr("name");
+        var unitPrice   = $(this).val();
+        var price       = document.getElementById('prices[' + id + ']');
+        var priceH      = document.getElementById('pricesH[' + id + ']');
+        var qte         = document.getElementById('quantities[' + id + ']').value;
+        var sousTotal   = document.getElementById('sousTotal[' + id + ']');
+        var total       = document.getElementById('total');
+        var tva         = document.getElementById('tva').value;
+        var remise      = document.getElementById('remise').value;
+        price.value     = unitPrice;
+        priceH.value    = unitPrice;
         sousTotal.value = parseFloat(qte) * parseFloat(unitPrice);
         var st = $('.sousTotal');
         var tt = 0;
         for (var i = 0; i < st.length; i++) {
           tt += eval(st[i].value);
-          console.log(st[i].value);
         }
+        tt = eval(tt);
+        tva = eval(tva);
+        var montantTva = (tt * tva)/100
         total.value = tt;
+        $("#ttc").val(tt + montantTva);
+        $("#net").val(tt + montantTva - remise);
+        console.log(tt);
+        
       });
 
       // A chaque fois que la quantité change
@@ -173,13 +169,15 @@
         var id = $(this).attr("name");
         console.log(id);
         
-        var qte = $(this).val();
-        var quantity = document.getElementById('quantities[' + id + ']');
-        var quantityH = document.getElementById('quantitiesH[' + id + ']');
-        var price = document.getElementById('prices[' + id + ']').value;
-        var sousTotal = document.getElementById('sousTotal[' + id + ']');
-        var total = document.getElementById('total');
-        quantity.value = qte;
+        var qte         = $(this).val();
+        var quantity    = document.getElementById('quantities[' + id + ']');
+        var quantityH   = document.getElementById('quantitiesH[' + id + ']');
+        var price       = document.getElementById('prices[' + id + ']').value;
+        var sousTotal   = document.getElementById('sousTotal[' + id + ']');
+        var total       = document.getElementById('total');
+        var tva         = document.getElementById('tva').value;
+        var remise      = document.getElementById('remise').value;
+        quantity.value  = qte;
         quantityH.value = qte;
         sousTotal.value = parseFloat(price) * parseFloat(qte);
         var st = $('.sousTotal');
@@ -188,7 +186,22 @@
           tt += eval(st[i].value);
           console.log(st[i].value);
         }
+                tt = eval(tt);
+        tva = eval(tva);
+        var montantTva = (tt * tva)/100
         total.value = tt;
+        $("#ttc").val(tt + montantTva);
+        $("#net").val(tt + montantTva - remise);
+
       });
+
+      $("#remise").on("input", function(){
+        var remise = eval($(this).val())
+        var ttc = eval($("#ttc").val()); 
+        if(remise == null || remise == undefined){
+          remise = 0
+        } 
+        $("#net").val(eval(ttc - remise));
+      })
   </script>
 {% endblock %}
