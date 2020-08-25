@@ -113,7 +113,7 @@ class AdminProductController extends AbstractController
 
           $data = $request->request->all();
           $codebarre = isset($data['codebarre']) ? $data['codebarre'] : null;
-          if(null !== $codebarre){
+          if(null != $codebarre){
             $exitingProduct = $manager->getRepository(Product::class)->findOneBy(["code_barre" => $codebarre]);
             if(empty($exitingProduct)){
               $product->setCodeBarre($codebarre);
@@ -325,7 +325,7 @@ class AdminProductController extends AbstractController
           }
           $data = $request->request->all();
           $codebarre = isset($data['codebarre']) ? $data['codebarre'] : null;
-          if(null !== $codebarre){
+          if(null != $codebarre){
             $exitingProduct = $manager->getRepository(Product::class)->findOneBy(["code_barre" => $codebarre]);
             if(empty($exitingProduct)){
               $product->setCodeBarre($codebarre);

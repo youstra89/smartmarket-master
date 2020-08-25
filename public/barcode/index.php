@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>PHP Barcode Generator Example</title>
+  <title>Générateur d'étiquette code barre</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -12,28 +12,28 @@
 
 <div class="container">
   <div style="margin: 10%;">
-  	<h2 class="text-center">PHP BARCODE GENERATOR</h2>
-  	<form class="form-horizontal" method="post" action="barcode.php" target="_blank">
+  	<h2 class="text-center">Générateur d'étiquette code barre</h2>
+  	<form class="form-horizontal" method="post" action="barcode/barcode.php" target="_blank">
   	<div class="form-group">
-      <label class="control-label col-sm-2" for="product">Product:</label>
+      <label class="control-label col-sm-2" for="product">Nom du produit</label>
       <div class="col-sm-10">
         <input autocomplete="OFF" type="text" class="form-control" id="product" name="product">
       </div>
     </div>
     <div class="form-group">
-      <label class="control-label col-sm-2" for="product_id">Product ID:</label>
+      <label class="control-label col-sm-2" for="product_id">Code du produit:</label>
       <div class="col-sm-10">
         <input autocomplete="OFF" type="text" class="form-control" id="product_id" name="product_id">
       </div>
     </div>
     <div class="form-group">
-      <label class="control-label col-sm-2" for="rate">Rate</label>
+      <label class="control-label col-sm-2" for="rate">Prix</label>
       <div class="col-sm-10">          
         <input autocomplete="OFF" type="text" class="form-control" id="rate"  name="rate">
       </div>
     </div>
     <div class="form-group">
-      <label class="control-label col-sm-2" for="print_qty">Barcode Quantity</label>
+      <label class="control-label col-sm-2" for="print_qty">Nombre d'étiquette</label>
       <div class="col-sm-10">          
         <input autocomplete="OFF" type="print_qty" class="form-control" id="print_qty"  name="print_qty">
       </div>
@@ -41,7 +41,7 @@
 
     <div class="form-group">        
       <div class="col-sm-offset-2 col-sm-10">
-        <button type="submit" class="btn btn-default">Submit</button>
+        <button type="submit" class="btn btn-primary">Générer</button>
       </div>
     </div>
   </form>

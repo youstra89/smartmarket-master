@@ -4,6 +4,7 @@ namespace App\Controller\Comptabilite;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Entity\Acompte;
 use App\Entity\Product;
 use App\Entity\Customer;
 use App\Entity\Provider;
@@ -39,7 +40,7 @@ class AcomptesController extends AbstractController
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
-        // return new Response(var_dump($data));
+        // return new Response(var_dump($data)); 
         if(!empty($data['token']))
         {
           $token = $data['token'];
@@ -54,8 +55,18 @@ class AcomptesController extends AbstractController
               $mode      = $data["mode"];
               $montant   = (int) $data["montant"];
               $remarque  = $data["remarque"];
-              $cutomerId = (int) $data["customer"];
-              $customer  = $manager->getRepository(Customer::class)->find($cutomerId);
+              $customerId = (int) $data["customer"];
+              $customer  = $manager->getRepository(Customer::class)->find($customerId);
+
+              $acompte = new Acompte();
+              $acompte->setCustomer($customer);
+              $acompte->setDate($date);
+              $acompte->setModePaiement($mode);
+              $acompte->setMontant($montant);
+              $acompte->setExercice($exercice);
+              $acompte->setCommentaire($remarque);
+              $acompte->setCreatedBy($this->getUser());
+              $manager->persist($acompte);
               $customer->setAcompte($customer->getAcompte() + $montant);
               /**
                * On va enregister une écriture dans le journal. Il s'agira dans un premier temps de débiter le compte caisse ou banque selon $mode
@@ -76,6 +87,7 @@ class AcomptesController extends AbstractController
               $reference = $fonctions->generateReferenceEcriture($manager);
               $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcompteClients, 0, $montant, $remarque);
               $manager->persist($ecriture);
+              // dd($acompte);
 
               try{
                 $manager->flush();
@@ -84,7 +96,7 @@ class AcomptesController extends AbstractController
               catch(\Exception $e){
                 $this->addFlash('danger', $e->getMessage());
               }
-              return $this->redirectToRoute('sell');
+              return $this->redirectToRoute('customer_info', ["id" => $customerId]);
             }
           }
           else{

@@ -163,6 +163,30 @@ class CustomerCommandeRepository extends ServiceEntityRepository
     }
 
 
+    public function creances_reglees($date)
+    {
+        return $this->createQueryBuilder('c')
+            ->join('c.settlements', 's')
+            ->andWhere('s.date = :date')
+            ->setParameter('date', $date)
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function creances_accordees($date)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.date = :date')
+            ->setParameter('date', $date)
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
     public function nombreCommandesDesDebiteurs()
     {
         return $this->createQueryBuilder('c')
@@ -175,6 +199,29 @@ class CustomerCommandeRepository extends ServiceEntityRepository
             ->groupBy('cus.id')  
             ->setParameter('status', false)  
             ->setParameter('commandeStatus', "LIVREE")  
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function toutes_les_ventes_periode($debut, $fin){
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.date >= :debut AND c.date <= :fin')
+            ->setParameter('debut', $debut)
+            ->setParameter('fin', $fin)
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function toutes_les_ventes_par_acompte_periode($debut, $fin){
+        return $this->createQueryBuilder('c')
+            ->join('c.settlements', 's')
+            ->andWhere('c.date >= :debut AND c.date <= :fin AND s.mode_paiement = 3')
+            ->setParameter('debut', $debut)
+            ->setParameter('fin', $fin)
+            ->orderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult()
         ;

@@ -40,7 +40,7 @@ class CustomerCommandeDetailsRepository extends ServiceEntityRepository
     public function benefice_journalier($date)
     {
         $manager = $this->getEntityManager()->getConnection();
-        $requete_eentrees = 'SELECT SUM((p.unit_price - p.purchasing_price) * ccd.quantity) AS benefice, cc.date FROM customer_commande_details ccd JOIN customer_commande cc ON ccd.commande_id = cc.id JOIN product p ON ccd.product_id = p.id WHERE cc.date LIKE :date AND p.is_deleted = :status AND cc.is_deleted = :status GROUP BY cc.date;';
+        $requete_eentrees = 'SELECT SUM((p.unit_price - p.purchasing_price) * ccd.quantity) AS benefice, cc.date FROM customer_commande_details ccd JOIN customer_commande cc ON ccd.commande_id = cc.id JOIN product p ON ccd.product_id = p.id WHERE cc.date LIKE :date AND p.is_deleted = :status AND ccd.is_deleted = :status AND cc.is_deleted = :status GROUP BY cc.date;';
         $statement = $manager->prepare($requete_eentrees);
         $statement->bindValue('date', $date.'%');
         $statement->bindValue('status', false);
@@ -52,40 +52,11 @@ class CustomerCommandeDetailsRepository extends ServiceEntityRepository
     public function benefice_mensuel($date)
     {
         $manager = $this->getEntityManager()->getConnection();
-        $requete_eentrees = 'SELECT SUM((p.unit_price - p.purchasing_price) * ccd.quantity) AS benefice, CONCAT(YEAR(cc.date), "-", MONTH(cc.date)) AS dateCC FROM customer_commande_details ccd JOIN customer_commande cc ON ccd.commande_id = cc.id JOIN product p ON ccd.product_id = p.id WHERE cc.date LIKE :date AND p.is_deleted = :status AND cc.is_deleted = :status GROUP BY dateCC;';
+        $requete_eentrees = 'SELECT SUM((p.unit_price - p.purchasing_price) * ccd.quantity) AS benefice, CONCAT(YEAR(cc.date), "-", MONTH(cc.date)) AS dateCC FROM customer_commande_details ccd JOIN customer_commande cc ON ccd.commande_id = cc.id JOIN product p ON ccd.product_id = p.id WHERE cc.date LIKE :date AND p.is_deleted = :status AND ccd.is_deleted = :status AND cc.is_deleted = :status GROUP BY dateCC;';
         $statement = $manager->prepare($requete_eentrees);
         $statement->bindValue('date', $date.'%');
         $statement->bindValue('status', false);
         $statement->execute();
         return $statement->fetchAll()[0];
     }
-
-    // /**
-    //  * @return CustomerCommandeDetails[] Returns an array of CustomerCommandeDetails objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?CustomerCommandeDetails
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

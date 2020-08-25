@@ -156,7 +156,7 @@ class AdminPurchaseController extends AbstractController
 
           try{
             $manager->flush();
-            $this->addFlash('success', '<li>Enregistrement de la commande fournisseur <strong>N°'.$commande->getReference().'</strong> du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li>');
+            $this->addFlash('success', '<li>Enregistrement de la commande fournisseur <strong>N°'.$providerCommande->getReference().'</strong> du <strong>'.$providerCommande->getDate()->format('d-m-Y').'</strong> réussie.</li>');
           } 
           catch(\Exception $e){
             $this->addFlash('danger', $e->getMessage());

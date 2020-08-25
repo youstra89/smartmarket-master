@@ -6,6 +6,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Avoir;
 use App\Entity\Acompte;
+use App\Entity\Customer;
 use App\Entity\Cloture;
 use App\Entity\Depense;
 use App\Entity\Settlement;
@@ -22,6 +23,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Controller\FonctionsComptabiliteController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
@@ -304,24 +306,41 @@ class AdminAccountingController extends AbstractController
       $depensesDuJour = $manager->getRepository(Depense      :: class)->depense_mensuelle($date);
       $totalNetAPayer = $manager->getRepository(CustomerCommande::class)->montant_net_a_payer_de_toutes_les_ventes_de_la_date($date);
       $avoirs = $manager->getRepository(Avoir::class)->avoirsDuJour($date);
+
+      $totalCreances = 0;
+      $date          = new \DateTime($date);
+      $commandes     = $manager->getRepository(CustomerCommande::class)->creances_accordees($date);
+      foreach ($commandes as $commande) {
+        if(isset($commande->getSettlements()[0]))
+        {
+          $settlement = $commande->getSettlements()[0];
+          if($settlement->getDate() == $date and $commande->getNetAPayer() > $settlement->getAmount()){
+            $creances[] = $settlement;
+            $totalCreances = $totalCreances + $commande->getNetAPayer() - $settlement->getAmount();
+          }
+        }
+      }
+      
+      //dd($creances, $totalCreances);
+      $date = $date->format("Y-m-d");
       $date = $this->dateEnFrancais($date);
 
-      $totalEntrees = 0;
-      $totalCaisse  = 0;
-      $totalBanque  = 0;
-      $totalAcompte = 0;
-      $totalSM      = 0;
+      $totalEntrees  = 0;
+      $totalCaisse   = 0;
+      $totalBanque   = 0;
+      $totalAcompte  = 0; 
+      $totalSM       = 0;
       foreach ($settlements as $value) {
         $mode = $value->getModepaiement();
         $montant = $value->getAmount();
         if($mode == 1)
-          $totalCaisse = $totalCaisse + $montant;
+        $totalCaisse = $totalCaisse + $montant;
         if($mode == 2)
-          $totalBanque = $totalBanque + $montant;
+        $totalBanque = $totalBanque + $montant;
         if($mode == 3)
-          $totalAcompte = $totalAcompte + $montant;
+        $totalAcompte = $totalAcompte + $montant;
         if($mode == 4)
-          $totalSM = $totalSM + $montant;
+        $totalSM = $totalSM + $montant;
       }
       $totalEntrees = $totalCaisse + $totalBanque + $totalSM;
 
@@ -330,6 +349,8 @@ class AdminAccountingController extends AbstractController
         $totalAvoirs = $totalAvoirs + $value->getMontant();
       }
 
+
+      
       // Configure Dompdf according to your needs
       $pdfOptions = new Options();
       $pdfOptions->set('defaultFont', 'Arial');
@@ -347,6 +368,7 @@ class AdminAccountingController extends AbstractController
         'totalBanque'    => $totalBanque,
         'totalAcompte'   => $totalAcompte,
         'totalEntrees'   => $totalEntrees,
+        'totalCreances'  => $totalCreances,
         'totalSM'        => $totalSM,
         'depensesDuJour' => $depensesDuJour[0]["somme"],
         'settlements'    => $settlements,
@@ -771,4 +793,17 @@ class AdminAccountingController extends AbstractController
           "Attachment" => false
       ]);
     }
+
+    /**
+   * @Route("/acomptes-clients", name="acomptes_clients")
+   * @IsGranted("ROLE_ADMIN")
+   */
+  public function acomptes_clients(EntityManagerInterface $manager)
+  {
+    $customers = $manager->getRepository(Customer::class)->acomptes_clients();
+    return $this->render('Accounting/acomptes-clients.html.twig', [
+      'current'   => 'sells',
+      'customers' => $customers
+    ]);
+  }
 }

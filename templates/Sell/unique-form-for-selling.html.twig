@@ -196,7 +196,7 @@
     $(document).ready(function(){
       var total = $("#total").val();
       var productsId = [];
-      var storeId = $("#storeId").val();;
+      var storeId = $("#storeId").val();
       // var test = $('#test').data("isTest")
       // A chaque fois qu'on sélectionne un produit
       $('#products').on('change',function(e){
@@ -222,7 +222,7 @@
               $("#quantity").val(1);
               $("#quantity").focus();
               $("#quantity").select();
-              $("#notif p").text(result.reference + ' --- ' + result.label);
+              $("#notif p").text(result.reference + ' --- ' + result.label + ': ' + result.stock + ' disponibles');
               $("#notif p").css("color", "green");
           },
           error: function (xhr, status, error) {
@@ -264,7 +264,7 @@
                 $("#quantity").focus();
                 $("#quantity").select();
                 $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
-                $("#notif p").text(result.reference + ' --- ' + result.label);
+                $("#notif p").text(result.reference + ' --- ' + result.label + ': ' + result.stock + ' disponibles');
                 $("#notif p").css("color", "green");
               } 
               else if(result.length != 0 && result.stock == 0) {
@@ -331,7 +331,7 @@
                     $("#quantity").focus();
                     $("#quantity").select();
                     $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
-                    $("#notif p").text(result.reference + ' --- ' + result.label);
+                    $("#notif p").text(result.reference + ' --- ' + result.label + ': ' + result.stock + ' disponibles');
                     $("#notif p").css("color", "green");
                   } 
                   else if(result.length != 0 && result.stock == 0) {
@@ -368,13 +368,6 @@
           }
       });
 
-      // $("#venduPar").on("change", function(){
-      //   var price = $("#prixUnitaire").val();
-      //   var unite = $("#nombreUnite").val();
-      //   var quantity = $("#quantity").val();
-      //   $("#price").val(price * unite * quantity);
-      // });
-
       // A chaque fois que la quantité change
       $('#add_product').on('click', function(e){
         var id                         = parseInt($("#productId").val());
@@ -401,6 +394,12 @@
         //   $("#notif p").css("color", "red");
         //   return false;
         // }
+        if(price < averageSellingPrice && unite == 1){
+          $("#notif p").text(label + ' ne peut être vendu en deça de ' + averageSellingPrice + 'F.');
+          $("#notif p").css("color", "red");
+          
+          return false;
+        }
         if(price < averagePurchasePrice && unite == 1){
           $("#notif p").text(label + ' ne peut être vendu en deça de ' + averagePurchasePrice + 'F.');
           $("#notif p").css("color", "red");

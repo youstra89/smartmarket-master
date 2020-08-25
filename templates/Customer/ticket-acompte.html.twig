@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            /* body{
+                size: auto;
+                margin: 0mm;  
+                width: 240px
+            } */
+
+            @font-face {
+                font-family: 'Elegance';
+                font-weight: normal;
+                font-style: normal;
+                font-variant: normal;
+                src: url("http://eclecticgeek.com/dompdf/fonts/Elegance.ttf") format("truetype");
+            }
+
+            /** Define the margins of your page **/
+            @page {
+              margin: 0px 10px;
+            }
+
+            table{
+              width: 98%;
+              padding-right: 5px;
+            }
+
+            table, th, td {
+              /* border: 1px solid black; */
+            }
+
+            /* tr:nth-child(even) {background-color: #CCC}
+            tr:nth-child(odd) {background-color: #FFF} */
+
+            main{
+              font-size: .7em
+            }
+
+            .numero{
+              text-align: center;
+            }
+
+            .ref{
+              font-style: underline;
+              /* font-size: .8em; */
+            }
+
+            .info-customer{
+              width: 40%;
+              display: inline-block;
+              float: right;
+              vertical-align : top;
+              margin-top: 1px;
+            }
+
+            .row{
+              margin: 0px;
+              padding: 0px;
+              width: 100%;
+            }
+
+            .col{
+              width: 32%;
+              display: inline-block;
+            }
+
+            p{
+              margin: 0px;
+              padding: 5px;
+            }
+
+            .info{
+              font-weight: bold;
+            }
+
+            tbody{
+              /* font-size: .7em; */
+            }
+
+            .title{
+              text-align: center;
+              font-family: 'Elegance';
+              font-size: 1em;
+              padding-top: 10px;
+              margin-bottom: 0px;
+              padding-bottom: 0px;
+            }
+        </style>
+        <meta charset="UTF-8">
+        <title>Ticket acompte | Smart Market</title>
+    </head>
+    <body onload="window.print()">
+        <!-- Wrap the content of your PDF inside a main tag -->
+        <main>
+          <div class="content">
+            <h1 class="title">
+              {% if info is defined %}
+                <strong>{{ info.nom }}</strong><br>
+                {% if info.adresse is not empty %}
+                  ******* {{ info.adresse }} *******<br>
+                {% endif %}
+                {% if info.telephone is not empty %}
+                  Téléphone: {{ info.telephone }}<br>
+                {% endif %}
+                {% if info.email is not empty %}
+                  Email: {{ info.email }}<br>
+                {% endif %}
+                {% if info.siteWeb is not empty %}
+                  Site web: {{ info.siteWeb }}<br>
+                {% endif %}
+              {% else %}
+                SmartMarket
+              {% endif %}
+              ******000******
+            </h1>
+            <br>
+            <div class="row">
+              <div class="info-enterprise" style="">
+                <div class="reference-commande">
+                  <table>
+                    <tr>
+                      <td witdh="10%"><span class="ref">Code client</span></td>
+                      <td><span class="ref">: {{ acompte.customer.reference }}</span></td>
+                    </tr>
+                    <tr>
+                      <td witdh="10%"><span class="ref">Client: </span></td>
+                      <td><span class="ref">: {{ acompte.customer.firstname }} {{ acompte.customer.lastname }}</span></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div><br>
+            <div class="row">
+              {# <p style="text-align: center;">
+                {% if settlements|last.modePaiement == 1 %}
+                  PAIEMENT AU COMPTANT
+                {% elseif settlements|last.modePaiement == 2 %}
+                  PAIEMENT PAR VIREMENT
+                {% elseif settlements|last.modePaiement == 3 %}
+                  PAIEMENT AVEC ACOMPTE CLIENT
+                {% elseif settlements|last.modePaiement == 4 %}
+                  PAIEMENT PAR SERVICE MONEY
+                {% endif %}
+              </p> #}
+              <p style="text-align: center; font-weight: bold; border: 1px solid black">ACOMPTE RECU</p>
+            </div>
+            <div class="row" style="text-align: right; padding-right: 10px;">
+              <span style="font-weight: bold;">{{ 'now'|date('d-m-Y') }}</span> à <span style="font-weight: bold;">{{ 'now'|date('H:i:s') }}</span>
+            </div><br>
+            <div class="table-responsive">
+              {% set i = 0 %}
+              <table class="table" cellspacing="0" border="0">
+                <thead>
+                  <tr align="left">
+                    <th>Date</th>
+                    <th>Montant</th>
+                  </tr>
+                </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ acompte.date|date('d-m-Y') }}</td>
+                      <td style="font-size: .9em">{{ acompte.montant|number_format(0, ',', '.') }} F</td>
+                    </tr>
+                    {% if acompte.commentaire %}
+                      <tr>
+                        <td colspan="2">
+                          <strong>Commentaire</strong><br>
+                          {{ acompte.commentaire }}
+                        </td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+              </table>
+              <br>
+              <div style="">
+                {# <table class="table" cellspacing="0" border="0" width="90%">
+                    <tr style="border: 1px solid black">
+                      <td width="50%">Valeur total Acompte</td>
+                      <td width="40%" align="right" style="align: right">
+                        {{ acompte.customer.acompte|number_format(0, ',', ' ') }} F
+                      &nbsp;
+                      </td>
+                      <td width="5%"></td>
+                    </tr>
+                  </tfoot>
+                </table> #}
+              </div>
+            </div>
+            <div class="row">
+              <div style="text-align: right; font-style: italic; padding-right: 20px">
+                <p><strong>Merci pour votre confiance</strong></p><br>
+                <p>Edité par : <strong>{{ app.user.username }}</strong></p><br><br>
+              </div>
+            </div>
+          </div>
+        </main>
+    </body>
+</html>

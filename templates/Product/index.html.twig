@@ -68,7 +68,8 @@
     <a href="{{ path('impression_cout_total_en_stock') }}" title="Inventaire en PDF"><button class="btn btn-primary btn-circle btn-xl"><i class="icon-file"></i>Inventaire</button></a>
     {% if is_granted('ROLE_STOCK_INITIAL') %}
       <br><br>
-        <a href="{{ path('add_multiple_products') }}" class="btn-sm btn-default">Ajouter plusieus produits à la fois</a>
+        <a href="{{ path('add_multiple_products') }}" class="btn-sm btn-default">Ajouter plusieus produits à la fois</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="/barcode" class="btn-sm btn-default">Générer des codes barres</a>
       <br><br>
     {% endif %}
   {% endif %}

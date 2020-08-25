@@ -32,17 +32,17 @@ class AdminCustomerController extends AbstractController
    * @Route("/", name="customer")
    * @IsGranted("ROLE_ADMIN")
    */
-   public function index(EntityManagerInterface $manager)
-   {
-       $customers = $manager->getRepository(Customer::class)->findAll();
-       return $this->render('Customer/index.html.twig', [
-         'current'   => 'sells',
-         'customers' => $customers
-       ]);
-   }
+  public function index(EntityManagerInterface $manager)
+  {
+      $customers = $manager->getRepository(Customer::class)->findAll();
+      return $this->render('Customer/index.html.twig', [
+        'current'   => 'sells',
+        'customers' => $customers
+      ]);
+  }
 
     /**
-     * @Route("/add", name="customer_add")
+     * @Route("/ajout", name="customer_add")
      * @IsGranted("ROLE_ADMIN")
      */
     public function add(Request $request, EntityManagerInterface $manager, FonctionsController $fonctions, FonctionsComptabiliteController $fonctionsComptables)
@@ -289,6 +289,52 @@ class AdminCustomerController extends AbstractController
           'current' => 'sells',
           'customer' => $customer,
         ]);
+    }
+
+
+    /**
+     * @Route("/impression-de-ticket-de-caisse/{id}", name="ticket_acompte", requirements={"id"="\d+"})
+     * @param Acompte $acompte
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function ticket_acompte(int $id, EntityManagerInterface $manager, Acompte $acompte)
+    {
+      $info = $manager->getRepository(Informations::class)->find(1);
+      // Configure Dompdf according to your needs
+      $pdfOptions = new Options();
+      $pdfOptions->set('defaultFont', 'Arial');
+      
+      // Instantiate Dompdf with our options
+      $dompdf = new Dompdf($pdfOptions);
+      
+      $html = $this->renderView('Customer/ticket-acompte.html.twig', [
+          'info'    => $info,
+          'acompte' => $acompte,
+      ]);
+      
+      // Load HTML to Dompdf
+      $dompdf->loadHtml($html);
+      // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+      // $dompdf->setPaper('A8', 'portrait');
+      $dompdf->setPaper('A8', 'landscape');
+
+      $orientation = "landscape";
+      // $nbr = count($commande->getProduct());
+      // $nbr = $nbr * 25 + 350;
+      $paper = [0, 0, 400, 240];
+      // dd($paper);
+      $dompdf->setPaper($paper, $orientation);
+
+      // Render the HTML as PDF
+      $dompdf->render();
+
+      //File name
+      $filename = "ticket-acompte-".$acompte->getCustomer()->getReference()."-".$acompte->getDate()->format("d-m-Y");
+
+      // Output the generated PDF to Browser (force download)
+      $dompdf->stream($filename.".pdf", [
+          "Attachment" => false
+      ]);
     }
 
 

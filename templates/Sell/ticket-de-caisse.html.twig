@@ -2,6 +2,12 @@
 <html>
     <head>
         <style>
+            /* body{
+                size: auto;
+                margin: 0mm;  
+                width: 240px
+            } */
+
             @font-face {
                 font-family: 'Elegance';
                 font-weight: normal;
@@ -12,7 +18,7 @@
 
             /** Define the margins of your page **/
             @page {
-                margin: 0px 10px;
+              margin: 0px 10px;
             }
 
             table{
@@ -162,7 +168,7 @@
                     <th>Total</th>
                   </tr>
                 </thead>
-                {% for item in commande.product %}
+                {% for item in commande.product if item.isDeleted == false %}
                   {% set i = i + 1 %}
                   {% set color = "" %}
                   {% if (i % 2) == 0 %}

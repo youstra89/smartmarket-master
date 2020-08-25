@@ -4,7 +4,26 @@
 {% block title %}Informations du client {{ customer.firstname }} {{ customer.lastname }}{% endblock %}
 
 
-{% block notifications %}{% endblock %}
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <strong>Succès!</strong> <br>{{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <strong>Succès!</strong> <br>{{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <strong>Succès!</strong> <br>{{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
 
 
 {% block body %}
@@ -12,131 +31,136 @@
     <h2 class="animate-box" data-animate-effect="fadeInLeft">Informations du client <strong>{{ customer.firstname }} {{ customer.lastname }}</strong> </h2>
     <div class="row">
         <div class="col-md-4">
+            <label for="">Reference</label> : {{ customer.reference }}
+        </div>
+        <div class="col-md-4">
+            <label for="">Nom</label> : {{ customer.firstname }}
+        </div>
+        <div class="col-md-4">
+            <label for="">Prénom</label> : {{ customer.lastname }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <label for="">Profession</label>: {{ customer.profession }}
+        </div>
+        <div class="col-md-4">
             <div class="form-group">
-            <label for="">Reference</label>
-            <input type="text" class="form-control" value="{{ customer.reference }}" readonly>
+                <label for="">Nationalité</label>: {{ customer.nationalite }}
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="">Nom</label>
-                <input type="text"class="form-control" value="{{ customer.firstname }}" readonly>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Prénom</label>
-                <input type="text"class="form-control" value="{{ customer.lastname }}" readonly>
+                <label for="">Sexe</label>: {{ customer.sexeType }}
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-md-4">
         <div class="form-group">
-            <label for="">Profession</label>
-            <input type="text"class="form-control" value="{{ customer.profession }}" readonly>
+            <label for="">Date de naissance</label>: {{ customer.dateNaissance|date("d-m-Y") }}
         </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="">Nationalité</label>
-                <input type="text"class="form-control" value="{{ customer.nationalite }}" readonly>
+                <label for="">Lieu de naissance</label>:     {{ customer.lieuNaissance }}
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="">Sexe</label>
-                <input type="text"class="form-control" value="{{ customer.sexeType }}" readonly>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-        <div class="form-group">
-            <label for="">Date de naissance</label>
-            <input type="text"class="form-control" value="{{ customer.dateNaissance|date("d-m-Y") }}" readonly>
-        </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Lieu de naissance</label>
-                <input type="text"class="form-control" value="{{ customer.lieuNaissance }}" readonly>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label for="">Civilité</label>
-                <input type="text"class="form-control" value="{{ customer.civilite }}" readonly>
+                <label for="">Civilité</label>:     {{ customer.civilite }}
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-md-4">
             <div class="form-group">
-                <label for="">Numéro de téléphone</label>
-                <input type="text"class="form-control" value="{{ customer.phoneNumber }}" readonly>
+                <label for="">Numéro de téléphone</label>: {{ customer.phoneNumber }}
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="">Email</label>
-                <input type="text"class="form-control" value="{{ customer.email }}" readonly>
+                <label for="">Email</label>: {{ customer.email }}
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="">Type de client</label>
-                <input type="text"class="form-control" value="{{ customer.type.type }}" readonly>
+                <label for="">Type de client</label>: {% if customer.type %}{{ customer.type.type }}{% else %}Indéfini{% endif %}
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="form-group">
-                <label for="">Adresse</label>
-                <input type="text"class="form-control" value="{{ customer_address }}" readonly>
+                <label for="">Adresse</label>: {{ customer.address }}
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="form-group">
-                <label for="">Résidence</label>
-                <input type="text"class="form-control" value="{{ customer.residence }}" readonly>
+                <label for="">Résidence</label>: {{ customer.residence }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="">Numéro de compte bancaire</label>: {{ customer.numeroCompteBancaire }}
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-md-3">
         <div class="form-group">
-            <label for="">Nature de la pièce d'identité</label>
-            <input type="text"class="form-control" value="{{ customer.naturePieceIdentite }}" readonly>
+            <label for="">Nature de la pièce d'identité</label><br>
+            {{ customer.naturePieceIdentite }}
         </div>
         </div>
         <div class="col-md-3">
             <div class="form-group">
-                <label for="">Numéro de la pièce d'identité</label>
-                <input type="text"class="form-control" value="{{ customer.numeroPieceIdentite }}" readonly>
+                <label for="">Numéro de la pièce d'identité</label><br>
+                {{ customer.numeroPieceIdentite }}
             </div>
         </div>
         <div class="col-md-3">
         <div class="form-group">
-            <label for="">Date d'établissement de la pièce d'identité</label>
-            <input type="text"class="form-control" value="{{ customer.dateEtablissementPieceIdentite|date("d-m-Y") }}" readonly>
+            <label for="">Date d'établissement de la pièce d'identité</label><br>
+            {{ customer.dateEtablissementPieceIdentite|date("d-m-Y") }}
         </div>
         </div>
         <div class="col-md-3">
             <div class="form-group">
-                <label for="">Date d'expiration de la pièce d'identité</label>
-                <input type="text"class="form-control" value="{{ customer.dateExpirationPieceIdentite|date("d-m-Y") }}" readonly>
+                <label for="">Date d'expiration de la pièce d'identité</label><br>
+                {{ customer.dateExpirationPieceIdentite|date("d-m-Y") }}
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="">Numéro de compte bancaire</label>
-                <input type="text"class="form-control" value="{{ customer.numeroCompteBancaire }}" readonly>
-            </div>
-        </div>
+        
+    </div>
+    <br><br>
+
+    <div class="table-responsive">
+        <h2>Les acomptes reçus</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set num = 0 %}
+                {% for item in customer.acomptes %}
+                    {% set num = num + 1 %}
+                    <tr>
+                        <td>{{ num }}</td>
+                        <td>{{ item.date|date("d-m-Y") }}</td>
+                        <td>{{ item.montant|number_format(0, ',', ' ') }} F</td>
+                        <td><a href="{{ path('ticket_acompte', {id: item.id}) }}" title="Imprimer ticket acompte">Imprimer</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 

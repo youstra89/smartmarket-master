@@ -73,12 +73,12 @@
           {% set reglement = commande.settlements|last %}
           <a href="{{ path('ticket_de_ciasse', {id: commande.id, settlementId: reglement.id }) }}" class="btn-sm btn-large btn-success">Imprimer un ticket de caisse</a><br><br>
         {% endif %} #}
-      {% if is_granted("ROLE_ADMIN") and commande.avoirs is empty and commande.store.id == 1 %}
+      {# {% if is_granted("ROLE_ADMIN") and commande.avoirs is empty and commande.store.id == 1 %}
         <a class="btn-sm btn-danger" href="{{ path('reset_sell', {id: commande.id}) }}">Retour de marchandises</a><br><br>
-      {% endif %}
-      {% if is_granted("ROLE_ADMIN") and commande.settlements|length <= 1 and commande.date|date('d-m-Y') == 'now'|date('d-m-Y') and commande.store.id == 1 %}
+      {% endif %} #}
+      {# {% if is_granted("ROLE_ADMIN") and commande.settlements|length <= 1 and commande.date|date('d-m-Y') == 'now'|date('d-m-Y') and commande.store.id == 1 %} #}
         <a class="btn-sm btn-info" href="{{ path('edit_sell', {id: commande.id}) }}">Modifier la commande</a><br><br>
-      {% endif %}
+      {# {% endif %} #}
     </div>
     {% set totalRetour = 0 %}
   </div><br><br>
@@ -99,7 +99,7 @@
           </thead>
           <tbody>
             {% set total = 0 %}
-            {% for item in commande.product %}
+            {% for item in commande.product if item.isDeleted == false %}
               {% set i = i + 1 %}
               {% set total = total + item.subtotal %}
               <tr>

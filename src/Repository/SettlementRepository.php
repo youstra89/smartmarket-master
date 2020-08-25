@@ -72,7 +72,7 @@ class SettlementRepository extends ServiceEntityRepository
     }
 
 
-    public function versementsAnterieurs1(int $commandeId, int $settlementId, $date)
+    public function versementsAnterieurs1(int $commandeId, $date)
     {
         $manager = $this->getEntityManager()->getConnection();
         $requete_eentrees = 'SELECT s.id, s.amount, s.date, s.created_at, s.created_by_id, s.reference, u.username FROM settlement s INNER JOIN customer_commande c ON c.id = s.commande_id JOIN user u ON u.id = s.created_by_id WHERE c.ended = :status AND s.is_deleted = 0 AND DATEDIFF(s.created_at, :date) >= 0 AND c.id = :commandeId;';

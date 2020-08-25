@@ -82,6 +82,11 @@ class Acompte
      */
     private $deleted_by;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $mode_paiement;
+
     public function __construct()
     {
         $this->is_deleted = false;
@@ -245,6 +250,18 @@ class Acompte
     public function setDeletedBy(?User $deleted_by): self
     {
         $this->deleted_by = $deleted_by;
+
+        return $this;
+    }
+
+    public function getModePaiement(): ?int
+    {
+        return $this->mode_paiement;
+    }
+
+    public function setModePaiement(int $mode_paiement): self
+    {
+        $this->mode_paiement = $mode_paiement;
 
         return $this;
     }

@@ -24,9 +24,9 @@ class FonctionsController extends AbstractController
         $prefix = "FO";
       }
       
-      $reference = $object->getReference();
-      if(!empty($reference))
+      if(!empty($object))
       {
+        $reference = $object->getReference();
         $zero = "";
         $number = (int) substr($reference, $characters_to_delete);
         $numero_ordre = $number + 1;
@@ -47,7 +47,15 @@ class FonctionsController extends AbstractController
         }
       }
       else{
-        $matricule = "PR001";            
+        if($type == 'product'){
+          $matricule = "PR001";            
+        }
+        elseif($type == 'customer'){
+          $matricule = "CLT001";            
+        }
+        elseif($type == 'provider'){
+          $matricule = "FO001";            
+        }
       }
 
       return $matricule;

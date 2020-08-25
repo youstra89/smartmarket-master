@@ -22,7 +22,7 @@ span { font-size: 13px;}
 		$rate = $_POST['rate'];
 
 		for($i=1;$i<=$_POST['print_qty'];$i++){
-			echo "<p class='inline'><span ><b>Item: $product</b></span>".bar128(stripcslashes($_POST['product_id']))."<span ><b>Price: ".$rate." </b><span></p>&nbsp&nbsp&nbsp&nbsp";
+			echo "<p class='inline'><span ><b>$product</b></span>".bar128(stripcslashes($_POST['product_id']))."<span ><b>Prix: ".number_format($rate, 0, ',', '.')." Frs </b><span></p>&nbsp&nbsp&nbsp&nbsp";
 		}
 
 		?>

@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Statistiques sur les créances règlées | Smart Market{% endblock %}
+
+
+{% block stylesheets %}
+<link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+<style>
+  .my-custom-td{
+     vertical-align: middle
+  }
+</style>
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Statistiques sur les créances règlées</h2>
+  
+  <form action="" method="post">
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="debut">Date</label>
+          <input type="date" name="date" id="date" class="form-control" value="{% if statistiques["date"] is defined %}{{ statistiques["date"]|date('Y-m-d') }}{% else %}{{ "now"|date('Y-m-d') }}{% endif %}" required>
+        </div>
+      </div>
+      <div class="col-md-1">
+        {# <div class="form-group"> #}
+          <label for=""></label>
+          <button class="btn btn-default">Rechercher</button>
+          <input type="hidden" name="token" value="{{ csrf_token('statistiques_creances_reglees') }}"/>
+        {# </div> #}
+      </div>
+    </div>
+  </form><br><br>
+  {# <div class="row"> #}
+  <div class="table-responsive">
+    {% if statistiques is not empty %}
+      {# <div class="row"> #}
+        <h3><strong>Créances règlées </strong> le <strong>{{statistiques["date"]|date('d-m-Y')}}</strong></h3>
+      {# </div> #}
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th colspan="7" style="text-align:center"> </th>
+          </tr>
+          <tr>
+            <th>#</th>
+            <th>Référence</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Montant</th>
+            <th>Etat</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set i = 0 %}
+          {% set total = 0 %}
+          {% for creance in statistiques["creances"] %}
+            {% set i = i + 1 %}
+            {% set total = total + creance.amount %}
+            <tr>
+              <td style="vertical-align: middle">{{i}}</td>
+              <td style="vertical-align: middle">{{creance.commande.reference}}</td>
+              <td style="vertical-align: middle">{{creance.date|date('d-m-Y')}}</td>
+              <td style="vertical-align: middle">{{creance.commande.customer.nom}}</td>
+              <td style="vertical-align: middle">{{creance.amount|number_format(0, ',', ' ') }} F</td>
+              <td style="vertical-align: middle">{% if creance.commande.ended == true %}Soldée{% else %}non soldée{% endif %}</td>
+              <td><a href="{{ path('customer_order_details', {id: creance.commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="4">Total</th>
+            <th>{{total|number_format(0, ',', ' ') }} F</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+    {% endif %}
+  </div>
+{% endblock %}
+
+
+{% block javascript %}
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+  <script>
+    $(document).ready(function() {
+      $('.js-example-basic-single').select2();
+    });
+  </script>
+{% endblock %}

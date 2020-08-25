@@ -200,12 +200,10 @@ class AdminSellController extends AbstractController
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
-        // return new Response(var_dump($data));
-        if(!empty($data['token']))
-        {
+        if(!empty($data['token'])){
           $token = $data['token'];
           if($this->isCsrfTokenValid('vente', $token)){
-            $data = $request->request->all();
+            // dd($data);
             if(empty($data['date'])){
               $this->addFlash('danger', 'Impossible d\'enregistrer une vente sans la date.');
               return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
@@ -385,12 +383,13 @@ class AdminSellController extends AbstractController
                 $this->addFlash('danger', $result[1]);
                 return $this->redirectToRoute('unique_form_for_selling', ["id" => $id]);
               }
-
+              // dump($customer->getAcompte());
               if($mode == 3 && $customer->getAcompte() > 0){
                 // Il ne faut pas oublier de retirer le montant de l'acompte du client
                 $customer->setAcompte($customer->getAcompte() - $amount);
               }
               // die($stock->getQuantity());
+              // dd($customer->getAcompte());
               try{
                 $manager->flush();
                 // dd($res1, $res2);
@@ -430,130 +429,171 @@ class AdminSellController extends AbstractController
       elseif($commande->getDate()->format('d-m-Y') !== (new \DateTime())->format('d-m-Y'))
         return $this->redirectToRoute('customer_order_details', ["id" => $id]);
 
+      $storeId = $commande->getStore()->getId();
+      $stocks    = $manager->getRepository(Stock::class)->storeProducts($storeId);
+
       if($request->isMethod('post'))
       {
         $data = $request->request->all();
-        // return new Response(var_dump($data));
         if(!empty($data['token']))
         {
-          $token = $data['token'];
+          $token      = $data['token'];
           if($this->isCsrfTokenValid('modifier_vente', $token)){
+            $products   = isset($data['products']) ? $data['products'] : [];
             $data       = $request->request->all();
             $quantities = $data["quantitiesH"];
             $remise     = isset($data["remise"]) ? $data["remise"] : 0;
             $prices     = $data["pricesH"];
             $total      = $data["total"];
             $change     = false;
+            // dd($data);
 
             $storeId   = $commande->getStore()->getId();
+            // Pour chaque produit, on va vérifier s'il existe encore dans la liste des produits après modification
+            $newProductsIds = [];
+            // if (count($products) != 0) {
+            //   # code...
+            // }
+            foreach ($products as $item) {
+              $newProductsIds[] = $item;
+            }
+
+            // dd($newProductsIds);
+            $oldProductsIds = [];
             foreach ($commande->getProduct() as $key => $value) {
               $productId = $value->getProduct()->getId();
-              $stock     = $manager->getRepository(Stock::class)->findOneBy(["product" => $productId, "store" => $storeId]);
-              $product   = $value->getProduct();
-              $productId = $product->getId();
-              $quantity  = $quantities[$productId];
-              $price     = $prices[$productId];
-              if($value->getQuantity() !== $quantity or $value->getUnitPrice() !== $price)
+              $oldProductsIds[] = $productId;
+              if(in_array($productId, $newProductsIds))
               {
-                // dump($product);
-                // On va voir s'il y a eu augmentation ou diminution de quantité
-                $diff     = $value->getQuantity() - $quantity;
-
-                // Si $diff est négatif, cela signifie qu'il y a eu une augmentation de quantité.
-                // Dans ce cas, on va vérifier si la différence demandée est disponible en stock. Si oui, on procède au mises à jour
-                if ($diff < 0) {
-                  $diff = abs($diff);
-                  if($stock->getQuantity() >= $diff)
-                    $stock->setQuantity($stock->getQuantity() - $diff);
-                  else{
-                    $this->addFlash('danger', 'Impossible de satisfaire la demande d\'augmentation. La quantité demandée ('.$diff.') n\'est pas disponible en stock');
-                    return $this->redirectToRoute('edit_sell', ["id" => $id]);
-                  }
-                } 
-                elseif ($diff > 0) {
-                  $stock->setQuantity($stock->getQuantity() + $diff);
-                }
-                
-                $change   = true;
-                $subtotal = $quantity * $price;
-                $value->setQuantity($quantity);
-                $value->setUnitPrice($price);
-                $value->setSubtotal($subtotal);
-                $value->setUpdatedAt(new \DateTime());
-                $value->setUpdatedBy($this->getUser());
+                $stock     = $manager->getRepository(Stock::class)->findOneBy(["product" => $productId, "store" => $storeId]);
+                $product   = $value->getProduct();
+                $productId = $product->getId();
+                $quantity  = $quantities[$productId];
+                $price     = $prices[$productId];
+                if($value->getQuantity() !== $quantity or $value->getUnitPrice() !== $price)
+                {
+                  // dump($product);
+                  // On va voir s'il y a eu augmentation ou diminution de quantité
+                  $diff     = $value->getQuantity() - $quantity;
   
+                  // Si $diff est négatif, cela signifie qu'il y a eu une augmentation de quantité.
+                  // Dans ce cas, on va vérifier si la différence demandée est disponible en stock. Si oui, on procède au mises à jour
+                  if ($diff < 0) {
+                    $diff = abs($diff);
+                    if($stock->getQuantity() >= $diff)
+                      $stock->setQuantity($stock->getQuantity() - $diff);
+                    else{
+                      $this->addFlash('danger', 'Impossible de satisfaire la demande d\'augmentation. La quantité demandée ('.$diff.') n\'est pas disponible en stock');
+                      return $this->redirectToRoute('edit_sell', ["id" => $id]);
+                    }
+                  } 
+                  elseif ($diff > 0) {
+                    $stock->setQuantity($stock->getQuantity() + $diff);
+                  }
+                  
+                  $change   = true;
+                  $subtotal = $quantity * $price;
+                  $value->setQuantity($quantity);
+                  $value->setUnitPrice($price);
+                  $value->setSubtotal($subtotal);
+                  $value->setUpdatedAt(new \DateTime());
+                  $value->setUpdatedBy($this->getUser());
+    
+                }
+              }
+              else{
+                $value->setIsDeleted(true);
+                $value->setDeletedAt(new \DateTime());
+                $value->setDeletedBy($this->getUser());
               }
             }
 
-            if($change === true)
-            {
-              $tva         = $commande->getTva();
-              $montantTtc  = $total + $total * ($tva/100);
-              $netAPayer   = $montantTtc - $remise;
-              $commande->setTotalAmount($total);
-              $commande->setMontantTtc($montantTtc);
-              $commande->setNetAPayer($netAPayer);
-              $commande->setUpdatedAt(new \DateTime());
-              $commande->setUpdatedBy($this->getUser());
-              
-              // S'il y a une différence entre le nouveau total et le total des règlements, il faudra faire un traitement.
-              $totalReglement = $commande->getTotalSettlments();
-              $customer       = $commande->getCustomer();
-              $reference      = $commande->getReference();
-              // $diff           = abs($totalReglement - $netAPayer);
-              // Si $totalReglement > $netAPayer, cela veut dire que nous devons donner cette différence au client
-              if ($totalReglement > $netAPayer) {
-                $exercice  = $fonctions->exercice_en_cours($manager);
-                $etat = "Acompte";
-                // On va, dans un premier temps, enregistrer l'avoir du client
-                $avoir = new Avoir();
-                $totalAvoir = $totalReglement - $netAPayer;
-                $reference = "AV-".(new \DateTime())->format('Ymd').'-'.(new \DateTime())->format('His');
-                $avoir->setDate(new \DateTime());
-                $avoir->setMode(3);
-                $avoir->setExercice($exercice);
-                $avoir->setReference($reference);
-                $avoir->setCommande($commande);
-                $avoir->setCreatedBy($this->getUser());
-                $avoir->setMontant($totalAvoir);
-                $manager->persist($avoir);
-
-                $acompte = new Acompte();
-                $acompte->setCustomer($customer);
-                $acompte->setDate(new \DateTime());
-                $acompte->setMontant($totalAvoir);
-                $acompte->setExercice($exercice);
-                $acompte->setCommentaire("Acompte reçu après modification de la vente N°$reference");
-                $acompte->setCreatedBy($this->getUser());
-                $manager->persist($acompte);
-                $commande->setEnded(true);
-                $customer->setAcompte($customer->getAcompte() + $totalAvoir);
-                // dd($avoir, $acompte);
-              }
-              elseif ($totalReglement < $netAPayer) {
-                $etat = "Règlement";
-                $commande->setEnded(false);
-                // dd($commande);
-              }
-              elseif ($totalReglement = $netAPayer) {
-                $commande->setEnded(true);
-                // dd($commande);
-              }
-
-              // dd($etat);
-              // Si $netAPayer > $totalReglement, cela veut dire que le client nous doit la différence
-              try{
-                // $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
-                $manager->flush();
-                $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
-              } 
-              catch(\Exception $e){
-                $this->addFlash('danger', $e->getMessage());
-                return $this->redirectToRoute('edit_sell', ["id" => $id]);
+            foreach ($newProductsIds as $id) {
+              if(!in_array($id, $oldProductsIds))
+              {
+                // dd($id);
+                $commandeProduit = new CustomerCommandeDetails();
+                $product = $manager->getRepository(Product::class)->find($id);
+                $price = $prices[$id];
+                $quantity = $quantities[$id];
+                $subtotal = $price + $quantity;
+                $beneficeSurProduit = ($price - $product->getAveragePurchasePrice()) * $quantity;
+                $commandeProduit->setBenefice($beneficeSurProduit);
+                $commandeProduit->setCommande($commande);
+                $commandeProduit->setProduct($product);
+                $commandeProduit->setQuantity($quantity);
+                $commandeProduit->setUnitPrice($price);
+                $commandeProduit->setSubtotal($subtotal);
+                $commandeProduit->setCreatedBy($this->getUser());
+                $manager->persist($commandeProduit);
+                $stock = $manager->getRepository(Stock::class)->findOneBy(["product" => $id, "store" => $storeId]);
+                $stock->setQuantity($stock->getQuantity() - $quantity);
               }
             }
-            else{
-              $this->addFlash('warning', 'Aucun changement constaté.');
+
+            $tva         = $commande->getTva();
+            $montantTtc  = $total + $total * ($tva/100);
+            $netAPayer   = $montantTtc - $remise;
+            $commande->setTotalAmount($total);
+            $commande->setMontantTtc($montantTtc);
+            $commande->setNetAPayer($netAPayer);
+            $commande->setUpdatedAt(new \DateTime());
+            $commande->setUpdatedBy($this->getUser());
+            
+            // S'il y a une différence entre le nouveau total et le total des règlements, il faudra faire un traitement.
+            $totalReglement = $commande->getTotalSettlments();
+            $customer       = $commande->getCustomer();
+            $reference      = $commande->getReference();
+            // $diff           = abs($totalReglement - $netAPayer);
+            // Si $totalReglement > $netAPayer, cela veut dire que nous devons donner cette différence au client
+            if ($totalReglement > $netAPayer) {
+              $exercice  = $fonctions->exercice_en_cours($manager);
+              $etat = "Acompte";
+              // On va, dans un premier temps, enregistrer l'avoir du client
+              $avoir = new Avoir();
+              $totalAvoir = $totalReglement - $netAPayer;
+              $reference = "AV-".(new \DateTime())->format('Ymd').'-'.(new \DateTime())->format('His');
+              $avoir->setDate(new \DateTime());
+              $avoir->setMode(3);
+              $avoir->setExercice($exercice);
+              $avoir->setReference($reference);
+              $avoir->setCommande($commande);
+              $avoir->setCreatedBy($this->getUser());
+              $avoir->setMontant($totalAvoir);
+              $manager->persist($avoir);
+
+              $acompte = new Acompte();
+              $acompte->setCustomer($customer);
+              $acompte->setDate(new \DateTime());
+              $acompte->setMontant($totalAvoir);
+              $acompte->setExercice($exercice);
+              $acompte->setCommentaire("Acompte reçu après modification de la vente N°$reference");
+              $acompte->setCreatedBy($this->getUser());
+              $manager->persist($acompte);
+              $commande->setEnded(true);
+              $customer->setAcompte($customer->getAcompte() + $totalAvoir);
+              // dd($avoir, $acompte);
+            }
+            elseif ($totalReglement < $netAPayer) {
+              $etat = "Règlement";
+              $commande->setEnded(false);
+              // dd($commande);
+            }
+            elseif ($totalReglement = $netAPayer) {
+              $commande->setEnded(true);
+              // dd($commande);
+            }
+
+            // dd($commande);
+            // Si $netAPayer > $totalReglement, cela veut dire que le client nous doit la différence
+            try{
+              // $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
+              $manager->flush();
+              $this->addFlash('success', 'La commande N°<strong>'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> à été modifiée avec succès.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+              return $this->redirectToRoute('edit_sell', ["id" => $id]);
             }
             return $this->redirectToRoute('sell');
           }
@@ -564,6 +604,8 @@ class AdminSellController extends AbstractController
       }
       return $this->render('Sell/sell-edit.html.twig', [
         'current'  => 'sells',
+        'store'   => $commande->getStore(),
+        'stocks'   => $stocks,
         'commande' => $commande,
       ]);
     }
@@ -1163,6 +1205,26 @@ class AdminSellController extends AbstractController
     }
 
     /**
+     * @Route("/new-impression-de-ticket-de-caisse/{id}/{settlementId}", name="ticket_de_ciasse_new", requirements={"id"="\d+"})
+     * @param CustomerCommande $commande
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function ticket_de_ciasse_new(int $id, EntityManagerInterface $manager, int $settlementId, CustomerCommande $commande)
+    {
+      $info = $manager->getRepository(Informations::class)->find(1);
+      $settlement  = $manager->getRepository(Settlement::class)->find($settlementId);
+      $settlements = $manager->getRepository(Settlement::class)->versementsAnterieurs($id, $settlement);
+      // Configure Dompdf according to your needs
+      
+
+      return $this->render('ticket-de-caisse.html.php', [
+          'info'        => $info,
+          'commande'    => $commande,
+          'settlements' => $settlements,
+      ]);
+    }
+
+    /**
      * @Route("/impression-de-ticket-de-caisse/{id}/{settlementId}", name="ticket_de_ciasse", requirements={"id"="\d+"})
      * @param CustomerCommande $commande
      * @IsGranted("ROLE_VENTE")
@@ -1180,6 +1242,11 @@ class AdminSellController extends AbstractController
       $dompdf = new Dompdf($pdfOptions);
       
       // Retrieve the HTML generated in our twig file
+      // return $this->render('Sell/ticket-de-caisse.html.twig', [
+      //   'info'        => $info,
+      //   'commande'    => $commande,
+      //   'settlements' => $settlements,
+      // ]);
       $html = $this->renderView('Sell/ticket-de-caisse.html.twig', [
           'info'        => $info,
           'commande'    => $commande,
