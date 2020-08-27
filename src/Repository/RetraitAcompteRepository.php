@@ -31,6 +31,23 @@ class RetraitAcompteRepository extends ServiceEntityRepository
         ;
     }
 
+    public function retrait_acompte_sur_periode(int $customerId, $debut, $fin)
+    {
+        return $this->createQueryBuilder('r')
+            ->join('r.customer', 'c')
+            ->andWhere('c.id = :customerId')
+            ->andWhere('r.is_deleted = :status')
+            ->andWhere('r.date >= :debut')
+            ->andWhere('r.date <= :fin')
+            ->setParameter('status', false)
+            ->setParameter('debut', $debut)
+            ->setParameter('fin', $fin)
+            ->setParameter('customerId', $customerId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return RetraitAcompte[] Returns an array of RetraitAcompte objects
     //  */

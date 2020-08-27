@@ -46,7 +46,7 @@
         <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
           <option value="">Sélectionner un client</option>
           {% for customer in customers %}
-            <option value="{{ customer.id }}">{{ customer.nom }} {{ customer.phoneNumber }}</option>
+            <option value="{{ customer.id }}">{{ customer.reference }} --- {{ customer.nom }} {{ customer.phoneNumber }}</option>
           {% endfor %}
         </select>
       </div>

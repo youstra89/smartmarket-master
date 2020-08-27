@@ -119,6 +119,43 @@ class SettlementRepository extends ServiceEntityRepository
         ;
     }
 
+
+    public function reglements_du_client(int $customerId, int $mode)
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.commande', 'c')
+            ->join('c.customer', 'cus')
+            ->where('s.is_deleted = :status')
+            ->andWhere(' cus.id = :customerId')
+            ->andWhere('s.mode_paiement = :mode')
+            ->setParameter('status', false)
+            ->setParameter('mode', $mode)
+            ->setParameter('customerId', $customerId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    
+    public function reglements_du_client_sur_periode(int $customerId, int $mode, $debut, $fin)
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.commande', 'c')
+            ->join('c.customer', 'cus')
+            ->where('s.is_deleted = :status')
+            ->andWhere(' cus.id = :customerId')
+            ->andWhere('s.mode_paiement = :mode')
+            ->andWhere('s.date >= :debut')
+            ->andWhere('s.date <= :fin')
+            ->setParameter('status', false)
+            ->setParameter('mode', $mode)
+            ->setParameter('debut', $debut)
+            ->setParameter('fin', $fin)
+            ->setParameter('customerId', $customerId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     
     public function lastNumber()
     {

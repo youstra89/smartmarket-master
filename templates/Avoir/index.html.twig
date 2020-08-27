@@ -75,7 +75,7 @@
                 {% endif %} #}
               </td>
               <td>
-                {# <a href="{{ path('customer_order_details', {id: avoir.id}) }}"data-toggle="tooltip" title="Voir les détails de la avoir"><i class="icon-info"></i></a> #}
+                <a href="{{ path('ticket_avoir', {id: avoir.id}) }}"data-toggle="tooltip" title="Voir les détails de la avoir"><i class="icon-printer"></i></a>
                 {# {% if is_granted('ROLE_SUPER_ADMIN') %}
                   &nbsp;&nbsp;<a  href="{{ path('delete_avoir', {'id': avoir.id, '_csrf_token': csrf_token('delete_avoir'), 'sells':'yes'}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer la avoir N° {{ avoir.reference }}" onclick="return confirm('Etes-vous sûrs de supprimer la avoir N°{{ avoir.reference }} ? Les règlements et échéances liés seront automatiquement supprimés aussi.')">
                     <i class="icon-trash"></i>

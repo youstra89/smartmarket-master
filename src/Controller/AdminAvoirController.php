@@ -2,28 +2,15 @@
 // src/Controller/LuckyController.php
 namespace App\Controller;
 
+use NumberFormatter;
+use App\Entity\Avoir;
+use App\Entity\Informations;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use App\Entity\Product;
-use App\Entity\Customer;
-use App\Entity\Settlement;
-use App\Entity\ComptaCompte;
-use App\Entity\Informations;
-use App\Entity\ComptaExercice;
-use App\Entity\CustomerCommande;
-use App\Entity\ComptaCompteExercice;
-use App\Entity\CustomerCommandeSearch;
-use App\Entity\CustomerCommandeDetails;
-use App\Form\CustomerCommandeSearchType;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Collections\Collection;
-use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Controller\FonctionsComptabiliteController;
-use App\Entity\Avoir;
-use NumberFormatter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -46,6 +33,51 @@ class AdminAvoirController extends AbstractController
       return $this->render('Avoir/index.html.twig', [
         'current' => 'avoir',
         'avoirs'   => $avoirs
+      ]);
+    }
+
+    /**
+     * @Route("/impression-de-ticket-avoir/{id}", name="ticket_avoir", requirements={"id"="\d+"})
+     * @param Avoir $avoir
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function ticket_avoir(EntityManagerInterface $manager, Avoir $avoir)
+    {
+      $info = $manager->getRepository(Informations::class)->find(1);
+      // Configure Dompdf according to your needs
+      $pdfOptions = new Options();
+      $pdfOptions->set('defaultFont', 'Arial');
+      
+      // Instantiate Dompdf with our options
+      $dompdf = new Dompdf($pdfOptions);
+      
+      $html = $this->renderView('Avoir/ticket-avoir.html.twig', [
+          'info'   => $info,
+          'avoir' => $avoir,
+      ]);
+      
+      // Load HTML to Dompdf
+      $dompdf->loadHtml($html);
+      // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+      // $dompdf->setPaper('A8', 'portrait');
+      $dompdf->setPaper('A8', 'landscape');
+
+      $orientation = "landscape";
+      $nbr   = count($avoir->getDetailsAvoirs());
+      $nbr   = $nbr * 25 + 350;
+      $paper = [0, 0, $nbr, 240];
+      // dd($paper);
+      $dompdf->setPaper($paper, $orientation);
+
+      // Render the HTML as PDF
+      $dompdf->render();
+
+      //File name
+      $filename = "ticket-avoir-".$avoir->getCommande()->getReference();
+
+      // Output the generated PDF to Browser (force download)
+      $dompdf->stream($filename.".pdf", [
+          "Attachment" => false
       ]);
     }
 }

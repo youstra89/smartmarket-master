@@ -32,6 +32,23 @@ class AcompteRepository extends ServiceEntityRepository
         ;
     }
 
+    public function acomptes_client_sur_periode(int $customerId, $debut, $fin)
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.customer', 'c')
+            ->where('a.is_deleted = :status')
+            ->andWhere(' c.id = :customerId')
+            ->andWhere('a.date >= :debut')
+            ->andWhere('a.date <= :fin')
+            ->setParameter('status', false)
+            ->setParameter('debut', $debut)
+            ->setParameter('fin', $fin)
+            ->setParameter('customerId', $customerId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Acompte[] Returns an array of Acompte objects
     //  */

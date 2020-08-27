@@ -156,7 +156,10 @@
                         <td>{{ num }}</td>
                         <td>{{ item.date|date("d-m-Y") }}</td>
                         <td>{{ item.montant|number_format(0, ',', ' ') }} F</td>
-                        <td><a href="{{ path('ticket_acompte', {id: item.id}) }}" title="Imprimer ticket acompte">Imprimer</a></td>
+                        <td>
+                            <a href="{{ path('ticket_acompte', {id: item.id}) }}" title="Imprimer ticket acompte">Imprimer</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="{{ path('ticket_acompte_gf', {id: item.id}) }}" title="Imprimer ticket acompte">Imprimer GF</a>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>

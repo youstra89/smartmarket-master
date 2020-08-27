@@ -4,11 +4,12 @@ namespace App\Controller;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use App\Entity\Provider;
-use App\Entity\Customer;
-use App\Entity\CustomerCommande;
+use App\Entity\Acompte;
 use App\Entity\Product;
+use App\Entity\Customer;
 use App\Entity\Settlement;
+use App\Entity\RetraitAcompte;
+use App\Entity\CustomerCommande;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -46,7 +47,9 @@ class StatistiquesController extends AbstractController
         $token = $data['token'];
         if($this->isCsrfTokenValid('statistiques_customers', $token)){
           $customer = $manager->getRepository(Customer::class)->find($data['customer']);
+          $reglementAcomptes = $manager->getRepository(Settlement::class)->reglements_du_client($data['customer'], 3);
           $statistiques["customer"] = $customer;
+          $statistiques["reglementAcomptes"] = $reglementAcomptes;
           $statistiques["debut"] = new \DateTime($data['debut']);
           $statistiques["fin"] = new \DateTime($data['fin']);
         }
@@ -55,10 +58,70 @@ class StatistiquesController extends AbstractController
         }
       }
       return $this->render('Statistiques/customers.html.twig', [
-        'current'      => 'statistiques',
-        'customers'    => $customers,
-        'statistiques' => $statistiques
+        'current'           => 'statistiques',
+        'customers'         => $customers,
+        'statistiques'      => $statistiques,
       ]);
+    }
+    
+    /**
+     * @Route("/statistiques-mouvements-acomptes", name="statistiques_mouvements_acomptes")
+     */
+    public function statistiques_mouvements_acomptes(Request $request, EntityManagerInterface $manager)
+    {
+      $statistiques = [];
+      $customers = $manager->getRepository(Customer::class)->findAll();
+      // $approvisionnements = $manager->getRepository(Approvisionnement::class)->findAll();
+      if($request->isMethod('post')){
+        $data = $request->request->all();
+        $token = $data['token'];
+        if($this->isCsrfTokenValid('statistiques_customers', $token)){
+          $debutInterval           = ($data['debut']);
+          $debut                   = new \DateTime($data['debut']);
+          $finInterval             = ($data['fin']);
+          $fin                     = new \DateTime($data['fin']);
+          $customerId              = $data['customer'];
+          $customer                = $manager->getRepository(Customer      ::class)->find($customerId);
+          $acomptes                = $manager->getRepository(Acompte       ::class)->acomptes_client_sur_periode($customerId, $debut, $fin);
+          $reglementsAcomptes      = $manager->getRepository(Settlement    ::class)->reglements_du_client_sur_periode($customerId, 3, $debut, $fin);
+          $retraitsAcomptes        = $manager->getRepository(RetraitAcompte::class)->retrait_acompte_sur_periode($customerId, $debut, $fin);
+          $datesAcomptes           = $this->select_dates($acomptes);
+          $dateRetraitsAcomptes        = $this->select_dates($retraitsAcomptes);
+          $datesReglementsAcomptes = $this->select_dates($reglementsAcomptes);
+          $dates = [];
+          while (strtotime($debutInterval) <= strtotime($finInterval)) {
+            if(in_array($debutInterval, $datesAcomptes) or in_array($debutInterval, $dateRetraitsAcomptes) or in_array($debutInterval, $datesReglementsAcomptes)){
+              $dates[] = $debutInterval;
+            }
+            $debutInterval = date("Y-m-d", strtotime("+1 day", strtotime($debutInterval)));
+          }
+          $statistiques["dates"] = $dates;
+          $statistiques["customer"] = $customer;
+          $statistiques["acomptes"] = $acomptes;
+          $statistiques["retraitsAcomptes"] = $retraitsAcomptes;
+          $statistiques["reglementsAcomptes"] = $reglementsAcomptes;
+          $statistiques["debut"] = $debut;
+          $statistiques["fin"] = $fin;
+          // dd($retraitsAcomptes);
+        }
+        else{
+          dd("C'est pas vrai");
+        }
+      }
+      return $this->render('Statistiques/mouvements-acomptes.html.twig', [
+        'current'           => 'statistiques',
+        'customers'         => $customers,
+        'statistiques'      => $statistiques,
+      ]);
+    }
+
+    public function select_dates($array)
+    {
+      $dates = [];
+      foreach ($array as $value) {
+        $dates[] = $value->getDate()->format("Y-m-d");
+      }
+      return $dates;
     }
 
 
@@ -144,8 +207,6 @@ class StatistiquesController extends AbstractController
           $creances             = [];
           $totalCreances        = 0;
           foreach ($commandes as $commande) {
-            // $commandeId  = $commande->getId();
-            // $settlements = $manager->getRepository(Settlement::class)->versementsAnterieurs1($commandeId, $date);
             if(isset($commande->getSettlements()[0]))
             {
               $settlement = $commande->getSettlements()[0];
@@ -154,10 +215,7 @@ class StatistiquesController extends AbstractController
                 $totalCreances = $totalCreances + $commande->getNetAPayer() - $settlement->getAmount();
               }
             }
-            // foreach ($settlements as $value) {
-            // }
           }
-          // dd($totalCreances);
           
           $statistiques["creances"] = $creances;
         }

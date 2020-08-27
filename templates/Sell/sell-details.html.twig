@@ -146,8 +146,8 @@
                 <tr>
                   <th>Date</th>
                   <th>Montant</th>
-                  <th>Enregistré par</th>
-                  <th>Enregistré le</th>
+                  <th>Enregistré</th>
+                  <th>Mode</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -157,8 +157,18 @@
                     {% set total = total + item.amount %}
                     <td>{{ item.date|date('d-m-Y') }}</td>
                     <td>{{ item.amount|number_format(0, ',', ' ') }} F</td>
-                    <td>{{ item.createdBy.username }}</td>
-                    <td>{{ item.createdAt|date('d-m-Y') }}</td>
+                    <td>le {{ item.createdAt|date('d-m-Y') }} par <strong>{{ item.createdBy.username }}</strong></td>
+                    <td>
+                      {% if item.modePaiement == 1 %}
+                        COMPTANT
+                      {% elseif item.modePaiement == 2 %}
+                        VIREMENT
+                      {% elseif item.modePaiement == 3 %}
+                        ACOMPTE CLIENT
+                      {% elseif item.modePaiement == 4 %}
+                        SERVICE MONEY
+                      {% endif %}
+                    </td>
                     <td>
                       <a href="{{ path('facture_client', {id: commande.id, settlementId: item.id}) }}" title="Imprimer une facture" style="font-size: 1.5em;"><i class="icon-file"></i></a>
                       <a href="{{ path('ticket_de_ciasse', {id: commande.id, settlementId: item.id}) }}" title="Imprimer un ticket de caisse" style="font-size: 1.5em;"><i class="icon-ticket"></i></a>

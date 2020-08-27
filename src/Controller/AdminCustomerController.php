@@ -156,6 +156,51 @@ class AdminCustomerController extends AbstractController
           'form'     => $form->createView()
         ]);
     }
+    
+    /**
+     * @Route("/editer-acompte-client/{id}", name="editer_acompte_client")
+     * @IsGranted("ROLE_SUPER_ADMIN")
+     * @param Customer $customer
+     */
+    public function editer_acompte_client(Request $request, EntityManagerInterface $manager, Customer $customer, $id)
+    {
+      if($request->isMethod('post'))
+      {
+        $data = $request->request->all();
+        $token = $data['token'];
+        if($this->isCsrfTokenValid('editer_acompte_client', $token)){
+          $montant = $data["montant"];
+          if($montant == $customer->getAcompte()){
+            $this->addFlash('warning', "Aucun changement observé.");  
+          }
+          else{
+            $activite = new Activite();
+            $activite->setTitre("Update Acompte");
+            $activite->setDescription("Mise à jour de l'acompte du client ".$id." de ".$customer->getAcompte()." à ".$montant);
+            $activite->setDate(new \DateTime());
+            $activite->setUser($this->getUser());
+            $manager->persist($activite);
+
+            $customer->setAcompte($montant);
+            $customer->setUpdatedAt(new \DateTime());
+            $customer->setUpdatedBy($this->getUser());
+
+            try{
+              $manager->flush();
+              $this->addFlash('success', 'Mise à jour de l\'acompte client <strong>'.$customer->getNom().'</strong> réussie.');
+            } 
+            catch(\Exception $e){
+              $this->addFlash('danger', $e->getMessage());
+            } 
+          }
+        }
+        return $this->redirectToRoute('customer');
+      }
+      return $this->render('Customer/edit-customer-acompte.html.twig', [
+        'current'  => 'sells',
+        'customer' => $customer,
+      ]);
+    }
 
     /**
      * @Route("/informations/{id}", name="customer_info")
@@ -293,7 +338,7 @@ class AdminCustomerController extends AbstractController
 
 
     /**
-     * @Route("/impression-de-ticket-de-caisse/{id}", name="ticket_acompte", requirements={"id"="\d+"})
+     * @Route("/impression-de-ticket-acompte/{id}", name="ticket_acompte", requirements={"id"="\d+"})
      * @param Acompte $acompte
      * @IsGranted("ROLE_VENTE")
      */
@@ -330,6 +375,46 @@ class AdminCustomerController extends AbstractController
 
       //File name
       $filename = "ticket-acompte-".$acompte->getCustomer()->getReference()."-".$acompte->getDate()->format("d-m-Y");
+
+      // Output the generated PDF to Browser (force download)
+      $dompdf->stream($filename.".pdf", [
+          "Attachment" => false
+      ]);
+    }
+
+
+    /**
+     * @Route("/impression-de-recu-acompte/{id}", name="ticket_acompte_gf", requirements={"id"="\d+"})
+     * @param Acompte $acompte
+     * @IsGranted("ROLE_VENTE")
+     */
+    public function ticket_acompte_gf(int $id, EntityManagerInterface $manager, Acompte $acompte)
+    {
+      $info = $manager->getRepository(Informations::class)->find(1);
+      // Configure Dompdf according to your needs
+      $pdfOptions = new Options();
+      $pdfOptions->set('defaultFont', 'Arial');
+      
+      // Instantiate Dompdf with our options
+      $dompdf = new Dompdf($pdfOptions);
+      
+      $html = $this->renderView('Customer/recu-acompte.html.twig', [
+        'info'    => $info,
+        'acompte' => $acompte,
+      ]);
+      
+      // Load HTML to Dompdf
+      $dompdf->loadHtml($html);
+      // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+      // $dompdf->setPaper('A8', 'portrait');
+      $dompdf->setPaper('A8', 'landscape');
+      $dompdf->setPaper('A4', 'portrait');
+
+      // Render the HTML as PDF
+      $dompdf->render();
+
+      //File name
+      $filename = "recu-acompte-".$acompte->getCustomer()->getReference()."-".$acompte->getDate()->format("d-m-Y");
 
       // Output the generated PDF to Browser (force download)
       $dompdf->stream($filename.".pdf", [

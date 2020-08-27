@@ -2,12 +2,6 @@
 <html>
     <head>
         <style>
-            /* body{
-                size: auto;
-                margin: 0mm;  
-                width: 240px
-            } */
-
             @font-face {
                 font-family: 'Elegance';
                 font-weight: normal;
@@ -18,35 +12,71 @@
 
             /** Define the margins of your page **/
             @page {
-              margin: 0px 10px;
+                margin: 100px 50px;
+            }
+
+            header {
+                position: fixed;
+                top: -60px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+
+                /** Extra personal styles **/
+                color: gray;
+                text-align: left;
+                padding-left: 20px;
+                font-size: .9em
+            }
+
+            footer {
+                position: fixed; 
+                bottom: -60px; 
+                left: 0px; 
+                right: 0px;
+                height: 50px; 
+
+                /** Extra personal styles **/
+                color: darkGray;
+                text-align: center;
+                font-size: 0.5em;
             }
 
             table{
-              width: 98%;
-              padding-right: 5px;
+              width: 100%
             }
 
             table, th, td {
               /* border: 1px solid black; */
+              
             }
 
             /* tr:nth-child(even) {background-color: #CCC}
             tr:nth-child(odd) {background-color: #FFF} */
 
-            main{
-              font-size: .7em
+            td{
+              /* border: 1px solid black; */
+              vertical-align: middle;
+              border-collapse: collapse;
+              font-size: 1.5em;
+              line-height: 30px;
             }
 
             .numero{
               text-align: center;
             }
 
-            .ref{
-              font-style: underline;
-              /* font-size: .8em; */
+            .invoice-header{
             }
 
-            .info-customer{
+            .info-enterprise{
+              width: 58%;
+              display: inline-block;
+              vertical-align : top;
+              margin-top: 1px;
+            }
+
+            .info-provider{
               width: 40%;
               display: inline-block;
               float: right;
@@ -74,60 +104,43 @@
               font-weight: bold;
             }
 
-            tbody{
-              /* font-size: .7em; */
+            table, th, td {
+              border: 1px solid black;
             }
 
-            .title{
-              text-align: center;
-              font-family: 'Elegance';
+            tbody{
+              font-size: .7em;
+            }
+
+            .settlement{
+              width: 95%;
               font-size: 1em;
-              padding-top: 10px;
-              margin-bottom: 0px;
-              padding-bottom: 0px;
+            }
+
+            .formatage-montant{
+              text-align: right;
+              padding-right: 5px;
             }
         </style>
         <meta charset="UTF-8">
-        <title>Ticket acompte | Smart Market</title>
+        <title>Reçu d'acompte | Smart Market</title>
     </head>
-    <body onload="window.print()">
+    <body>
+        {# Inclusion de l'entête de du pied de page #}
+        {{ include('header.html.twig') }}
         <!-- Wrap the content of your PDF inside a main tag -->
         <main>
           <div class="content">
-            <h1 class="title">
-              {% if info is defined %}
-                <strong>{{ info.nom }}</strong><br>
-                {% if info.adresse is not empty %}
-                  ******* {{ info.adresse }} *******<br>
-                {% endif %}
-                {% if info.telephone is not empty %}
-                  Téléphone: {{ info.telephone }}<br>
-                {% endif %}
-                {% if info.email is not empty %}
-                  Email: {{ info.email }}<br>
-                {% endif %}
-                {% if info.siteWeb is not empty %}
-                  Site web: {{ info.siteWeb }}<br>
-                {% endif %}
-              {% else %}
-                SmartMarket
-              {% endif %}
-              ******000******
-            </h1>
-            <br>
+            <div style="text-align: center; padding-top: 10px; font-size: 1.5em">
+              <span>
+                Reçu acompte<strong>
+              </span><br><br>
+            </div>
             <div class="row">
               <div class="info-enterprise" style="">
                 <div class="reference-commande">
-                  <table>
-                    <tr>
-                      <td witdh="10%"><span class="ref">Code client</span></td>
-                      <td><span class="ref">: {{ acompte.customer.reference }}</span></td>
-                    </tr>
-                    <tr>
-                      <td witdh="10%"><span class="ref">Client: </span></td>
-                      <td><span class="ref">: {{ acompte.customer.firstname }} {{ acompte.customer.lastname }}</span></td>
-                    </tr>
-                  </table>
+                  <strong>Code client</strong><span class="ref">: {{ acompte.customer.reference }}</span><br>
+                  <strong>Client </strong><span class="ref">: {{ acompte.customer.firstname }} {{ acompte.customer.lastname }}</span>
                 </div>
               </div>
             </div><br>
@@ -157,26 +170,26 @@
                     <th>Montant</th>
                   </tr>
                 </thead>
-                  <tbody>
+                <tbody>
+                  <tr>
+                    <td>{{ acompte.date|date('d-m-Y') }}</td>
+                    <td>{{ acompte.montant|number_format(0, ',', '.') }} F</td>
+                  </tr>
+                  {% if acompte.commentaire %}
                     <tr>
-                      <td>{{ acompte.date|date('d-m-Y') }}</td>
-                      <td style="font-size: .9em">{{ acompte.montant|number_format(0, ',', '.') }} F</td>
+                      <td colspan="2">
+                        <strong>Commentaire</strong><br>
+                        {{ acompte.commentaire }}
+                      </td>
                     </tr>
-                    {% if acompte.commentaire %}
-                      <tr>
-                        <td colspan="2">
-                          <strong>Commentaire</strong><br>
-                          {{ acompte.commentaire }}
-                        </td>
-                      </tr>
-                    {% endif %}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th>Montant total au {{ 'now'|date('d-m-Y') }}</th>
-                      <th>{{ acompte.customer.acompte|number_format(0, ',', '.') }} F</th>
-                    </tr>
-                  </tfoot>
+                  {% endif %}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th>Montant total au {{ 'now'|date('d-m-Y') }}</th>
+                    <th>{{ acompte.customer.acompte|number_format(0, ',', '.') }} F</th>
+                  </tr>
+                </tfoot>
               </table>
               <br>
               <div style="">

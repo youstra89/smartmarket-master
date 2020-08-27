@@ -320,6 +320,45 @@ class AdminAccountingController extends AbstractController
           }
         }
       }
+
+      $totalAcomptesRecus = 0;
+      $acomptesRecus     = $manager->getRepository(Acompte::class)->acomptesDuJour($date->format("Y-m-d"));
+      foreach ($acomptesRecus as $item) {
+        $totalAcomptesRecus = $totalAcomptesRecus + $item->getMontant();
+      }
+
+      /************************************* Début du calcul du reste des créances du jour */
+      // Pour calculer le reste des créances accordées d'un jour, on va faire la somme des créances accordées $sommeCreancesAccordees. 
+      // Puis on fait la somme des créances du jour qui ont été règlées $sommeCreancesDuJourReglees.
+      // On obtient le résultat en faisant la soustraction de $sommeCreancesAccordees - $sommeCreancesDuJourReglees
+      $sommeCreancesAccordees = 0;
+      $commandes              = $manager->getRepository(CustomerCommande::class)->creances_accordees($date);
+      foreach ($commandes as $commande) {
+        if(isset($commande->getSettlements()[0]))
+        {
+          $settlement = $commande->getSettlements()[0];
+          if($settlement->getDate() == $date and $commande->getNetAPayer() > $settlement->getAmount()){
+            $sommeCreancesAccordees = $sommeCreancesAccordees + $commande->getNetAPayer() - $settlement->getAmount();
+          }
+        }
+      }
+
+
+      $sommeCreancesDuJourReglees = 0;
+      $commandes                  = $manager->getRepository(CustomerCommande::class)->creances_reglees($date);
+      foreach ($commandes as $commande) {
+        if(count($commande->getSettlements()) > 1){
+          $reglements = $commande->getSettlements();
+          foreach ($reglements as $key => $value) {
+            if($value->getDate() == $date and $value->getAmount() > 0 and $key != 0 and $value->getCommande()->getDate() == $date){
+              $sommeCreancesDuJourReglees = $sommeCreancesDuJourReglees + $value->getAmount();
+            }
+          }
+        }
+      }
+
+      // dd($date, $sommeCreancesAccordees, $sommeCreancesDuJourReglees);
+      /************************************* Fin du calcul du reste des créances du jour */
       
       //dd($creances, $totalCreances);
       $date = $date->format("Y-m-d");
@@ -360,19 +399,22 @@ class AdminAccountingController extends AbstractController
       
       // Retrieve the HTML generated in our twig file
       $html = $this->renderView('Accounting/bilan-du-jour.html.twig', [
-        'current'        => 'accounting',
-        'info'           => $info,
-        'date'           => $date,
-        'totalAvoirs'    => $totalAvoirs,
-        'totalCaisse'    => $totalCaisse,
-        'totalBanque'    => $totalBanque,
-        'totalAcompte'   => $totalAcompte,
-        'totalEntrees'   => $totalEntrees,
-        'totalCreances'  => $totalCreances,
-        'totalSM'        => $totalSM,
-        'depensesDuJour' => $depensesDuJour[0]["somme"],
-        'settlements'    => $settlements,
-        'totalNetAPayer' => $totalNetAPayer[0][1],
+        'current'                    => 'accounting',
+        'info'                       => $info,
+        'date'                       => $date,
+        'totalAvoirs'                => $totalAvoirs,
+        'totalCaisse'                => $totalCaisse,
+        'totalBanque'                => $totalBanque,
+        'totalAcompte'               => $totalAcompte,
+        'totalEntrees'               => $totalEntrees,
+        'totalCreances'              => $totalCreances,
+        'totalAcomptesRecus'         => $totalAcomptesRecus,
+        'sommeCreancesAccordees'     => $sommeCreancesAccordees,
+        'sommeCreancesDuJourReglees' => $sommeCreancesDuJourReglees,
+        'totalSM'                    => $totalSM,
+        'depensesDuJour'             => $depensesDuJour[0]["somme"],
+        'settlements'                => $settlements,
+        'totalNetAPayer'             => $totalNetAPayer[0][1],
       ]);
       
       // Load HTML to Dompdf

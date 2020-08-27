@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 
-{% block title %}Statistiques sur les ventes | Smart Market{% endblock %}
+{% block title %}Statistiques sur les mouvements d'acomptes | Smart Market{% endblock %}
 
 
 {% block stylesheets %}
@@ -41,19 +41,18 @@
 
 {% block body %}
   <a href="javascript:history.back()" class="btn-primary btn">Retour</a><br><br>
-  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Statistiques sur les ventes</h2>
+  <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Statistiques sur les mouvements d'acomptes</h2>
   
   <form action="" method="post">
     <div class="row">
       <div class="col-md-4">
         <div class="form-group">
-          <label for="type_vente">Types de vente</label>
-          <select name="type_vente" id="type_vente" class="form-control mb-4" required>
-            <option value="">Sélectionner un type de vente</option>
-            <option value="1">Toutes les ventes</option>
-            <option value="2">Ventes par acomptes</option>
-            <option value="3">Ventes à crédits</option>
-            <option value="4">Ventes au comptant</option>
+          <label for="customer">Client</label>
+          <select name="customer" id="customer" class="form-control mb-4 js-example-basic-single" required>
+            <option value="">Sélectionner un client</option>
+            {% for customer in customers if customer.isDeleted == 0 %}
+              <option value="{{ customer.id }}">{{ customer.reference }} --- {{ customer.nom }} {{ customer.phoneNumber }}</option>
+            {% endfor %}
           </select>
         </div>
       </div>
@@ -73,7 +72,7 @@
         {# <div class="form-group"> #}
           <label for=""></label>
           <button class="btn btn-default">Rechercher</button>
-          <input type="hidden" name="token" value="{{ csrf_token('statistiques_sells') }}"/>
+          <input type="hidden" name="token" value="{{ csrf_token('statistiques_customers') }}"/>
         {# </div> #}
       </div>
     </div>
@@ -81,74 +80,70 @@
   <div class="row">
     {% if statistiques is not empty %}
       {# {{ dump(statistiques["customer"]) }} #}
-      {% set type_vente = statistiques["type_vente"] %}
+      {% set customer = statistiques["customer"] %}
+      {% set acomptes = statistiques["acomptes"] %}
+      {% set retraitsAcomptes = statistiques["retraitsAcomptes"] %}
+      {% set dates = statistiques["dates"] %}
+      {% set reglementsAcomptes = statistiques["reglementsAcomptes"] %}
       {% set debut = statistiques["debut"] %}
       {% set fin = statistiques["fin"] %}
       <div class="row">
-        <h3><strong>Ventes </strong> Du <strong>{{debut|date('d-m-Y')}}</strong> au <strong>{{fin|date('d-m-Y')}}</strong></h3>
+        <h3><strong>{{customer.nom}}</strong> Du <strong>{{debut|date('d-m-Y')}}</strong> au <strong>{{fin|date('d-m-Y')}}</strong></h3>
       </div>
       <table class="table table-bordered">
         <thead>
           <tr>
-            <th colspan="6" style="text-align:center"> </th>
+            <th colspan="5" style="text-align:center">Les mouvements de l'acompte du client {{customer.nom}}</th>
           </tr>
           <tr>
             <th>#</th>
-            <th>Référence</th>
             <th>Date</th>
-            <th>Client</th>
-            <th>Montant</th>
-            <th>Détails</th>
+            <th>Dépôt</th>
+            <th>Règlement</th>
+            <th>Retrait</th>
+            <th>Diff</th>
           </tr>
         </thead>
         <tbody>
           {% set i = 0 %}
-          {% for commande in sells %}
+          {% set totalAcompte = 0 %}
+          {% set totalRetrait = 0 %}
+          {% set totalReglement = 0 %}
+          {% for dt in range(debut|date('U'), fin|date('U'), 86400 ) if dt|date("Y-m-d") in dates %}
             {% set i = i + 1 %}
             <tr>
-              <td style="vertical-align: middle">{{i}}</td>
-              <td style="vertical-align: middle">{{commande.reference}}</td>
-              <td style="vertical-align: middle">{{commande.date|date('d-m-Y')}}</td>
-              <td style="vertical-align: middle">{{commande.customer.nom}}</td>
-              <td style="vertical-align: middle">{{commande.netAPayer|number_format(0, ',', ' ') }} F</td>
-              <td style="vertical-align: middle">
-                {% for item in commande.product %}
-                  <li>{{item.product.label}}</li>
+              <td>{{ i }}</td>
+              <td>{{ dt|date('d-m-Y') }}</td>
+              <td>
+                {% for item in acomptes %}
+                  {% if item.date|date("d-m-Y") == dt|date('d-m-Y')  %}
+                    {% set totalAcompte = totalAcompte + item.montant %}
+                    <li>{{ item.montant|number_format(0, ',', ' ') }} F</li>
+                  {% endif %}
                 {% endfor %}
               </td>
+              <td>
+                {% for item in reglementsAcomptes %}
+                  {% if item.date|date("d-m-Y") == dt|date('d-m-Y')  %}
+                    {% set totalReglement = totalReglement + item.amount %}
+                    <li>{{ item.amount|number_format(0, ',', ' ') }} F</li>
+                  {% endif %}
+                {% endfor %}
+              </td>
+              <td>
+                {% for item in retraitsAcomptes %}
+                  {% if item.date|date("d-m-Y") == dt|date('d-m-Y')  %}
+                    {% set totalRetrait = totalRetrait + item.montant %}
+                    <li>{{ item.montant|number_format(0, ',', ' ') }} F</li>
+                  {% endif %}
+                {% endfor %}
+              </td>
+              <td>{{ (totalAcompte - totalReglement - totalRetrait)|number_format(0, ',', ' ') }} F</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
-
       <br><br>
-      {# {% if customer.acomptes|length != 0 %}
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th colspan="5" style="text-align:center">Les acomptes versés par {{customer.nom}}</th>
-            </tr>
-            <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Montant</th>
-              <th>Commentaire</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% set i = 0 %}
-            {% for acompte in customer.acomptes if date(debut) <= date(acompte.date) and  date(fin) >= date(acompte.date) %}
-              {% set i = i + 1 %}
-              <tr>
-                <td style="vertical-align: middle">{{i}}</td>
-                <td style="vertical-align: middle">{{acompte.date|date('d-m-Y')}}</td>
-                <td style="vertical-align: middle">{{acompte.montant|number_format(0, ',', ' ') }} F</td>
-                <td style="vertical-align: middle">{{acompte.commentaire }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% endif %} #}
     {% endif %}
   </div>
 {% endblock %}

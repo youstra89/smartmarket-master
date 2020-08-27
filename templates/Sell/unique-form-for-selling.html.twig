@@ -197,9 +197,14 @@
       var total = $("#total").val();
       var productsId = [];
       var storeId = $("#storeId").val();
+      // $("#save").on("click", function(){
+      //   if(!$("#customer").val());
+      //   break;
+      // })
       // var test = $('#test').data("isTest")
       // A chaque fois qu'on sélectionne un produit
       $('#products').on('change',function(e){
+        // console.log("test");
         $.ajax({
           url: '/ventes/select-product/' + this.value + '/' + storeId,
           type: 'GET',
@@ -664,10 +669,10 @@
     });
 
     function submitForm(btn) {
-        // disable the button
-        btn.disabled = true;
-        // submit the form    
-        btn.form.submit();
+      // disable the button
+      btn.disabled = true;
+      // submit the form    
+      btn.form.submit();
     }
   </script>
   <script src="{{ asset('js/select2.min.js') }}"></script>

@@ -88,7 +88,7 @@
             }
         </style>
         <meta charset="UTF-8">
-        <title>Ticket acompte | Smart Market</title>
+        <title>Ticket Avoir | Smart Market</title>
     </head>
     <body onload="window.print()">
         <!-- Wrap the content of your PDF inside a main tag -->
@@ -121,11 +121,11 @@
                   <table>
                     <tr>
                       <td witdh="10%"><span class="ref">Code client</span></td>
-                      <td><span class="ref">: {{ acompte.customer.reference }}</span></td>
+                      <td><span class="ref">: {{ avoir.commande.customer.reference }}</span></td>
                     </tr>
                     <tr>
                       <td witdh="10%"><span class="ref">Client: </span></td>
-                      <td><span class="ref">: {{ acompte.customer.firstname }} {{ acompte.customer.lastname }}</span></td>
+                      <td><span class="ref">: {{ avoir.commande.customer.nom }}</span></td>
                     </tr>
                   </table>
                 </div>
@@ -143,7 +143,7 @@
                   PAIEMENT PAR SERVICE MONEY
                 {% endif %}
               </p> #}
-              <p style="text-align: center; font-weight: bold; border: 1px solid black">ACOMPTE RECU</p>
+              <p style="text-align: center; font-weight: bold; border: 1px solid black">TiCKET AVOIR</p>
             </div>
             <div class="row" style="text-align: right; padding-right: 10px;">
               <span style="font-weight: bold;">{{ 'now'|date('d-m-Y') }}</span> à <span style="font-weight: bold;">{{ 'now'|date('H:i:s') }}</span>
@@ -153,28 +153,33 @@
               <table class="table" cellspacing="0" border="0">
                 <thead>
                   <tr align="left">
-                    <th>Date</th>
-                    <th>Montant</th>
+                    <th>Désignation</th>
+                    <th>PU</th>
+                    <th>Qte</th>
+                    <th>Total</th>
                   </tr>
                 </thead>
-                  <tbody>
-                    <tr>
-                      <td>{{ acompte.date|date('d-m-Y') }}</td>
-                      <td style="font-size: .9em">{{ acompte.montant|number_format(0, ',', '.') }} F</td>
-                    </tr>
-                    {% if acompte.commentaire %}
-                      <tr>
-                        <td colspan="2">
-                          <strong>Commentaire</strong><br>
-                          {{ acompte.commentaire }}
-                        </td>
+                  {% for item in avoir.detailsAvoirs if item.isDeleted == false %}
+                  {% set i = i + 1 %}
+                  {% set color = "" %}
+                  {% if (i % 2) == 0 %}
+                      {% set color = 'white' %}
+                  {% else %}
+                      {% set color = '#EEEEEE' %}
+                  {% endif %}
+                    <tbody>
+                      <tr bgcolor="{{ color }}">
+                        <td>{{ item.product.label }}</td>
+                        <td style="font-size: .9em">{{ item.price|number_format(0, ',', '.') }} F</td>
+                        <td style="text-align: center">{{ item.quantity }}</td>
+                        <td style="font-size: .9em">{{ (item.quantity * item.price)|number_format(0, ',', '.') }} F</td>
                       </tr>
-                    {% endif %}
-                  </tbody>
+                    </tbody>
+                {% endfor %}
                   <tfoot>
                     <tr>
-                      <th>Montant total au {{ 'now'|date('d-m-Y') }}</th>
-                      <th>{{ acompte.customer.acompte|number_format(0, ',', '.') }} F</th>
+                      <th colspan="3">Montant total</th>
+                      <th>{{ avoir.montant|number_format(0, ',', '.') }} F</th>
                     </tr>
                   </tfoot>
               </table>

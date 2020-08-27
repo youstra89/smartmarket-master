@@ -16,6 +16,7 @@ use App\Entity\Customer;
 use App\Entity\Echeance;
 use App\Entity\Settlement;
 use App\Entity\ComptaCompte;
+use App\Entity\DetailsAvoir;
 use App\Entity\Informations;
 use App\Entity\ComptaExercice;
 use App\Entity\CustomerCommande;
@@ -426,8 +427,6 @@ class AdminSellController extends AbstractController
     {
       if(count($commande->getSettlements()) > 1)
         return $this->redirectToRoute('customer_order_details', ["id" => $id]);
-      elseif($commande->getDate()->format('d-m-Y') !== (new \DateTime())->format('d-m-Y'))
-        return $this->redirectToRoute('customer_order_details', ["id" => $id]);
 
       $storeId = $commande->getStore()->getId();
       $stocks    = $manager->getRepository(Stock::class)->storeProducts($storeId);
@@ -488,7 +487,18 @@ class AdminSellController extends AbstractController
                     }
                   } 
                   elseif ($diff > 0) {
+                    // Dès que l'on constate une différence ici, on crée un $detailAvoir et on oublie pas de mettre à jour le stock
                     $stock->setQuantity($stock->getQuantity() + $diff);
+                    // $product = $item->getProduct();
+                    // $price = $item->getUnitPrice();
+                    // $productToReturn = new DetailsAvoir();
+                    // $productToReturn->setPrice($price);
+                    // // $productToReturn->setAvoir($avoir);
+                    // $productToReturn->setProduct($product);
+                    // $productToReturn->setQuantity($diff);
+                    // $productToReturn->setCreatedBy($this->getUser());
+                    // $manager->persist($productToReturn);
+                    // $tableauAvoirs[] = $productToReturn;
                   }
                   
                   $change   = true;
@@ -498,7 +508,6 @@ class AdminSellController extends AbstractController
                   $value->setSubtotal($subtotal);
                   $value->setUpdatedAt(new \DateTime());
                   $value->setUpdatedBy($this->getUser());
-    
                 }
               }
               else{
@@ -512,11 +521,11 @@ class AdminSellController extends AbstractController
               if(!in_array($id, $oldProductsIds))
               {
                 // dd($id);
-                $commandeProduit = new CustomerCommandeDetails();
-                $product = $manager->getRepository(Product::class)->find($id);
-                $price = $prices[$id];
-                $quantity = $quantities[$id];
-                $subtotal = $price + $quantity;
+                $commandeProduit    = new CustomerCommandeDetails();
+                $product            = $manager->getRepository(Product::class)->find($id);
+                $price              = $prices[$id];
+                $quantity           = $quantities[$id];
+                $subtotal           = $price + $quantity;
                 $beneficeSurProduit = ($price - $product->getAveragePurchasePrice()) * $quantity;
                 $commandeProduit->setBenefice($beneficeSurProduit);
                 $commandeProduit->setCommande($commande);
@@ -584,7 +593,7 @@ class AdminSellController extends AbstractController
               // dd($commande);
             }
 
-            // dd($commande);
+            // dd($avoir);
             // Si $netAPayer > $totalReglement, cela veut dire que le client nous doit la différence
             try{
               // $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);

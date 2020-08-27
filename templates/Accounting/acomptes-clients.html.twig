@@ -58,6 +58,7 @@
           <th>Prénom</th>
           <th>Téléphone</th>
           <th>Montant acompte</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -73,6 +74,9 @@
             <td>{{ customer.lastname }}</td>
             <td>{{ customer.phoneNumber }}</td>
             <td>{{ customer.acompte|number_format(0, ',', ' ') }} F</td>
+            <td>
+              <a href="{{ path('customer_info', {id: customer.id}) }}" title="Voir les détails">Voir les détails</a>&nbsp;&nbsp;&nbsp;
+            </td>
           </tr>
         {% endfor %}
       </tbody>
@@ -80,6 +84,7 @@
         <tr>
           <th colspan="5">Total</th>
           <th>{{ total|number_format(0, ',', ' ') }} F</th>
+          <th></th>
         </tr>
       </tfoot>
     </table>

@@ -65,7 +65,7 @@
       <div class="col-md-3">
         <div class="form-group">
           <label for="fin">Au</label>
-          <input type="date" name="fin" id="fin" class="form-control" value="{% if statistiques["fin"] is defined %}{{ statistiques["fin"]|date('Y-m-d') }}{% endif %}" required>
+          <input type="date" name="fin" id="fin" class="form-control" value="{% if statistiques["fin"] is defined %}{{ statistiques["fin"]|date('Y-m-d') }}{% else %}{{ 'now'|date('Y-m-d') }}{% endif %}" required>
         </div>
       </div>
       <div class="col-md-1">

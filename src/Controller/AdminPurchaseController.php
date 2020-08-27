@@ -225,61 +225,55 @@ class AdminPurchaseController extends AbstractController
           $prices = $data['price'];
           // return new Response(var_dump($price));
           foreach ($prices as $key => $value) {
-            if ((int) $value == 0) {
-              $this->addFlash('danger', 'Echec, la marge bénéficiaire ne doit pas être nulle.');
-              return $this->redirectToRoute('receive_provider_commande', ['id' => $id]);
+            $commande->setReceptionDate($date);
+            $commande->setStatus("RECUE");
+            $commandeItem    = $manager->getRepository(ProviderCommandeDetails::class)->find($key);
+            $newSellingPrice = $commandeItem->getMinimumSellingPrice() + $value;
+            $commandeItem->setFixedAmount($newSellingPrice);
+            
+            // On va aussi déterminer le prix de vente minimum de tout les stock
+            $product   = $commandeItem->getProduct();
+            $quantity  = $commandeItem->getQuantity();
+            $stockAvantCommande = $product->getTotalStock();
+            $stockQte = $stockAvantCommande + $quantity;
+            
+            // 1 - Détermination de prix d'achat moyen
+            /**
+             * On va aussi déterminer le prix d'achat moyen. En effet, un même produit peut se retrouver en stock avec différent prix d'achat.
+             * Il faut alors qu'on détermine le prix moyen d'achat. Cela nous permettra de savoir lors d'une vente quelle est la marge bénéficiaire.
+             * 
+             * 1 - Pour calculer ce prix moyenne, on va multiplier le nombre de produits en stock dans tous les dépôts par le prix moyen d'achat courant.
+             * 2 - Puis on multiplie le nombre de produits nouvellement achéter par le prix d'achat lors de l'achat en cours d'enregistrement
+             * 3 - Et enfin, on fait la somme de ces deux produits qu'on va diviser par le nombre total de produits dans tous les dépôts.
+             */
+            $produit1       = $stockAvantCommande * $product->getAveragePurchasePrice();
+            $produit2       = $quantity * $commandeItem->getMinimumSellingPrice();
+            $prixMoyenAchat = ($produit1 + $produit2) / $stockQte;
+            $prixMoyenAchat = (int) round($prixMoyenAchat);
+            $product->setAveragePurchasePrice($prixMoyenAchat);
+            
+            
+            // 2 - Détermination du prix de vente moyen
+            $produit1  = $stockAvantCommande * $product->getAverageSellingPrice();
+            $produit2  = $quantity * $newSellingPrice;
+            $prixMoyenVente = ($produit1 + $produit2) / $stockQte;
+            $prixMoyenVente = (int) round($prixMoyenVente);
+            $product->setAverageSellingPrice($prixMoyenVente);
+            $product->setAveragePackageSellingPrice($prixMoyenVente * $product->getUnite());
+            
+            // 3 - Mise à jour des stocks
+            /** 
+             * Ensuite, on met à jour le stock. Mais attention !!!!!!!!!
+             * La mise à jour du stock doit se faire seulement dans le dépôt qui a été sélectionné lors de la réception de la commande
+             */
+            foreach ($store->getStocks() as $value) {
+              if($value->getProduct()->getId() == $product->getId())
+                $stock = $value;
             }
-            else {
-              $commande->setReceptionDate($date);
-              $commande->setStatus("RECUE");
-              $commandeItem    = $manager->getRepository(ProviderCommandeDetails::class)->find($key);
-              $newSellingPrice = $commandeItem->getMinimumSellingPrice() + $value;
-              $commandeItem->setFixedAmount($newSellingPrice);
-              
-              // On va aussi déterminer le prix de vente minimum de tout les stock
-              $product   = $commandeItem->getProduct();
-              $quantity  = $commandeItem->getQuantity();
-              $stockAvantCommande = $product->getTotalStock();
-              $stockQte = $stockAvantCommande + $quantity;
-              
-              // 1 - Détermination de prix d'achat moyen
-              /**
-               * On va aussi déterminer le prix d'achat moyen. En effet, un même produit peut se retrouver en stock avec différent prix d'achat.
-               * Il faut alors qu'on détermine le prix moyen d'achat. Cela nous permettra de savoir lors d'une vente quelle est la marge bénéficiaire.
-               * 
-               * 1 - Pour calculer ce prix moyenne, on va multiplier le nombre de produits en stock dans tous les dépôts par le prix moyen d'achat courant.
-               * 2 - Puis on multiplie le nombre de produits nouvellement achéter par le prix d'achat lors de l'achat en cours d'enregistrement
-               * 3 - Et enfin, on fait la somme de ces deux produits qu'on va diviser par le nombre total de produits dans tous les dépôts.
-               */
-              $produit1       = $stockAvantCommande * $product->getAveragePurchasePrice();
-              $produit2       = $quantity * $commandeItem->getMinimumSellingPrice();
-              $prixMoyenAchat = ($produit1 + $produit2) / $stockQte;
-              $prixMoyenAchat = (int) round($prixMoyenAchat);
-              $product->setAveragePurchasePrice($prixMoyenAchat);
-              
-              
-              // 2 - Détermination du prix de vente moyen
-              $produit1  = $stockAvantCommande * $product->getAverageSellingPrice();
-              $produit2  = $quantity * $newSellingPrice;
-              $prixMoyenVente = ($produit1 + $produit2) / $stockQte;
-              $prixMoyenVente = (int) round($prixMoyenVente);
-              $product->setAverageSellingPrice($prixMoyenVente);
-              $product->setAveragePackageSellingPrice($prixMoyenVente * $product->getUnite());
-              
-              // 3 - Mise à jour des stocks
-              /** 
-               * Ensuite, on met à jour le stock. Mais attention !!!!!!!!!
-               * La mise à jour du stock doit se faire seulement dans le dépôt qui a été sélectionné lors de la réception de la commande
-               */
-              foreach ($store->getStocks() as $value) {
-                if($value->getProduct()->getId() == $product->getId())
-                  $stock = $value;
-              }
-              $stock->setQuantity($stock->getQuantity() + $quantity);
-              $stock->setUpdatedAt(new \DateTime());
-              $stock->setUpdatedBy($this->getUser());
-              $tab[] = $stock;
-            }
+            $stock->setQuantity($stock->getQuantity() + $quantity);
+            $stock->setUpdatedAt(new \DateTime());
+            $stock->setUpdatedBy($this->getUser());
+            $tab[] = $stock;
           }
           // dd($tab);
           try{

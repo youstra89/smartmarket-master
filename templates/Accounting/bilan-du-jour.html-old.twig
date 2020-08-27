@@ -43,8 +43,7 @@
             }
 
             table{
-              width: 100%;
-              margin-bottom: 15px;
+              width: 100%
             }
 
             table, th, td {
@@ -60,6 +59,7 @@
               vertical-align: middle;
               border-collapse: collapse;
               font-size: 1.5em;
+              line-height: 30px;
             }
 
             .numero{
@@ -119,12 +119,11 @@
 
             .formatage-montant{
               text-align: right;
-              font-size: 1.5em;
               padding-right: 5px;
             }
         </style>
         <meta charset="UTF-8">
-        <title>Bilan des activités {{ date }} | Smart Market</title>
+        <title>Points des entrées et sorties du {{ date }} | Smart Market</title>
     </head>
     <body>
         {# Inclusion de l'entête de du pied de page #}
@@ -140,40 +139,29 @@
           <div class="content">
             <div style="text-align: center; padding-top: 10px; font-size: 1.5em">
               <span>
-                Bilan des activités <br> <strong>{{ date }}<strong>
+                Points des entrées et sorties <br> <strong>{{ date }}<strong>
               </span><br><br>
             </div>
             
             <div class="table-responsive">
-              <!-- Tableau des ventes -->
               <table class="table" cellspacing="0" border="0">
                 <thead>
-                  <tr bgcolor="lightgrey">
-                    <th colspan="2">Ventes</th>
+                  <tr>
+                    <th colspan="4">Ventes</th>
+                  </tr>
+                  <tr style="align: left">
+                    <th colspan="2">Description</th>
+                    <th colspan="2">Montant</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td width="60%">Total ventes (Net à payer)</td>
-                    <td width="40%" class="formatage-montant">{{ totalNetAPayer|number_format(2, ',', ' ') }} F</td>
+                    <td colspan="2">Total ventes (Net à payer)</td>
+                    <td colspan="2" class="formatage-montant">{{ totalNetAPayer|number_format(2, ',', ' ') }} F</td>
                   </tr>
-              </table>
-
-              <!-- Tableau des entrées -->
-              <table class="table" cellspacing="0" border="0">
-                <thead>
-                  <tr bgcolor="lightgrey">
-                    <th colspan="4">Entrées</th>
-                  </tr>
-                  {# <tr style="align: left">
-                    <th width="60%" colspan="2">Description</th>
-                    <th width="40%" colspan="2">Montant</th>
-                  </tr> #}
-                </thead>
-                <tbody>
                   <tr>
-                    <td width="40%" rowspan="3">Total entrées</td>
-                    <td width="20%">Espéces</td>
+                    <td rowspan="3">Total entrées</td>
+                    <td>Espéces</td>
                     <td class="formatage-montant">{{ totalCaisse|number_format(2, ',', ' ') }} F</td>
                     <td rowspan="3" class="formatage-montant">{{ totalEntrees|number_format(2, ',', ' ') }} F</td>
                   </tr>
@@ -186,73 +174,42 @@
                     <td class="formatage-montant">{{ totalSM|number_format(2, ',', ' ') }} F</td>
                   </tr>
                   <tr>
+                    <td colspan="2">Total règlements par acompte</td>
+                    <td colspan="2" class="formatage-montant">{{ totalAcompte|number_format(2, ',', ' ') }} F</td>
+                  </tr>
+                  <tr>
                     <td colspan="2">Total acomptes reçus</td>
                     <td colspan="2" class="formatage-montant">{{ totalAcomptesRecus|number_format(2, ',', ' ') }} F</td>
                   </tr>
-              </table>
-
-              <!-- Tableau des créances -->
-              <table class="table" cellspacing="0" border="0">
-                <thead>
-                  <tr bgcolor="lightgrey">
-                    <th colspan="2">Créances</th>
-                  </tr>
-                  {# <tr style="align: left">
-                    <th width="60%">Description</th>
-                    <th width="40%">Montant</th>
-                  </tr> #}
-                </thead>
-                <tbody>
                   <tr>
-                    <td>Crédits accordés</td>
-                    <td class="formatage-montant">{{ sommeCreancesAccordees|number_format(2, ',', ' ') }} F</td>
+                    <td colspan="2">Total avoirs</td>
+                    <td colspan="2" class="formatage-montant">{{ (totalAvoirs)|number_format(2, ',', ' ') }} F</td>
                   </tr>
                   <tr>
-                    <td>Crédits du jour règlés</td>
-                    <td class="formatage-montant">{{ sommeCreancesDuJourReglees|number_format(2, ',', ' ') }} F</td>
+                    <td colspan="2">Crédits accordés</td>
+                    <td colspan="2" class="formatage-montant">{{ sommeCreancesAccordees|number_format(2, ',', ' ') }} F</td>
                   </tr>
                   <tr>
-                    <td>Reste crédits accordés</td>
-                    <td class="formatage-montant">{{ (sommeCreancesAccordees - sommeCreancesDuJourReglees)|number_format(2, ',', ' ') }} F</td>
+                    <td colspan="2">Crédits du jour règlés</td>
+                    <td colspan="2" class="formatage-montant">{{ sommeCreancesDuJourReglees|number_format(2, ',', ' ') }} F</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">Reste crédits accordés</td>
+                    <td colspan="2" class="formatage-montant">{{ (sommeCreancesAccordees - sommeCreancesDuJourReglees)|number_format(2, ',', ' ') }} F</td>
                     {# <td class="formatage-montant">{{ totalCreances|number_format(2, ',', ' ') }} F</td> #}
                   </tr>
-              </table>
-
-              <!-- Dépenses & autres -->
-              <table class="table" cellspacing="0" border="0">
-                <thead>
-                  <tr bgcolor="lightgrey">
-                    <th colspan="2">Dépenses & autres</th>
-                  </tr>
-                  {# <tr style="align: left">
-                    <th width="60%">Description</th>
-                    <th width="40%">Montant</th>
-                  </tr> #}
-                </thead>
-                <tbody>
-                  {# <tr>
-                    <td>Total règlements par acompte</td>
-                    <td class="formatage-montant">{{ totalAcompte|number_format(2, ',', ' ') }} F</td>
-                  </tr> #}
                   <tr>
-                    <td>Total avoirs</td>
-                    <td class="formatage-montant">{{ (totalAvoirs)|number_format(2, ',', ' ') }} F</td>
-                  </tr>
-                  <tr>
-                    <td>Dépenses du jour</td>
-                    <td class="formatage-montant">{{ depensesDuJour|number_format(2, ',', ' ') }} F</td>
+                    <td colspan="2">Dépenses du jour</td>
+                    <td colspan="2" class="formatage-montant">{{ depensesDuJour|number_format(2, ',', ' ') }} F</td>
                   </tr>
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" style="vertical-align: middle; font-weight: 300; line-height: 55px;">Recette du jour</td>
+                    <td colspan="2" style="color: green; font-weight: 300; font-size: 2em; text-align: right">{{ (totalEntrees + totalAcomptesRecus - depensesDuJour - totalAvoirs)|number_format(2, ',', ' ') }} F</td>
+                  </tr>
+                </tfoot>
               </table>
-              <div style="border: 3px solid red; padding: 5px; font-size: 2.5em;">
-                Recette du jour: <span style="color: green; float: right; font-weight: 300">{{ (totalEntrees + totalAcomptesRecus - depensesDuJour - totalAvoirs)|number_format(2, ',', ' ') }} F</span>
-              </div>
-            </div>
-
-            <div class="row">
-              <div style="text-align: right; font-style: italic">
-                <p class="annee">Editée le <strong>{{ 'now'|date('d-m-Y') }}</strong> à <strong>{{ 'now'|date('H:i:s') }}</strong> par <strong>{{ app.user.username }}</strong></strong></p>
-              </div>
             </div>
           </div>
         </main>
