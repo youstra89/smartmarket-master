@@ -17,7 +17,7 @@ class ProviderCommandeDetails
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $unit_price;
 
@@ -27,17 +27,17 @@ class ProviderCommandeDetails
     private $quantity;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $minimum_selling_price;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="float", nullable=true)
      */
     private $fixed_amount;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $subtotal;
 
@@ -58,12 +58,12 @@ class ProviderCommandeDetails
         return $this->id;
     }
 
-    public function getUnitPrice(): ?int
+    public function getUnitPrice(): ?float
     {
         return $this->unit_price;
     }
 
-    public function setUnitPrice(int $unit_price): self
+    public function setUnitPrice(float $unit_price): self
     {
         $this->unit_price = $unit_price;
 
@@ -82,36 +82,36 @@ class ProviderCommandeDetails
         return $this;
     }
 
-    public function getMinimumSellingPrice(): ?int
+    public function getMinimumSellingPrice(): ?float
     {
         return $this->minimum_selling_price;
     }
 
-    public function setMinimumSellingPrice(int $minimum_selling_price): self
+    public function setMinimumSellingPrice(float $minimum_selling_price): self
     {
         $this->minimum_selling_price = $minimum_selling_price;
 
         return $this;
     }
 
-    public function getFixedAmount(): ?int
+    public function getFixedAmount(): ?float
     {
         return $this->fixed_amount;
     }
 
-    public function setFixedAmount(int $fixed_amount): self
+    public function setFixedAmount(float $fixed_amount): self
     {
         $this->fixed_amount = $fixed_amount;
 
         return $this;
     }
 
-    public function getSubtotal(): ?int
+    public function getSubtotal(): ?float
     {
         return $this->subtotal;
     }
 
-    public function setSubtotal(int $subtotal): self
+    public function setSubtotal(float $subtotal): self
     {
         $this->subtotal = $subtotal;
 

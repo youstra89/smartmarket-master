@@ -37,13 +37,30 @@ class ComptaEcritureRepository extends ServiceEntityRepository
     }
     
 
-    public function ecrituresDeLExercice($id)
+    public function ecrituresDeLExercice($exerciceId)
     {
         return $this->createQueryBuilder('c')
             // ->join('c.exercice', 'e')
             // ->andWhere('e.id = :id')
-            ->andWhere('c.exercice = :id')
-            ->setParameter('id', $id)
+            ->andWhere('c.exercice = :exerciceId')
+            ->setParameter('exerciceId', $exerciceId)
+            ->orderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function ecrituresDUnCompteDeLExercice($exerciceId, $compteId)
+    {
+        return $this->createQueryBuilder('c')
+            ->join('c.debit', 'd')
+            ->join('d.compte', 'cpt1')
+            ->join('c.credit', 'cr')
+            ->join('cr.compte', 'cpt2')
+            // ->andWhere('e.id = :id')
+            ->andWhere('c.exercice = :exerciceId AND (cpt1.id = :compteId or cpt2.id = :compteId)')
+            ->setParameter('compteId', $compteId)
+            ->setParameter('exerciceId', $exerciceId)
             ->orderBy('c.id', 'DESC')
             ->getQuery()
             ->getResult()

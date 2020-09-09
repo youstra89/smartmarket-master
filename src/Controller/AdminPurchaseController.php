@@ -133,6 +133,7 @@ class AdminPurchaseController extends AbstractController
             // On divise maintenant cette somme ($chargeProduit) par le nombre de
             // produit de la commande.
             $chargeUnitaire = $chargeProduit / $quantity;
+            // $chargeUnitaire = round($chargeUnitaire, 2);
 
             // On enregistre d'abord les détails de commande
             $commandeProduit = new ProviderCommandeDetails();
@@ -143,7 +144,7 @@ class AdminPurchaseController extends AbstractController
             $commandeProduit->setSubtotal($subtotal);
             $commandeProduit->setMinimumSellingPrice($value + $chargeUnitaire);
             $commandeGlobalCost += $subtotal;
-            // dd($commandeProduit);
+            // dd($chargeUnitaire);
             $manager->persist($commandeProduit);
           }
           // dd($product);
@@ -249,7 +250,8 @@ class AdminPurchaseController extends AbstractController
             $produit1       = $stockAvantCommande * $product->getAveragePurchasePrice();
             $produit2       = $quantity * $commandeItem->getMinimumSellingPrice();
             $prixMoyenAchat = ($produit1 + $produit2) / $stockQte;
-            $prixMoyenAchat = (int) round($prixMoyenAchat);
+            $prixMoyenAchat = round($prixMoyenAchat, 2);
+            // dd($prixMoyenAchat);
             $product->setAveragePurchasePrice($prixMoyenAchat);
             
             
@@ -257,9 +259,9 @@ class AdminPurchaseController extends AbstractController
             $produit1  = $stockAvantCommande * $product->getAverageSellingPrice();
             $produit2  = $quantity * $newSellingPrice;
             $prixMoyenVente = ($produit1 + $produit2) / $stockQte;
-            $prixMoyenVente = (int) round($prixMoyenVente);
+            $prixMoyenVente = round($prixMoyenVente, 2);
             $product->setAverageSellingPrice($prixMoyenVente);
-            $product->setAveragePackageSellingPrice($prixMoyenVente * $product->getUnite());
+            // $product->setAveragePackageSellingPrice($prixMoyenVente * $product->getUnite());
             
             // 3 - Mise à jour des stocks
             /** 
@@ -293,6 +295,33 @@ class AdminPurchaseController extends AbstractController
         'commande' => $commande
       ]);
     }
+
+
+    /**
+     * @Route("/supprimer-commande-fournisseur/{id}", name="delete_provider_commande", methods="GET|POST", requirements={"id"="\d+"})
+     * @param ProviderCommande $commande
+     */
+    public function delete_provider_commande(Request $request, EntityManagerInterface $manager, int $id, ProviderCommande $commande)
+    {
+      $token = $request->get('_csrf_token');
+      if($this->isCsrfTokenValid('delete_provider_commande', $token))
+      {
+        // foreach ($commande->getProduct() as $value) {
+        //   $value->setIsDeleted(true);
+        //   $value->setDeletedAt(new \DateTime());  
+        // }
+        $commande->setIsDeleted(true);
+        $commande->setDeletedAt(new \DateTime());
+        try{
+          $manager->flush();
+          $this->addFlash('success', 'La commande <strong>'.$commande->getReference().'</strong> a été supprimée avec succès.');
+        }  
+        catch(\Exception $e){
+          $this->addFlash('danger', $e->getMessage());
+        }
+        return $this->redirectToRoute('purchase');
+      }
+  }
 
 
     /**
@@ -355,7 +384,7 @@ class AdminPurchaseController extends AbstractController
             $date = new \DateTime($data["date"]);
             if($date < $exercice->getDateDebut() or $date > $exercice->getDateFin()){
               $this->addFlash('danger', 'Impossible de continuer. La date saisie ne fait pas partie de la période d\'exercice en cours.');
-              return $this->redirectToRoute('settlement', ['id' => $id]);
+              return $this->redirectToRoute('provider_settlement', ['id' => $id]);
             }
           }
           if(empty($amount) or $amount < 0){
@@ -384,6 +413,7 @@ class AdminPurchaseController extends AbstractController
           elseif($mode == 3){
             $compteAcrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(28, $exerciceId);
             $montantDuCompte = $commande->getProvider()->getAcompte();
+            $commande->getProvider()->setAcompte($commande->getProvider()->getAcompte() - $amount);
             $compte = "Fournisseur - Acomptes et avances versées";
           }
           
@@ -427,6 +457,7 @@ class AdminPurchaseController extends AbstractController
           $settlement->setCreatedBy($this->getUser());
           $settlement->setCommande($commande);
           $manager->persist($settlement);
+          // dump($commande->getProvider()->getAcompte());
           try{
             // $fonctions->ecritureDeReglementsFournisseursDansLeJournalComptable($manager, $mode, $amount, $exercice, $date, $settlement);
             $manager->flush();
@@ -504,5 +535,55 @@ class AdminPurchaseController extends AbstractController
       }
       
       return $number;
+    }
+
+    /**
+     * @Route("/regulariser-prix-de-revient/{id}", name="regulariser_prix_de_revient")
+     * @IsGranted("ROLE_SUPER_ADMIN")
+     * @param ProviderCommande $commande
+     */
+    public function regulariser_prix_de_revient(EntityManagerInterface $manager, ProviderCommande $commande)
+    {
+      $commandeGlobalCost = 0;
+      $products = $commande->getProduct();
+      foreach ($products as $key => $item) {
+        $price = $item->getUnitPrice();
+        $value    = $price / $item->getProduct()->getUnite();
+        $quantity = $item->getQuantity();
+        $subtotal = $price * $quantity;
+        $totalCommande = $commande->getTotalAmount();
+        $totalCharge = $commande->getTotalFees();
+        
+        $part = 0;
+        // On va commencer par calculer le prix de revient de chaque marchandise
+        /* Pour se faire, on déternime d'abord le pourcentage du prix total de chaque
+          * article (marchandise, ou encore produit) dans le prix total de la commande
+          **/
+        $part = ($subtotal * 100) / $totalCommande;
+        // On cherche maintenant le coût total des charges pour l'article actuel
+        // (l'article dans la boucle foreach
+        $chargeProduit = ($totalCharge * $part) / 100;
+        // On divise maintenant cette somme ($chargeProduit) par le nombre de
+        // produit de la commande.
+        $chargeUnitaire = $chargeProduit / $quantity;
+        // $chargeUnitaire = round($chargeUnitaire, 2);
+
+        // On enregistre d'abord les détails de commande
+        // $tab["old"] = $item->getMinimumSellingPrice();
+        $newPrice = round(($value + $chargeUnitaire), 2);
+        $item->setMinimumSellingPrice($newPrice);
+        // $tab["new"] = $item->getMinimumSellingPrice();
+        $commandeGlobalCost += $newPrice * $quantity;
+      }
+      // dd($commandeGlobalCost);
+
+      try{
+        $manager->flush();
+        $this->addFlash('success', '<li>Enregistrement de la commande fournisseur <strong>N°'.$commande->getReference().'</strong> du <strong>'.$commande->getDate()->format('d-m-Y').'</strong> réussie.</li>');
+      } 
+      catch(\Exception $e){
+        $this->addFlash('danger', $e->getMessage());
+      } 
+      return $this->redirectToRoute('purchase');
     }
 }

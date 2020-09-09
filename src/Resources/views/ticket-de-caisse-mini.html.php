@@ -173,10 +173,10 @@
               {% endif %}
                 <tbody>
                   <tr class="td" bgcolor="{{ color }}">
-                    <td class="td" style="font-size: 1.5em">{{ item.product.label }}</td>
-                    <td class="td" style="font-size: 1.5em">{{ item.unitPrice|number_format(0, ',', '.') }}</td>
-                    <td class="th" style="font-size: 1.5em; text-align: center">{{ item.quantity }}</td>
-                    <td class="td" style="font-size: 1.5em">{{ item.subtotal|number_format(0, ',', '.') }}</td>
+                    <td class="td" style="font-size: 1.1em">{{ item.product.label }}</td>
+                    <td class="td" style="font-size: 1.1em">{{ item.unitPrice|number_format(0, ',', '.') }}</td>
+                    <td class="th" style="font-size: 1.1em; text-align: center">{{ item.quantity }}</td>
+                    <td class="td" style="font-size: 1.1em">{{ item.subtotal|number_format(0, ',', '.') }}</td>
                   </tr>
                 </tbody>
             {% endfor %}

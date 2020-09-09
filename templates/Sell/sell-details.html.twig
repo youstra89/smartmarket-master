@@ -136,12 +136,12 @@
           </tfoot>
         </table>
       </div><br><br>
-      <div class="row">
+      <div class="row" style="border: 3px black solid; padding: 5px">
         <div class="col-lg-6 col-md-8 col-sm-12">
-          <h3>Règlements</h3>
+          <h3 style="font-weight: bold">Règlements</h3>
           {% if commande.settlements is not empty %}
             {% set total = 0 %}
-            <table width="100%">
+            <table width="100%" style="font-size: .9em">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -170,10 +170,12 @@
                       {% endif %}
                     </td>
                     <td>
-                      <a href="{{ path('facture_client', {id: commande.id, settlementId: item.id}) }}" title="Imprimer une facture" style="font-size: 1.5em;"><i class="icon-file"></i></a>
-                      <a href="{{ path('ticket_de_ciasse', {id: commande.id, settlementId: item.id}) }}" title="Imprimer un ticket de caisse" style="font-size: 1.5em;"><i class="icon-ticket"></i></a>
+                      <a href="{{ path('facture_client', {id: commande.id, settlementId: item.id}) }}" title="Imprimer une facture" style="font-size: 1.2em;"><i class="icon-file"></i></a>
+                      <a href="{{ path('ticket_de_ciasse', {id: commande.id, settlementId: item.id}) }}" title="Imprimer un ticket de caisse" style="font-size: 1.2em;"><i class="icon-ticket"></i></a>
+                      <a href="{{ path('ticket_de_ciasse_new', {id: commande.id, settlementId: item.id}) }}" title="Imprimer un ticket de caisse" style="font-size: 1.2em;"><i class="icon-printer"></i></a>
+                      <a href="{{ path('ticket_de_ciasse_new', {id: commande.id, settlementId: item.id, origine: "mini"}) }}" title="Imprimer un ticket de caisse en petit caractères" style="font-size: 1.2em; color: red"><i class="icon-printer"></i></a>
                       {% if is_granted('ROLE_ADMIN') and commande.settlements|last == item %}
-                        <a href="{{ path('edit_settlement', {id: item.id}) }}" title="Modifier le montant" style="font-size: 1.5em;"><i class="icon-edit"></i></a>
+                        <a href="{{ path('edit_settlement', {id: item.id}) }}" title="Modifier le montant" style="font-size: 1.2em;"><i class="icon-edit"></i></a>
                       {% endif %}
                     </td>
                   </tr>
@@ -191,7 +193,7 @@
         </div>
         <div class="col-lg-6 col-md-8 col-sm-12">
           {% if commande.avoirs|length != 0 %}
-            <h3>Avoirs</h3>
+            <h3 style="font-weight: bold">Avoirs</h3>
             <table width="100%">
               <thead>
                 <tr>

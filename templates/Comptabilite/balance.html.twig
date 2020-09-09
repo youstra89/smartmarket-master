@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+
+{% block stylesheets %}
+  <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+{% endblock %}
+
+
+{% block title %}
+  Balance de l'exercice de {{ exercice.label }}
+{% endblock %}
+
+
+{% block notifications %}
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Succès</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('warning') %}
+    <div class="alert alert-warning fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Attention !!!</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+  {% for message in app.flashes('danger') %}
+    <div class="alert alert-danger fade in">
+      <a href="#" class="close" data-dismiss="alert">&times;</a>
+      <strong>Erreur</strong><br>
+      {{ message|raw }}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+{% block body %}
+  <a href="javascript:history.back()" class="btn btn-primary">Retour</a>
+  <h2 class="animate-box" data-animate-effect="fadeInLeft">Balance de l'exercice de <strong>{{ exercice.label }}</strong></h2>
+  <form class="form" action="" method="post">
+    <div class="row">
+      <div class="form-group col-md-4 col-sm-12 col-xs-12">
+        <label for="compte">Comptes</label>
+        <select name="compte" id="compte" class="form-control mb-4 js-example-basic-single" required>
+          <option value="">Sélectionner un compte</option>
+          {% for compte in comptes %}
+            <option value="{{ compte.id }}">{{ compte.numero }} --- {{ compte.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <input type="hidden" name="token" value="{{ csrf_token('balance_compte') }}"/>
+    <input type="submit" class="btn-default btn-lg" id="save" value="Voir la balance" onclick="submitForm(this);">
+    {# <button class="btn-default btn-lg" id="save">{{ button|default('Enregistrer') }}</button><br><br> #}
+  </form>
+{% endblock %}
+
+
+{% block javascript %}
+  <script src="{{ asset('js/select2.min.js') }}"></script>
+  <script>
+    $(document).ready(function() {
+      $('.js-example-basic-single').select2();
+    });
+  </script>
+{% endblock %}

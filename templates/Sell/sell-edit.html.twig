@@ -85,7 +85,7 @@
         {# <select name="products" id="products" class="form-control"> #}
         <select name="products" id="products" class="form-control mb-4 js-example-basic-single">
           <option value="">Sélectionnez un produit</option>
-          {% for product in stocks if product.quantity > 0 %}
+          {% for product in stocks if product.quantity > 0 and product.product.id not in idsProduitsCommandeEnCours|keys %}
             <option value="{{ product.product.id }}">{{ product.product.reference }} --- {{ product.product.label }}</option>
           {% endfor %}
         </select>
@@ -142,7 +142,7 @@
           </thead>
           <tbody>
             {% set total = 0 %}
-            {% for item in commande.product %}
+            {% for item in commande.product if item.isDeleted == false %}
               {% set i = i + 1 %}
               <tr id="tableLineId{{item.product.id}}">
                 {# <td>{{ i }}</td> #}
@@ -164,29 +164,32 @@
                 </td>
                 <td><i class="icon-trash" id="' + id + '" title="Retirer {{ item.product.label }} de la vente en cours" onclick="$.fn.deleteProduct({{item.product.id}})"></i></td>
               </tr>
-              {# <input type="hidden" name="oldProductId" id="oldProductId" value="{{item.product.id}}"> #}
+              {% set total = total + item.subtotal %}
             {% endfor %}
           </tbody>
           <tfoot>
+            {% set TVA = commande.tva %}
+            {% set montantTTC = total + (total * commande.tva)/100 %}
+            {% set montantNetAPayer = montantTTC - commande.remise %}
             <tr>
               <th colspan="4">Montant HT</th>
-              <th><input type="text" id="total" name="total" value="{{ commande.totalAmount }}" readonly required></th>
+              <th><input type="text" id="total" name="total" value="{{ total }}" readonly required></th>
             </tr>
             <tr>
               <th colspan="4">Valeur TVA</th>
-              <th><input type="text" id="tva" name="tva" value="{{ commande.tva }}" readonly required></th>
+              <th><input type="number" id="tva" name="tva" value="{{ TVA }}" required></th>
             </tr>
             <tr>
               <th colspan="4">Montant TTC</th>
-              <th><input type="text" id="ttc" name="ttc" value="{{ commande.montantTtc }}" readonly required></th>
+              <th><input type="text" id="ttc" name="ttc" value="{{ montantTTC }}" readonly required></th>
             </tr>
             <tr>
               <th colspan="4">Remise</th>
-              <th><input type="text" id="remise" name="remise" value="{{ commande.remise }}" required></th>
+              <th><input type="number" id="remise" name="remise" value="{{ commande.remise }}" required></th>
             </tr>
             <tr>
               <th colspan="4">Net à payer</th>
-              <th><input type="text" id="net" name="net" value="{{ commande.netAPayer }}" readonly required></th>
+              <th><input type="text" id="net" name="net" value="{{ montantNetAPayer }}" readonly required></th>
             </tr>
           </tfoot>
         </table>
@@ -613,12 +616,23 @@
       });
 
       $("#remise").on("input", function(){
-        var remise = eval($(this).val())
+        var remise = parseInt($(this).val())
         var ttc = eval($("#ttc").val()); 
         if(remise == null || remise == undefined){
           remise = 0
         } 
         $("#net").val(eval(ttc - remise));
+      })
+
+      // Si le taux de la tva change, il faut mettre à jour 
+      $("#tva").on("change input paste", function(){
+        var tva = parseInt($(this).val()) / 100
+        var t = eval($("#total").val())
+        var taxe = eval(t * tva)
+        var remise = parseInt($("#remise").val())
+        // $("#montantTva").val(taxe)
+        $("#ttc").val(t + taxe)
+        $("#net").val(t + taxe - remise)
       })
     });
   </script>

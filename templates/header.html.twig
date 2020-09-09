@@ -1,5 +1,11 @@
 <header>
-    {% if info is defined %}
+  {% if info is defined %}
+    {% if info.logo %}
+      <div style="width: 100px; display: inline-block;">
+        <img src=".{{ asset('uploads/images/' ~ info.logo) }}" alt="" style="width: 100%; height: auto">
+      </div>
+    {% endif %}
+    <div style="width: 75%; display: inline-block;">
       <strong>{{ info.nom }}</strong><br>
       {% if info.telephone is not empty %}
         Téléphone: {{ info.telephone }}<br>
@@ -10,16 +16,18 @@
       {% if info.siteWeb is not empty %}
         Site web: {{ info.siteWeb }}<br>
       {% endif %}
-    {% else %}
-      SmartMarket
-    {% endif %}
-    <hr width="75%">
+    </div>
+  {% else %}
+    SmartMarket
+  {% endif %}
+  <hr width="75%" style="margin-top: -10px">
 </header>
 
 <footer style="font-family: Elegance; line-height: 10px; font-size: 0.8em">
-    <hr width="75%" style="align: left; border: solid black 2px">
+  <hr width="75%" style="align: left; border: solid grey 2px">
   {% if info is defined %}
-    {{ info.nom }} au capital de {{ info.capital|number_format(0, ',', ' ') }} F<br>
+    {# {{ info.nom }} au capital de {{ info.capital|number_format(0, ',', '.') }} F<br> #}
+    {{ info.nom }}<br>
     {% if info.adresse is not empty %}
       Sise à {{ info.adresse }} <br>
     {% endif %}
@@ -28,6 +36,9 @@
     {% endif %}
     {% if info.registreCommerce is not empty %}
       RCM {{ info.registreCommerce }} <br>
+    {% endif %}
+    {% if info.slogan is not empty %}
+      <span style="font-weight: bold; font-style: italic">{{ info.slogan }}</span>
     {% endif %}
   {% else %}
     Contacts: (00225) 07 31 09 99 - Email: contact.youstra@gmail.com

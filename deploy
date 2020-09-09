@@ -1,0 +1,3 @@
+#!/bin/sh
+rsync -avp ./ 274w5_admin@274w5.ftp.infomaniak.com:~/smartmarket --include=var/cache/prod/doctrine --include=public/build --include=public/.htaccess --include=var/cache/prod --include=vendor --exclude=.git --exclude-from=.gitignore --exclude=".*"
+ssh 274w5_admin@274w5.ftp.infomaniak.com rm -R smartmarket/var/cache/prod

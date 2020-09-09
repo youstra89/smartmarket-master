@@ -49,6 +49,7 @@
           <th>Prénom</th>
           <th>Téléphone</th>
           <th>Email</th>
+          <th>Solde</th>
           <th>Pays</th>
           <th>Actions</th>
         </tr>
@@ -61,6 +62,7 @@
           <th>Prénom</th>
           <th>Téléphone</th>
           <th>Email</th>
+          <th>Solde</th>
           <th>Pays</th>
           <th>Actions</th>
         </tr>
@@ -76,6 +78,7 @@
             <td>{{ provider.firstname }}</td>
             <td>{{ provider.phoneNumber }}</td>
             <td>{{ provider.email }}</td>
+            <td>{{ provider.acompte|number_format(2, ',', ' ') }} F</td>
             <td>{{ provider.country.name }}</td>
             <td>
               <a href="{{ path('provider.edit', {id: provider.id}) }}" title="Modifier info fournisseur"><i class="icon-edit"></i></a>&nbsp;&nbsp;&nbsp;

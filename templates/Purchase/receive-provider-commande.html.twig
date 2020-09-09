@@ -76,9 +76,9 @@
                 <td>{{ i }}</td>
                 <td>{{ item.product.label }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.unitPrice|number_format(0, ',', ' ') }} F</td>
-                <td>{{ item.minimumSellingPrice|number_format(0, ',', ' ') }} F</td>
-                <td>{{ item.product.unitPrice|number_format(0, ',', ' ') }} F</td>
+                <td>{{ item.unitPrice|number_format(2, ',', ' ') }} F</td>
+                <td>{{ item.minimumSellingPrice|number_format(2, ',', ' ') }} F</td>
+                <td>{{ item.product.unitPrice|number_format(2, ',', ' ') }} F</td>
                 <td>
                   <input type="number" class="price" id="price[{{ item.id }}]" name="price[{{ item.id }}]" value="{{ item.product.unitPrice - item.minimumSellingPrice }}" required>
                 </td>

@@ -148,7 +148,7 @@ class Provider
     {
         $total = 0;
         foreach ($this->getProviderCommandes() as $key => $value) {
-            if($value->getEnded() === false and $value->getIsDeleted() === false)
+            if($value->getEnded() == false and $value->getIsDeleted() == false)
                 $total = $total + $value->getNetAPayer();
         }
         return $total;
@@ -158,7 +158,7 @@ class Provider
     {
         $total = 0;
         foreach ($this->getProviderCommandes() as $key => $value) {
-            if($value->getEnded() === false and $value->getIsDeleted() === false)
+            if($value->getEnded() == false and $value->getIsDeleted() == false)
             {
                 foreach ($value->getSettlements() as $settlement) {
                     if ($settlement->getIsDeleted() === false) {

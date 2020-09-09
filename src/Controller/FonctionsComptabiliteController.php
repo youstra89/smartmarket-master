@@ -582,7 +582,7 @@ class FonctionsComptabiliteController extends AbstractController
         $compteAcrediter->setMontantFinal($compteAcrediter->getMontantFinal() - $montant);  
 
         // Il ne faut pas oublier de retirer le montant de l'acompte du client
-        $settlement->getCommande()->getProvider()->setAcompte($settlement->getCommande()->getProvider()->getAcompte() - $montant);
+        // $settlement->getCommande()->getProvider()->setAcompte($settlement->getCommande()->getProvider()->getAcompte() - $montant);
       }
       else{
         // 1 - On commence par débiter le compte fournisseur
@@ -620,7 +620,7 @@ class FonctionsComptabiliteController extends AbstractController
     }
 
 
-    public function ecritureDesChargesDUnAchatDansLeJournalComptable(EntityManagerInterface $manager, int $transport, int $dedouanement, int $currency_cost, int $forwarding_cost, int $additional_fees, ProviderCommande $providerCommande, ComptaExercice $exercice)
+    public function ecritureDesChargesDUnAchatDansLeJournalComptable(EntityManagerInterface $manager, int $transport, int $dedouanement, int $currency_cost, int $forwarding_cost, int $additional_fees, ProviderCommande $commande, ComptaExercice $exercice)
     {
       /**
        * Pour chaque depense, on va créditer la caisse et débiter le compte autres charges
@@ -657,7 +657,7 @@ class FonctionsComptabiliteController extends AbstractController
       // 4 - Quatième et dernière étape, on écrit dans le journal
       $reference = $this->generateReferenceEcriture($manager);
 
-      $label           = "Vente de marchandises";
+      $label           = "Paiement des charges de la commande ".$commande->getReference();
       $tva             = 0;
       $date            = new \DateTime();
       $montant         = $totalCharges;

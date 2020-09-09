@@ -46,7 +46,52 @@
     <div class="col-md-8 col-lg-8 col-sm-8"></div>
     <div class="col-md-4 col-lg-4 col-sm-4"></div>
   </div>
+  <h3>Produits de la commande</h3>
+  {# <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document"> 
+      <div class="modal-content">#}
+        <form class="text-sm">
+          <div class="modal-body">
+            <div class="row">
+              <div class="form-group col-md-6">
+                <label for="products" class="col-form-label">Produits</label><br>
+                {# <select name="products" id="products" class="form-control"> #}
+                <select name="products" id="products" class="js-example-basic-single">
+                  <option value="">Sélectionnez un produit</option>
+                  {% for product in products %}
+                    <option value="{{ product.id }}">{{ product.reference }}  --- {{ product.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group col-md-1">
+                {# <label for="reference" class="col-form-label">Référence de produit</label>
+                <input type="text" name="reference" class="form-control" id="reference" value="PR"> #}
+              </div>
+            {# </div>
+            <div class="row"> #}
+              <div class="form-group col-md-2">
+                <label for="quantity" class="col-form-label">Quantité:</label>
+                <input type="number" class="form-control" id="quantity" value="1" min="1" required>
+              </div>
+              <div class="form-group col-md-2">
+                <label for="price" class="col-form-label">Prix unitaire:</label>
+                <input type="number" class="form-control" id="price" value="" required>
+              </div>
+            </div>
+            <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
+          </div>
+          <div class="modal-footer" style="margin-right: 150px">
+            <input type="hidden" name="productId" id="productId" value="">
+            <input type="hidden" name="productLabel" id="productLabel" value="">
+            <input type="hidden" name="productStock" id="productStock" value="">
+            <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter un produit</button>
+          </div>
+        </form>
+    {#   </div>
+    </div>
+  </div> #}
   {{ form_start(form, {'attr': {'class': ''}}) }}
+    <h3>Détails de la commande</h3>
     <div class="row">
       <div class="col-md-6">
         <div class="form-group">
@@ -57,7 +102,7 @@
       <div class="col-md-6">
         <div class="form-group">
           <label for="date" class="required">Date de la commande</label>
-          <input type="date" name="date" class="form-control" required>
+          <input type="date" name="date" class="form-control" value="{{ 'now'|date("Y-m-d") }}" min="{{ 'now'|date("Y-m-d") }}" required>
         </div>
       </div>
     </div>
@@ -109,8 +154,8 @@
           <input type="number" name="remise" id="remise" value="0" class="form-control" required>
         </div>
       </div>
-    </div>
-    <button type="button" class="btn-lg btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Ajouter un produit</button>
+    </div><br><br>
+    {# <button type="button" class="btn-lg btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Ajouter un produit</button> #}
     <section class="">
     {# <form class="ui form" action="" method="post"> #}
       <table class="table" id="myTable">
@@ -153,55 +198,6 @@
     {# </form> #}
     </section>
   {{ form_end(form) }}
-
-  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Sélection de produits</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <form class="text-sm">
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="reference" class="col-form-label">Référence de produit</label>
-              <input type="text" name="reference" class="form-control" id="reference" value="PR">
-            </div>
-            <div class="form-group">
-              <label for="products" class="col-form-label">Produits</label>
-              <select name="products" id="products" class="form-control">
-              {# <select name="products" id="products" class="js-example-basic-single"> #}
-                <option value="">Sélectionnez un produit</option>
-                {% for product in products %}
-                  <option value="{{ product.id }}">{{ product.reference }}  --- {{ product.label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="row">
-              <div class="form-group col-md-6">
-                <label for="quantity" class="col-form-label">Quantité:</label>
-                <input type="number" class="form-control" id="quantity" value="1" min="1" required>
-              </div>
-              <div class="form-group col-md-6">
-                <label for="price" class="col-form-label">Prix unitaire:</label>
-                <input type="number" class="form-control" id="price" value="" required>
-              </div>
-            </div>
-            <div class="form-group text-center"><div id="notif"><p style="color: red; font-weight: bolder"></p></div></div>
-          </div>
-          <div class="modal-footer">
-            <input type="hidden" name="productId" id="productId" value="">
-            <input type="hidden" name="productLabel" id="productLabel" value="">
-            <input type="hidden" name="productStock" id="productStock" value="">
-            <button type="button" class="btn-lg btn-default" data-dismiss="modal">Fermer</button>
-            <button type="submit" class="btn-lg btn-primary" id="add_product">Ajouter</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 {% endblock %}
 
 
@@ -225,7 +221,10 @@
               $("#productStock").val(result.stock);
               $("#quantity").val(1);
               $("#quantity").focus();
-              $("#notif p").text('');
+              $("#quantity").select();
+              $("#notif p").text(result.reference + ' --- ' + result.label);
+              $("#notif p").css("color", "black");
+
           },
           error: function (xhr, status, error) {
             $("#products").val(null);
@@ -255,7 +254,10 @@
                 $("#quantity").val(1);
                 $("#quantity").focus();
                 $('#products option[value="'+ result.id +'"]').attr('selected', 'selected');
-                $("#notif p").text('');
+                $("#quantity").select();
+                $("#notif p").text(result.reference + ' --- ' + result.label);
+                $("#notif p").css("color", "black");
+                // console.log(result.label);
               } 
               else{
                 $("#notif p").text('Référence (' + ref + ') incorrecte.');
@@ -302,17 +304,17 @@
           productsId.push(id);
           console.log(productsId);
           var sousTotal = quantity * price;
-          total = eval(total + sousTotal);
+          total         = eval(total + sousTotal);
               
-          $("#total").val(total)
           // $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td></td></tr>');
-          $("#myTable tbody tr:last").after('<tr><td>' + reference + '</td><td>' + label + '</td><td><input type="number" class="quantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required readonly></td><td><input type="number" class="price" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required readonly></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td><i class="icon-trash" title="Retirer ' + label + ' de la vente en cours"></i></td></tr>');
+          $("#myTable tbody tr:last").after('<tr id="tableLineId' + id + '"><td>' + reference + '</td><td>' + label + '</td><td><input type="number" data="' + id + '" class="setQuantity" id="quantities[' + id + ']" name="quantities[' + id + ']" value="' + quantity + '" required></td><td><input type="number" data="' + id + '" class="setPrice" id="prices[' + id + ']" name="prices[' + id + ']" value="' + price + '" required></td><td><input type="number" class="sousTotal" id="sousTotal[' + id + ']" name="sousTotal[' + id + ']" value="' + sousTotal + '" readonly><input type="hidden" name="products[]" value="' + id + '"></td><td><i class="icon-trash" id="' + id + '" title="Retirer ' + label + ' de la commande en cours" onclick="$.fn.deleteProduct(' + id + ')"></i></td></tr>');
           $("#products").val(null);
           $("#reference").val("PR");
           $("#price").val(null);
           $("#quantity").val(1);
           $('#products option[value="'+ id +'"]').remove();
           $("#notif p").text('');
+          $("#total").val($.fn.calculateTotal())
           var t = eval($("#total").val())
           var tva = eval($("#tva").val()) / 100
           var taxe = eval(t * tva)
@@ -391,6 +393,52 @@
         $("#ttc").val(t + taxe)
         $("#net").val(t + taxe - remise)
       })
+
+
+      // A chaque fois que le prix change
+      $('#myTable').on("change paste keyup", '.setPrice', function(e){       
+        var id          = $(this).attr("id");
+        var id          = $(this).attr("data");
+        // console.log(data);
+        var price       = $(this).val();
+        var priceH      = $('#prices[' + id + ']');
+        var qte         = document.getElementById('quantities[' + id + ']').value;
+        var sousTotal   = document.getElementById('sousTotal[' + id + ']');
+        var total       = $('#total');
+        priceH.value    = price;
+        sousTotal.value = parseFloat(qte) * parseFloat(price);
+        $("#total").val($.fn.calculateTotal())
+        var t      = eval($("#total").val())
+        var tva    = eval($("#tva").val()) / 100
+        var taxe   = eval(t * tva)
+        var remise = parseInt($("#remise").val())
+        $("#montantTva").val(taxe)
+        $("#ttc").val(t + taxe)
+        $("#net").val(t + taxe - remise)
+      });
+
+      // A chaque fois que la quantité change
+      $('#myTable').on("change paste keyup", '.setQuantity', function(e){       
+        var id        = $(this).attr("id");
+        var id        = $(this).attr("data");
+        var qte       = $(this).val();
+        var quantityH = ('#quantities[' + id + ']');
+        var price     = document.getElementById('prices[' + id + ']').value;
+        var sousTotal = document.getElementById('sousTotal[' + id + ']');
+        var total     = $('#total');
+        // console.log("Id : " + id, "Quantité : " + qte, "Prix : " + price, "Sous-total : " + sousTotal.value);
+        //console.log(qte, price);
+        quantityH.value = qte;
+        sousTotal.value = parseFloat(price) * parseFloat(qte);
+        $("#total").val($.fn.calculateTotal())
+        var t      = eval($("#total").val())
+        var tva    = eval($("#tva").val()) / 100
+        var taxe   = eval(t * tva)
+        var remise = parseInt($("#remise").val())
+        $("#montantTva").val(taxe)
+        $("#ttc").val(t + taxe)
+        $("#net").val(t + taxe - remise)
+      });
       
 
       $('.icon-trash').on("click", function(){
@@ -408,7 +456,7 @@
 
         // 2. On ajoute le produit retiré au select (menu déroulant) des produits dans la boîte modal d'ajout de produit
         $.ajax({
-          url: '/ventes/select-product/' + id + '/' + storeId,
+          url: '/ventes/select-product/' + id + '/1',
           type: 'GET',
           dataType: 'json',
           success: function (result) { 
@@ -425,13 +473,24 @@
 
         // 4. On calcule à nouveau le total de la commande
         $("#total").val($.fn.calculateTotal())
-        var t = eval($("#total").val())
-        var tva = eval($("#tva").val()) / 100
-        var taxe = eval(t * tva)
+        var t      = eval($("#total").val())
+        var tva    = eval($("#tva").val()) / 100
+        var taxe   = eval(t * tva)
         var remise = parseInt($("#remise").val())
         $("#montantTva").val(taxe)
         $("#ttc").val(t + taxe)
         $("#net").val(t + taxe - remise)
+      }
+
+      $.fn.calculateTotal = function()
+      {
+        var sousTotaux = $('.sousTotal');
+        var total  = 0;
+        for (let i = 0; i < sousTotaux.length; i++) {
+          const element = sousTotaux[i];
+          total += eval(element.value)
+        }
+        return total;
       }
     
     });

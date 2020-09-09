@@ -72,21 +72,21 @@ class AcomptesController extends AbstractController
                * On va enregister une écriture dans le journal. Il s'agira dans un premier temps de débiter le compte caisse ou banque selon $mode
                * Dans un second temps, on va créditer le compte "Clients - Avances et acomptes récus"
                */
-              // $compteAutresCharges = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
-              $compteAcompteClients = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
-              $compteAcompteClients->setMontantFinal($compteAcompteClients->getMontantFinal() + $montant);
+              // // $compteAutresCharges = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
+              // $compteAcompteClients = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
+              // $compteAcompteClients->setMontantFinal($compteAcompteClients->getMontantFinal() + $montant);
 
-              // 2 - On débiter ensuite soit le compte caisse, soit le compte banque
-              if($mode == 1)
-                $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
-              elseif($mode == 2)
-                $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+              // // 2 - On débiter ensuite soit le compte caisse, soit le compte banque
+              // if($mode == 1)
+              //   $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+              // elseif($mode == 2)
+              //   $compteADebiter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
 
-              $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() + $montant);
-              $label = "Versement d'acompte/avance pour le clien ".$customer->getNom();
-              $reference = $fonctions->generateReferenceEcriture($manager);
-              $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcompteClients, 0, $montant, $remarque);
-              $manager->persist($ecriture);
+              // $compteADebiter->setMontantFinal($compteADebiter->getMontantFinal() + $montant);
+              // $label = "Versement d'acompte/avance pour le clien ".$customer->getNom();
+              // $reference = $fonctions->generateReferenceEcriture($manager);
+              // $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteADebiter, $compteAcompteClients, 0, $montant, $remarque);
+              // $manager->persist($ecriture);
               // dd($acompte);
 
               try{
@@ -139,26 +139,35 @@ class AcomptesController extends AbstractController
               $remarque  = $data["remarque"];
               $providerId = (int) $data["provider"];
               $provider  = $manager->getRepository(Provider::class)->find($providerId);
+              $acompte = new Acompte();
+              $acompte->setProvider($provider);
+              $acompte->setDate($date);
+              $acompte->setModePaiement($mode);
+              $acompte->setMontant($montant);
+              $acompte->setExercice($exercice);
+              $acompte->setCommentaire($remarque);
+              $acompte->setCreatedBy($this->getUser());
+              $manager->persist($acompte);
               $provider->setAcompte($provider->getAcompte() + $montant);
               /**
                * On va enregister une écriture dans le journal. Il s'agira dans un premier temps de créditer le compte caisse ou banque selon $mode
                * Dans un second temps, on va débiter le compte "Fournisseur - Avances et acomptes récus"
                */
-              // $compteAutresCharges = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
-              $compteAcompteFournisseurs = $manager->getRepository(ComptaCompteExercice::class)->findCompte(28, $exerciceId);
-              $compteAcompteFournisseurs->setMontantFinal($compteAcompteFournisseurs->getMontantFinal() + $montant);
+              // // $compteAutresCharges = $manager->getRepository(ComptaCompteExercice::class)->findCompte(27, $exerciceId);
+              // $compteAcompteFournisseurs = $manager->getRepository(ComptaCompteExercice::class)->findCompte(28, $exerciceId);
+              // $compteAcompteFournisseurs->setMontantFinal($compteAcompteFournisseurs->getMontantFinal() + $montant);
 
-              // 2 - On débiter ensuite soit le compte caisse, soit le compte banque
-              if($mode == 1)
-                $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
-              elseif($mode == 2)
-                $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
+              // // 2 - On débiter ensuite soit le compte caisse, soit le compte banque
+              // if($mode == 1)
+              //   $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(13, $exerciceId);
+              // elseif($mode == 2)
+              //   $compteACrediter = $manager->getRepository(ComptaCompteExercice::class)->findCompte(12, $exerciceId);
 
-              $compteACrediter->setMontantFinal($compteACrediter->getMontantFinal() - $montant);
-              $label = "Versement d'acompte/avance chez le fournisseur ".$provider->getNom();
-              $reference = $fonctions->generateReferenceEcriture($manager);
-              $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteAcompteFournisseurs, $compteACrediter, 0, $montant, $remarque);
-              $manager->persist($ecriture);
+              // $compteACrediter->setMontantFinal($compteACrediter->getMontantFinal() - $montant);
+              // $label = "Versement d'acompte/avance chez le fournisseur ".$provider->getNom();
+              // $reference = $fonctions->generateReferenceEcriture($manager);
+              // $ecriture  = $fonctions->genererNouvelleEcritureDuJournal($manager, $exercice, $reference, $date, $label, $compteAcompteFournisseurs, $compteACrediter, 0, $montant, $remarque);
+              // $manager->persist($ecriture);
 
               try{
                 $manager->flush();

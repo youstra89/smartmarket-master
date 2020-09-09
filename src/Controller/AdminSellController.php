@@ -430,6 +430,13 @@ class AdminSellController extends AbstractController
 
       $storeId = $commande->getStore()->getId();
       $stocks    = $manager->getRepository(Stock::class)->storeProducts($storeId);
+      $idsProduitsCommandeEnCours = [];
+      foreach ($commande->getProduct() as $value) {
+        if($value->getIsDeleted() == false){
+          $idsProduitsCommandeEnCours[$value->getProduct()->getId()] = $value->getProduct()->getId();
+        }
+      }
+      // dd($idsProduitsCommandeEnCours);
 
       if($request->isMethod('post'))
       {
@@ -454,7 +461,7 @@ class AdminSellController extends AbstractController
             //   # code...
             // }
             foreach ($products as $item) {
-              $newProductsIds[] = $item;
+              $newProductsIds[$item] = $item;
             }
 
             // dd($newProductsIds);
@@ -462,7 +469,7 @@ class AdminSellController extends AbstractController
             foreach ($commande->getProduct() as $key => $value) {
               $productId = $value->getProduct()->getId();
               $oldProductsIds[] = $productId;
-              if(in_array($productId, $newProductsIds))
+              if(in_array($productId, $newProductsIds) and $value->getIsDeleted() == false)
               {
                 $stock     = $manager->getRepository(Stock::class)->findOneBy(["product" => $productId, "store" => $storeId]);
                 $product   = $value->getProduct();
@@ -503,12 +510,15 @@ class AdminSellController extends AbstractController
                   
                   $change   = true;
                   $subtotal = $quantity * $price;
+                  $beneficeSurProduit = ($price - $value->getProduct()->getAveragePurchasePrice()) * $quantity;
                   $value->setQuantity($quantity);
                   $value->setUnitPrice($price);
                   $value->setSubtotal($subtotal);
+                  $value->setBenefice($beneficeSurProduit);
                   $value->setUpdatedAt(new \DateTime());
                   $value->setUpdatedBy($this->getUser());
                 }
+                unset($newProductsIds[$productId]);
               }
               else{
                 $value->setIsDeleted(true);
@@ -516,16 +526,18 @@ class AdminSellController extends AbstractController
                 $value->setDeletedBy($this->getUser());
               }
             }
+            // dd($newProductsIds);
 
-            foreach ($newProductsIds as $id) {
-              if(!in_array($id, $oldProductsIds))
-              {
+            $test = [];
+            foreach ($newProductsIds as $productId) {
+              // if(!in_array($productId, $oldProductsIds))
+              // {
                 // dd($id);
                 $commandeProduit    = new CustomerCommandeDetails();
-                $product            = $manager->getRepository(Product::class)->find($id);
-                $price              = $prices[$id];
-                $quantity           = $quantities[$id];
-                $subtotal           = $price + $quantity;
+                $product            = $manager->getRepository(Product::class)->find($productId);
+                $price              = $prices[$productId];
+                $quantity           = $quantities[$productId];
+                $subtotal           = $price * $quantity;
                 $beneficeSurProduit = ($price - $product->getAveragePurchasePrice()) * $quantity;
                 $commandeProduit->setBenefice($beneficeSurProduit);
                 $commandeProduit->setCommande($commande);
@@ -535,10 +547,15 @@ class AdminSellController extends AbstractController
                 $commandeProduit->setSubtotal($subtotal);
                 $commandeProduit->setCreatedBy($this->getUser());
                 $manager->persist($commandeProduit);
-                $stock = $manager->getRepository(Stock::class)->findOneBy(["product" => $id, "store" => $storeId]);
+                $stock = $manager->getRepository(Stock::class)->findOneBy(["product" => $productId, "store" => $storeId]);
                 $stock->setQuantity($stock->getQuantity() - $quantity);
-              }
+                $test[] = $productId;
+              // }
+              // else{
+              //   $commandeProduit = $manager->getRepository(CustomerCommandeDetails::class)->findOneBy(["commande" => $id, "product" => $productId]);
+              // }
             }
+            // dd($newProductsIds, $productId);
 
             $tva         = $commande->getTva();
             $montantTtc  = $total + $total * ($tva/100);
@@ -559,28 +576,36 @@ class AdminSellController extends AbstractController
               $exercice  = $fonctions->exercice_en_cours($manager);
               $etat = "Acompte";
               // On va, dans un premier temps, enregistrer l'avoir du client
-              $avoir = new Avoir();
+              $avoir = $manager->getRepository(Avoir::class)->findByCommande($commande);
               $totalAvoir = $totalReglement - $netAPayer;
-              $reference = "AV-".(new \DateTime())->format('Ymd').'-'.(new \DateTime())->format('His');
-              $avoir->setDate(new \DateTime());
-              $avoir->setMode(3);
-              $avoir->setExercice($exercice);
-              $avoir->setReference($reference);
-              $avoir->setCommande($commande);
-              $avoir->setCreatedBy($this->getUser());
-              $avoir->setMontant($totalAvoir);
-              $manager->persist($avoir);
+              if(empty($avoir)){
+                $avoir = new Avoir();
+                $referenceAvoir = "AV-".(new \DateTime())->format('Ymd').'-'.(new \DateTime())->format('His');
+                $avoir->setDate(new \DateTime());
+                $avoir->setMode(1);
+                $avoir->setExercice($exercice);
+                $avoir->setReference($referenceAvoir);
+                $avoir->setCommande($commande);
+                $avoir->setCreatedBy($this->getUser());
+                $avoir->setMontant($totalAvoir);
+                $manager->persist($avoir);
+              }
+              else{
+                $avoir[0]->setUpdatedAt(new \DateTime());
+                $avoir[0]->setUpdatedBy($this->getUser());
+                $avoir[0]->setMontant($totalAvoir);
+              }
 
-              $acompte = new Acompte();
-              $acompte->setCustomer($customer);
-              $acompte->setDate(new \DateTime());
-              $acompte->setMontant($totalAvoir);
-              $acompte->setExercice($exercice);
-              $acompte->setCommentaire("Acompte reçu après modification de la vente N°$reference");
-              $acompte->setCreatedBy($this->getUser());
-              $manager->persist($acompte);
-              $commande->setEnded(true);
-              $customer->setAcompte($customer->getAcompte() + $totalAvoir);
+              // $acompte = new Acompte();
+              // $acompte->setCustomer($customer);
+              // $acompte->setDate(new \DateTime());
+              // $acompte->setMontant($totalAvoir);
+              // $acompte->setExercice($exercice);
+              // $acompte->setCommentaire("Acompte reçu après modification de la vente N°$reference");
+              // $acompte->setCreatedBy($this->getUser());
+              // $manager->persist($acompte);
+              // $commande->setEnded(true);
+              // $customer->setAcompte($customer->getAcompte() + $totalAvoir);
               // dd($avoir, $acompte);
             }
             elseif ($totalReglement < $netAPayer) {
@@ -593,7 +618,7 @@ class AdminSellController extends AbstractController
               // dd($commande);
             }
 
-            // dd($avoir);
+            // dd($avoir, $commande);
             // Si $netAPayer > $totalReglement, cela veut dire que le client nous doit la différence
             try{
               // $fonctions->ecritureDeModificationDeVente($manager, $commande, $ancienTotal);
@@ -616,6 +641,7 @@ class AdminSellController extends AbstractController
         'store'   => $commande->getStore(),
         'stocks'   => $stocks,
         'commande' => $commande,
+        'idsProduitsCommandeEnCours' => $idsProduitsCommandeEnCours,
       ]);
     }
 
@@ -1218,18 +1244,26 @@ class AdminSellController extends AbstractController
      * @param CustomerCommande $commande
      * @IsGranted("ROLE_VENTE")
      */
-    public function ticket_de_ciasse_new(int $id, EntityManagerInterface $manager, int $settlementId, CustomerCommande $commande)
+    public function ticket_de_ciasse_new(Request $request, int $id, EntityManagerInterface $manager, int $settlementId, CustomerCommande $commande)
     {
       $info = $manager->getRepository(Informations::class)->find(1);
       $settlement  = $manager->getRepository(Settlement::class)->find($settlementId);
       $settlements = $manager->getRepository(Settlement::class)->versementsAnterieurs($id, $settlement);
       // Configure Dompdf according to your needs
-      
+      $origine = $request->get('origine');
 
-      return $this->render('ticket-de-caisse.html.php', [
+      if($origine == "mini"){
+        return $this->render('ticket-de-caisse-mini.html.php', [
           'info'        => $info,
           'commande'    => $commande,
           'settlements' => $settlements,
+        ]);
+      }
+      
+      return $this->render('ticket-de-caisse.html.php', [
+        'info'        => $info,
+        'commande'    => $commande,
+        'settlements' => $settlements,
       ]);
     }
 

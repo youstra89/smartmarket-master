@@ -46,6 +46,7 @@
             <th>Référence</th>
             <th>Date</th>
             <th>Clients</th>
+            <th>Commandes</th>
             <th>Montant</th>
             <th>Statut</th>
             <th>Actions</th>
@@ -66,6 +67,7 @@
                   ---
                 {% endif %}
               </td>
+              <td>{{ avoir.commande.reference }}</td>
               <td>{{ avoir.montant|number_format(0, ',', ' ') }} F</td>
               <td>
                 {# {% if avoir.ended == 0 %}

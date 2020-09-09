@@ -88,6 +88,21 @@ class ProviderCommandeRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+
+    public function montant_net_a_payer_de_tous_les_achats_de_la_date($dateActuelle)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('SUM(c.net_a_payer), c.date')
+            ->where('c.date LIKE :dateActuelle')
+            ->andWhere('c.is_deleted = :status')
+            ->groupBy('c.date')
+            ->setParameter('status', false)
+            ->setParameter('dateActuelle', $dateActuelle.'%')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
     
     
     public function tous_les_achats_du($dateActuelle)

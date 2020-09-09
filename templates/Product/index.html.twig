@@ -63,14 +63,14 @@
     <a href="{{ path('mark') }}" title="Gestion des marques de produits"><button class="btn btn-default btn-circle btn-xl">Marques</button></a>
     <a href="{{ path('category') }}" title="Gestion des catégories de produits"><button class="btn btn-info btn-circle btn-xl">Catégories</button></a>
     <a href="{{ path('family') }}" title="Gestion des familles de produits"><button class="btn btn-info btn-circle btn-xl">Famille</button></a>
-    <a href="{{ path('impression_inventaire') }}" title="Vente prévisionnelle"><button class="btn btn-default btn-circle btn-xl">Vente <br> Prévisionnelle</button></a>
+    <a href="{{ path('vente_previsionnelle') }}" title="Vente prévisionnelle"><button class="btn btn-default btn-circle btn-xl">Vente <br> Prévisionnelle</button></a>
     <a href="{{ path('cout_total_en_stock') }}" title="Inventaire"><button class="btn btn-info btn-circle btn-xl" style="font-size: 10px;">Inventaire</button></a>
     <a href="{{ path('impression_cout_total_en_stock') }}" title="Inventaire en PDF"><button class="btn btn-primary btn-circle btn-xl"><i class="icon-file"></i>Inventaire</button></a>
     {% if is_granted('ROLE_STOCK_INITIAL') %}
       <br><br>
-        <a href="{{ path('add_multiple_products') }}" class="btn-sm btn-default">Ajouter plusieus produits à la fois</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        {# <a href="{{ path('add_multiple_products') }}" class="btn-sm btn-default">Ajouter plusieus produits à la fois</a>&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="/barcode" class="btn-sm btn-default">Générer des codes barres</a>
-      <br><br>
+      <br><br> #}
     {% endif %}
   {% endif %}
   <div class="table-responsive">
@@ -144,10 +144,10 @@
                   &nbsp;
                   <a href="{{ path('define_product_prices', {id: product.id}) }}" title="Modifier ce produit"><i class="icon-xing"></i></a>
                 {% endif %}
-                {# {% if is_granted("ROLE_ADMIN") %}
+                {% if is_granted("ROLE_ADMIN") %}
                   &nbsp;
-                  <a href="{{ path('product_barecode', {id: product.id}) }}" title="Modifier le code barre"><i class="icon-code"></i></a>
-                {% endif %} #}
+                  <a href="/barcode/barcode.php?reference={{product.reference}}&productId={{product.codebarre}}&price={{product.unitPrice}}" title="Imprimer le code barre"><i class="icon-code"></i></a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

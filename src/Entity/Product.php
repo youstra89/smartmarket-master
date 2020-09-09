@@ -112,7 +112,7 @@ class Product
     private $last_seller;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $average_purchase_price;
 
@@ -122,12 +122,12 @@ class Product
     private $unite;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $average_selling_price;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $average_package_selling_price;
 
@@ -392,12 +392,12 @@ class Product
         return $this;
     }
 
-    public function getAveragePurchasePrice(): ?int
+    public function getAveragePurchasePrice(): ?float
     {
         return $this->average_purchase_price;
     }
 
-    public function setAveragePurchasePrice(int $average_purchase_price): self
+    public function setAveragePurchasePrice(float $average_purchase_price): self
     {
         $this->average_purchase_price = $average_purchase_price;
 
@@ -416,24 +416,24 @@ class Product
         return $this;
     }
 
-    public function getAverageSellingPrice(): ?int
+    public function getAverageSellingPrice(): ?float
     {
         return $this->average_selling_price;
     }
 
-    public function setAverageSellingPrice(int $average_selling_price): self
+    public function setAverageSellingPrice(float $average_selling_price): self
     {
         $this->average_selling_price = $average_selling_price;
 
         return $this;
     }
 
-    public function getAveragePackageSellingPrice(): ?int
+    public function getAveragePackageSellingPrice(): ?float
     {
         return $this->average_package_selling_price;
     }
 
-    public function setAveragePackageSellingPrice(int $average_package_selling_price): self
+    public function setAveragePackageSellingPrice(float $average_package_selling_price): self
     {
         $this->average_package_selling_price = $average_package_selling_price;
 

@@ -66,6 +66,7 @@
                 <th>Référence</th>
                 <th>Date</th>
                 <th>Fournisseur</th>
+                <th style="text-align: right">Montant</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -78,6 +79,7 @@
                   <td>{{ commande.reference }}</td>
                   <td>{{ commande.date|date('d-m-Y') }}</td>
                   <td>{{ commande.provider.firstname }} {{ commande.provider.lastname }} ({{ commande.provider.country.name }})</td>
+                  <td style="text-align: right">{{ commande.netAPayer|number_format(2, ',', ' ') }} F</td>
                   <td>
                     <a href="{{ path('provider.order.details', {id: commande.id}) }}"data-toggle="tooltip" title="Voir les détails de la commande"><i class="icon-info"></i></a>
                     {% if commande.ended == false %}
@@ -85,6 +87,12 @@
                     {% endif %}
                     {% if commande.status == "COMMANDEE" and is_granted('ROLE_ADMIN') %}
                       <a href="{{ path('receive_provider_commande', {id: commande.id}) }}"data-toggle="tooltip" title="Recevoir la commande"><i class="icon-news"></i></a>
+                      <a href="{{ path('delete_provider_commande', {'id': commande.id, '_csrf_token': csrf_token('delete_provider_commande')}) }}" data-toggle="tooltip" data-placement="top" title="Supprimer la commande" onclick="return confirm('Etes-vous sûrs de supprimer cette commande ?')">
+                        <i class="icon-trash"></i>
+                      </a>
+                    {% endif %}
+                    {% if is_granted("ROLE_SUPER_ADMIN") %}
+                      {# <a href="{{ path('regulariser_prix_de_revient', {id: commande.id}) }}">Test</a> #}
                     {% endif %}
                   </td>
                 </tr>

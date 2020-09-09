@@ -19,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Controller\FonctionsComptabiliteController;
+use App\Entity\Activite;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -39,9 +40,11 @@ class ComptabiliteController extends AbstractController
           return $this->redirectToRoute('login');
         }
 
-        $creancesClients    = 0;
-        $dettesFournisseurs = 0;
-        $stockMarchandises  = 0;
+        $acomptesClients      = 0;
+        $creancesClients      = 0;
+        $acomptesFournisseurs = 0;
+        $dettesFournisseurs   = 0;
+        $stockMarchandises    = 0;
         $products = $manager->getRepository(Product::class)->findAll();
         foreach ($products as $item) {
           if ($item->getIsDeleted() == 0) {
@@ -55,30 +58,36 @@ class ComptabiliteController extends AbstractController
             $totalCommandes = $item->getMontantTotalCommandeNonSoldees();
             $totalReglements = $item->getMontantTotalReglementCommandeNonSoldees();
             $creance = $totalCommandes - $totalReglements;
+            $acomptesClients = $acomptesClients + $item->getAcompte();
             $creancesClients = $creancesClients + $creance;
           }
         }
 
         $providers = $manager->getRepository(Provider::class)->findAll();
+        $com = [];
         foreach ($providers as $item) {
           if ($item->getIsDeleted() == 0) {
             $totalCommandes = $item->getMontantTotalCommandeNonSoldees();
             $totalReglements = $item->getMontantTotalReglementCommandeNonSoldees();
             $dette = $totalCommandes - $totalReglements;
+            $com[] = [$totalCommandes, $totalReglements, $dette];
+            $acomptesFournisseurs = $acomptesFournisseurs + $item->getAcompte();
             $dettesFournisseurs = $dettesFournisseurs + $dette;
           }
         }
         // $resultat = $fonctions->determinationDuResultatDeLExercice($exercice);
-        // dd($resultat);
+        // dd($com);
 
         $exercices = $manager->getRepository(ComptaExercice::class)->findAll();
         $exercices = array_reverse($exercices);
         return $this->render('Comptabilite/index.html.twig', [ 
-          'current'            => 'accounting',
-          'exercices'          => $exercices,
-          'creancesClients'    => $creancesClients,
-          'dettesFournisseurs' => $dettesFournisseurs,
-          'stockMarchandises'  => $stockMarchandises,
+          'current'              => 'accounting',
+          'exercices'            => $exercices,
+          'acomptesClients'      => $acomptesClients,
+          'creancesClients'      => $creancesClients,
+          'acomptesFournisseurs' => $acomptesFournisseurs,
+          'dettesFournisseurs'   => $dettesFournisseurs,
+          'stockMarchandises'    => $stockMarchandises,
         ]);
     }
 
@@ -266,6 +275,119 @@ class ComptabiliteController extends AbstractController
         'comptesPassifs' => $comptesPassifs,
         'classesActifs'  => $classesActifs,
         'classesPassifs' => $classesPassifs,
+      ]);
+    }
+
+    /**
+     * @Route("/ajuster-bilan-d-exercice/{id}", name="ajuster_bilan")
+     * @param ComptaExercice $exercice
+     */
+    public function ajuster_bilan(Request $request, EntityManagerInterface $manager, ComptaExercice $exercice, int $id)
+    {
+      $comptesActifs  = $manager->getRepository(ComptaCompte::class)->comptesDuBilanOuDuResultat("bilan", "actif");
+      $comptesPassifs = $manager->getRepository(ComptaCompte::class)->comptesDuBilanOuDuResultat("bilan", "passif");
+      $classesActifs  = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "actif");
+      $classesPassifs = $manager->getRepository(ComptaClasse::class)->classesDuBilanOuDuResultat("bilan", "passif");
+      $comptesExercice = $manager->getRepository(ComptaCompteExercice::class)->findByExercice($id);
+      // $date = (new \DateTime())->format("Y-m-d");
+      // $tab = [$date, date('01-m-Y', strtotime($date)), date('t-m-Y', strtotime($date))];
+      // dump($comptesExercice);
+      if($request->isMethod('post'))
+      {
+        $token = $request->get('_csrf_token');
+        if($this->isCsrfTokenValid('ajuster_bilan', $token))
+        {
+          $data           = $request->request->all();
+          $totalActif     = (int) $data["totalActif"];
+          $totalPassif    = (int) $data["totalPassif"];
+          $comptesActifs  = $data["comptesActifs"];
+          $comptesPassifs = $data["comptesPassifs"];
+          // dd($labelExercice);
+          if($totalActif !== $totalPassif){
+            $this->addFlash('danger', "Impossible de continuer. Total actif différent de total passif");
+            return $this->redirectToRoute('enregistrer_bilan_ouverture');    
+          }
+
+
+          // Vient maintenant le moment d'enregistrer les comptes du bilan et ceux du résultat, sachant que le montant initial des comptes du résultat est nul.
+          // On commence par les comptes de l'actif du bilan
+          foreach ($comptesActifs as $key => $value) {
+            foreach ($comptesExercice as $compte) {
+              if($key == $compte->getCompte()->getNumero()){
+                $compte->setMontantFinal($value);
+                $compte->setUpdatedBy($this->getUser());
+                $compte->setUpdatedAt(new \DateTime());
+              }
+            }
+            // dd($compteExercice);
+          }
+
+          // Ensuite, les comptes du passif du bilan
+          foreach ($comptesPassifs as $key => $value) {
+            foreach ($comptesExercice as $compte) {
+              if($key == $compte->getCompte()->getNumero()){
+                $compte->setMontantFinal($value);
+                $compte->setUpdatedBy($this->getUser());
+                $compte->setUpdatedAt(new \DateTime());
+              }
+            }
+            // dd($exercice);
+          }
+
+          $activite = new Activite();
+          $activite->setTitre("Ajustement bilan");
+          $activite->setDescription("Ajustement du bilan de ".$exercice->getLabel());
+          $activite->setDate(new \DateTime());
+          $activite->setUser($this->getUser());
+          $manager->persist($activite);
+
+          try{
+            $manager->flush();
+            $this->addFlash('success', 'Ajustement du bilan de <strong>'.$exercice->getLabel().'</strong> réussi.');
+          } 
+          catch(\Exception $e){
+            $this->addFlash('danger', $e->getMessage());
+          } 
+          return $this->redirectToRoute('etat_entreprise');
+        }
+      }
+      
+      return $this->render('Comptabilite/ajuster-bilan.html.twig', [
+        'current'         => 'accounting',
+        'exercice'        => $exercice,
+        'comptesActifs'   => $comptesActifs,
+        'comptesPassifs'  => $comptesPassifs,
+        'classesActifs'   => $classesActifs,
+        'classesPassifs'  => $classesPassifs,
+        'comptesExercice' => $comptesExercice,
+      ]);
+    }
+
+    /**
+     * @Route("/balance-d-exercice/{id}", name="balance_d_un_exercice")
+     * @param ComptaExercice $exercice
+     */
+    public function balance_d_un_exercice(Request $request, EntityManagerInterface $manager, ComptaExercice $exercice, int $id)
+    {
+      $comptes  = $manager->getRepository(ComptaCompte::class)->comptesDuBilanOuDuResultat("bilan");
+      $ecritures = [];
+      if($request->isMethod('post'))
+      {
+        $token = $request->get('token');
+        if($this->isCsrfTokenValid('balance_compte', $token))
+        {
+          $data = $request->request->all();
+          $compteId = $data["compte"];
+          $ecritures  = $manager->getRepository(ComptaEcriture::class)->ecrituresDUnCompteDeLExercice($id, $compteId);
+          // dd($ecritures);
+        }
+      }
+      
+      return $this->render('Comptabilite/balance.html.twig', [
+        'current'  => 'accounting',
+        'ecritures' => $ecritures,
+        'exercice' => $exercice,
+        'comptes'  => $comptes,
       ]);
     }
 

@@ -23,12 +23,12 @@ class ComptaCompteExercice
     private $compte;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $montant_initial;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $montant_final;
 
@@ -96,24 +96,24 @@ class ComptaCompteExercice
         return $this;
     }
 
-    public function getMontantInitial(): ?int
+    public function getMontantInitial(): ?float
     {
         return $this->montant_initial;
     }
 
-    public function setMontantInitial(int $montant_initial): self
+    public function setMontantInitial(float $montant_initial): self
     {
         $this->montant_initial = $montant_initial;
 
         return $this;
     }
 
-    public function getMontantFinal(): ?int
+    public function getMontantFinal(): ?float
     {
         return $this->montant_final;
     }
 
-    public function setMontantFinal(int $montant_final): self
+    public function setMontantFinal(float $montant_final): self
     {
         $this->montant_final = $montant_final;
 

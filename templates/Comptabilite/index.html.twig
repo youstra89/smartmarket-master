@@ -69,7 +69,7 @@
           <h4>Clients</h4>
         </div>                
         <span class="btn-primary btn-sm" style="font-size: 1.5em">
-          {{ creancesClients|number_format(2, ',', ' ') }} F
+          {{ (creancesClients - acomptesClients)|number_format(2, ',', ' ') }} F
         </span>
       </div>
     </div>
@@ -79,7 +79,7 @@
           <h4>Fournisseurs</h4>
         </div>                
         <span class="btn-primary btn-sm" style="font-size: 1.5em">
-          {{ dettesFournisseurs|number_format(2, ',', ' ') }} F
+          {{ (dettesFournisseurs - acomptesFournisseurs)|number_format(2, ',', ' ') }} F
         </span>
       </div>
     </div>
@@ -93,6 +93,7 @@
         </span>
       </div>
     </div>
+    {# {{ dump(dettesFournisseurs, acomptesFournisseurs) }} #}
   </div><br><br>
   <h2 class="fh5co animate-box" data-animate-effect="fadeInLeft">Comptabilité détaillée</h2>
   <a href="{{ path('gestion_comptes') }}" class="btn-primary btn-sm">Gérer les comptes</a>
@@ -121,11 +122,13 @@
                 <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le bilan initial"><i class="icon-cloud-storage"></i></a></div>
                 <div class="col-md-1"><a href="{{ path('journal', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le journal"><i class="icon-news"></i></a></div>
                 <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le grand livre"><i class="icon-book"></i></a></div>
-                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir la balance"><i class="icon-edit"></i></a></div>
+                <div class="col-md-1"><a href="{{ path('balance_d_un_exercice', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir la balance"><i class="icon-edit"></i></a></div>
                 <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le résultat"><i class="icon-times"></i></a></div>
                 <div class="col-md-1"><a href="{{ path('bilan_final', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le bilan final"><i class="icon-tick"></i></a></div>
                 <div class="col-md-1"><a href="{{ path('resultat_d_un_exercice', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir le résultat"><i class="icon-point-of-interest"></i></a></div>
-                <div class="col-md-1"><a href="{{ path('bilan_initial', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Voir les graphes"><i class="icon-chart-bar"></i></a></div>
+                {% if exercice.acheve == false %}
+                  <div class="col-md-1"><a href="{{ path('ajuster_bilan', {id: exercice.id}) }}" data-toggle="tooltip" data-placement="top" title="Ajuster le bilan"><i class="icon-chart-bar"></i></a></div>
+                {% endif %}
               </div>
             </td>
           </tr>

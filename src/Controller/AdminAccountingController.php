@@ -104,24 +104,21 @@ class AdminAccountingController extends AbstractController
         if(empty($mois))
           $mois = (new \DateTime())->format('Y-m');
         $ventes         = $manager->getRepository(CustomerCommande       ::class)->montantTotalHorsTaxeDeToutesLesVenteDUnMois($mois);
+        $tousLesAchats  = $manager->getRepository(ProviderCommande       ::class)->montant_net_a_payer_de_tous_les_achats_de_la_date($mois);
         $totalNetAPayer = $manager->getRepository(CustomerCommande       ::class)->montant_net_a_payer_de_toutes_les_ventes_de_la_date($mois);
         $totalRemises   = $manager->getRepository(CustomerCommande       ::class)->totalDesRemiseDeToutesLesVenteDUnMois($mois);
         $entrees        = $manager->getRepository(Settlement             ::class)->entreesDuMois($mois);
         $clotures       = $manager->getRepository(Cloture                ::class)->jours_clotures($mois);
         $benefices      = $manager->getRepository(CustomerCommandeDetails::class)->benefice_journalier($mois);
-        // dump($clotures);
-        if(empty($ventes)){
-          $this->addFlash('danger', 'La date sélectionnée n\'est pas correcte.');
-          // return $this->redirectToRoute('compte_journalier');
-        }
 
-        $dates = $this->differentesDates($ventes, $entrees);
-        $mois = $this->dateEnFrancais($mois, false);
+        $dates = $this->differentesDates($ventes, $entrees, $tousLesAchats);
+        $mois  = $this->dateEnFrancais($mois, false);
 
         return $this->render('Accounting/comptabilite-journaliere.html.twig', [
           'dates'          => $dates,
           'ventes'         => $ventes,
           'entrees'        => $entrees,
+          'tousLesAchats'  => $tousLesAchats,
           'totalNetAPayer' => $totalNetAPayer,
           'totalRemises'   => $totalRemises,
           'mois'           => $mois,
@@ -132,17 +129,22 @@ class AdminAccountingController extends AbstractController
     }
 
 
-    public function differentesDates($ventes, $entrees)
+    public function differentesDates($ventes, $entrees, $tousLesAchats)
     {
       $dates = [];
+      foreach ($tousLesAchats as $key => $value) {
+        $dates[] = $value["date"]->format("Y-m-d");
+      }
       foreach ($ventes as $key => $value) {
         $dates[] = $value["date"]->format("Y-m-d");
       }
       foreach ($entrees as $key => $value) {
         $dates[] = $value["date"]->format("Y-m-d");
       }
-      return array_unique($dates);
+      return array_values(array_unique($dates));
     }
+
+
 
     /**
      * @Route("/comptabilite-mensuelle", name="compte_mensuel")
@@ -644,7 +646,7 @@ class AdminAccountingController extends AbstractController
   
         try{
           $manager->flush();
-          $this->addFlash('success', 'Activités du <strong>'.$dateFr.'</strong> clôturer avec succèss. Vous ne pouvez plus apporter de changement aux activités de ce jour.');
+          $this->addFlash('success', 'Activités du <strong>'.$dateFr.'</strong> clôturées avec succèss. Vous ne pouvez plus apporter de changement aux activités de ce jour.');
         } 
         catch(\Exception $e){
           $this->addFlash('danger', $e->getMessage());

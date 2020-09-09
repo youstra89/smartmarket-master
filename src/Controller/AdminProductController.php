@@ -617,9 +617,9 @@ class AdminProductController extends AbstractController
     }
 
     /**
-     * @Route("/impression-de-inventaire-de-stock-de-produits", name="impression_inventaire")
+     * @Route("/vente_previsionnelle", name="vente_previsionnelle")
      */
-    public function inventaire_de_stock_de_produits(EntityManagerInterface $manager)
+    public function vente_previsionnelle(EntityManagerInterface $manager)
     {
       $products = $manager->getRepository(Product::class)->findAll();
       if(empty($products)){
@@ -635,7 +635,7 @@ class AdminProductController extends AbstractController
       $dompdf = new Dompdf($pdfOptions);
       
       // Retrieve the HTML generated in our twig file
-      $html = $this->renderView('Product/inventaire-stock-de-produits.html.twig', [
+      $html = $this->renderView('Product/vente-previsionnelle.html.twig', [
           'products'  => $products
       ]);
       

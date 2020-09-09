@@ -123,56 +123,9 @@
         <title>Facture de la vente N° {{ commande.reference }} | Smart Market</title>
     </head>
     <body>
-        <header style="margin-bottom: -30px">
-            {% if info is defined %}
-              {% if info.logo %}
-                <div style="width: 25%; display: inline-block;">
-                  <img src=".{{ asset('uploads/images/' ~ info.logo) }}" alt="" style="width: 100%; height: auto">
-                </div>
-              {% endif %}
-              <div style="width: 75%; display: inline-block;">
-                <strong>{{ info.nom }}</strong><br>
-                {% if info.telephone is not empty %}
-                  Téléphone: {{ info.telephone }}<br>
-                {% endif %}
-                {% if info.email is not empty %}
-                  Email: {{ info.email }}<br>
-                {% endif %}
-                {% if info.siteWeb is not empty %}
-                  Site web: {{ info.siteWeb }}<br>
-                {% endif %}
-              </div>
-            {% else %}
-              SmartMarket
-            {% endif %}
-            <hr width="75%">
-        </header>
-
-        <footer style="font-family: Elegance; line-height: 10px; font-size: 0.8em">
-            <hr width="75%" style="align: left; border: solid black 2px">
-          {% if info is defined %}
-            {{ info.nom }} au capital de {{ info.capital|number_format(0, ',', ' ') }} F<br>
-            {% if info.adresse is not empty %}
-              Sise à {{ info.adresse }} <br>
-            {% endif %}
-            {% if info.numeroCompteBancaire is not empty %}
-              Compte bancaire {{ info.numeroCompteBancaire }} <br>
-            {% endif %}
-            {% if info.registreCommerce is not empty %}
-              RCM {{ info.registreCommerce }} <br>
-            {% endif %}
-          {% else %}
-            Contacts: (00225) 07 31 09 99 - Email: contact.youstra@gmail.com
-          {% endif %}
-        </footer>
+        {% include "header.html.twig" %}
         <!-- Wrap the content of your PDF inside a main tag -->
-        <main style="margin-top: 25px">
-            {# <p style="page-break-after: always;">
-                Content Page 1
-            </p>
-            <p style="page-break-after: never;">
-                Content Page 2
-            </p> #}
+        <main style="margin-top: 0px">
           <div class="content">
             <h1 class="title">
               Reçu N°{{ settlements|last.reference }} 
@@ -303,7 +256,7 @@
                   </tr>
                 </tbody>
               </table>
-            </div><br><br><br><br><br>
+            </div><br><br>
             <div class="row">
               <div style="text-align: right; font-style: italic">
                 <p class="annee">Editée le <strong>{{ 'now'|date('d-m-Y') }}</strong> à <strong>{{ 'now'|date('H:i:s') }}</strong> par <strong>{{ app.user.username }}</strong></strong></p>
